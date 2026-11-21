@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from rfinance.storage.repositories.data_ingestion import (
+        DataImportHistoryItem,
         DataImportSummary,
         DataIngestionRepository,
     )
@@ -39,6 +40,11 @@ class MarketCSVImportService:
         self._data_directory = data_directory.resolve()
         self._documents_directory = self._data_directory / "Documents"
         self._max_file_bytes = max_file_bytes
+
+    def recent_imports(self, limit: int = 20) -> tuple[DataImportHistoryItem, ...]:
+        """Return recent local import batches for provenance inspection."""
+
+        return self._repository.recent_imports(limit=limit)
 
     def import_market_csv(
         self,
