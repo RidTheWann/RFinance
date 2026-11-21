@@ -130,9 +130,7 @@ class TechnicalAnalysisPage(QWidget):
         self.summary_label.setWordWrap(True)
         layout.addWidget(self.summary_label)
 
-        self.status_label = QLabel(
-            "Catalogue has not been loaded. No live provider is configured."
-        )
+        self.status_label = QLabel("Catalogue has not been loaded. No live provider is configured.")
         self.status_label.setObjectName("technicalStatus")
         self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)

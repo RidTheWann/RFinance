@@ -270,8 +270,11 @@ def test_blocked_source_cannot_feed_historical_indicators(tmp_path) -> None:
             database,
             observations=(
                 (
-                    "blocked", NOW - timedelta(days=1), Decimal("100"),
-                    "VERIFIED", "batch-source-main",
+                    "blocked",
+                    NOW - timedelta(days=1),
+                    Decimal("100"),
+                    "VERIFIED",
+                    "batch-source-main",
                 ),
             ),
         )
@@ -298,8 +301,11 @@ def test_catalog_excludes_inactive_or_unverified_instruments(tmp_path) -> None:
             database,
             observations=(
                 (
-                    "placeholder", NOW - timedelta(days=1), Decimal("100"),
-                    "VERIFIED", "batch-source-main",
+                    "placeholder",
+                    NOW - timedelta(days=1),
+                    Decimal("100"),
+                    "VERIFIED",
+                    "batch-source-main",
                 ),
             ),
         )
@@ -326,9 +332,9 @@ def test_technical_service_returns_only_values_aligned_to_latest_bar(tmp_path) -
         )
         add_bars(database, observations=bars)
 
-        report = TechnicalAnalysisService(
-            HistoricalPriceSeriesService(database.sessions)
-        ).analyze("IDX:BBCA", "source-main")
+        report = TechnicalAnalysisService(HistoricalPriceSeriesService(database.sessions)).analyze(
+            "IDX:BBCA", "source-main"
+        )
 
         values = {item.key: item for item in report.indicators}
         assert report.latest_close == Decimal("13900")
