@@ -32,7 +32,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 1
 
-    window = MainWindow(context.paths)
+    window = MainWindow(context.paths, context.portfolio_ledger)
     application.aboutToQuit.connect(context.close)
     window.show()
     return application.exec()
