@@ -107,6 +107,16 @@ def test_market_csv_import_persists_source_provenance_and_unverified_rows(tmp_pa
         assert len(result.file_sha256) == 64
         assert result.file_sha256 == hashlib.sha256(source_file.read_bytes()).hexdigest()
 
+        history = service.recent_imports()
+        assert len(history) == 1
+        assert history[0].batch_id == result.batch_id
+        assert history[0].source_name == "User-supplied IDX EOD CSV"
+        assert history[0].original_filename == source_file.name
+        assert history[0].accepted_rows == 1
+        assert history[0].rejected_rows == 1
+        assert history[0].file_sha256 == result.file_sha256
+        assert history[0].document_relative_path.startswith("Documents/MarketImports/")
+
         with database.sessions() as session:
             source = session.get(SourceRegistryRecord, result.source_id)
             batch = session.get(DataImportBatchRecord, result.batch_id)
