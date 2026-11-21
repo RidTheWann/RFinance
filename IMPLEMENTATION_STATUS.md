@@ -75,6 +75,13 @@ Last verified against the repository: 2026-11-21
 - Instrument identity verification and observation verification are independent gates; verifying an instrument cannot promote a price.
 - `select_eligible_observations` partitions observations into usable and diagnosed rejections without mutation, giving downstream screening a single eligibility boundary.
 
+### Observation review workflow
+
+- Added migration `0005_observation_review` and an append-only `observation_review_events` ledger. Raw market observations remain immutable; effective quality is derived from the latest decision.
+- `ObservationReviewService` promotes or rejects a price only with explicit reviewer, evidence reference, SHA-256 digest, and notes. Promotion additionally requires a raw `UNVERIFIED` observation, a `VERIFIED` instrument identity, and a source policy that is neither `BLOCKED` nor `RESTRICTED`.
+- Added evidence-file archiving under the per-user data directory, review history, raw-versus-effective candidate listing, and `candidates_for_eligibility` to connect persisted reviews to the domain eligibility gate.
+- The workflow has no AI decision path and no automatic promotion; instrument identity verification still cannot certify a price.
+
 ## Verified CI
 
 Application-code commit `e5cff0a979bf75a8c8a8b3b949123a491896e0d6` completed successfully on Windows and Ubuntu using Python 3.12.
@@ -94,11 +101,11 @@ The tested head includes the instrument-master foreign-key import path, single-p
 - Branch `foundation/bootstrap-core`; Python 3.14 editable install with `--no-deps`.
 - Ruff 0.17.6 lint and format checks: passed on `src` and `tests`.
 - Mypy: no issues in `src/rfinance/analysis/dividend/analytics.py`; the six remaining diagnostics are pre-existing PySide6-stub artifacts because PySide6 is not installable on this Termux/Android runtime.
-- pytest: 106 passed (62 pre-existing non-UI tests plus 27 dividend tests and 17 eligibility tests). UI tests were not run locally because PySide6 is unavailable.
+- pytest: 120 passed (62 pre-existing non-UI tests plus 27 dividend, 17 eligibility and 14 observation-review tests). UI tests were not run locally because PySide6 is unavailable.
 
 ## Not implemented yet
 
-- A separate price-observation review process that can promote an observation to `VERIFIED` with explicit evidence. The eligibility gate consumes that state but does not grant it; instrument identity verification must not promote imported market observations.
+- A desktop UI for the observation-review workflow; the service, migration, and append-only audit ledger exist but are not yet exposed in the desktop application. The eligibility gate consumes review state but does not grant it.
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
 - Full financial statements, broader valuation metrics, dividend event persistence/calendar/UI, screening, and evidence-linked recommendations. The dividend calculation layer exists but is not yet connected to persistence or the desktop.
@@ -108,7 +115,7 @@ The tested head includes the instrument-master foreign-key import path, single-p
 
 ## Next engineering objectives
 
-1. Add a separate price-observation review workflow that can promote an observation to `VERIFIED` only with explicit evidence; wire the eligibility gate into screening and portfolio valuation.
+1. Expose the observation-review workflow in the desktop and wire the eligibility gate into screening and portfolio valuation.
 2. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
 3. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
 4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.

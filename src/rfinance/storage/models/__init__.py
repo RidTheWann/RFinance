@@ -12,6 +12,7 @@ from rfinance.storage.models.instrument_registry import (
     InstrumentRegistryRecord,
     InstrumentReviewEventRecord,
 )
+from rfinance.storage.models.observation_review import ObservationReviewEventRecord
 from rfinance.storage.models.portfolio_ledger import PortfolioLedgerRecord
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "InstrumentRegistryRecord",
     "InstrumentReviewEventRecord",
     "MarketObservationRecord",
+    "ObservationReviewEventRecord",
     "PortfolioLedgerRecord",
     "SourceRegistryRecord",
 ]
