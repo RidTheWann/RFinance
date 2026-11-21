@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import UTC
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from sqlalchemy import select, tuple_
-from sqlalchemy.orm import Session
 
 from rfinance.data.contracts import DataQualityStatus
 from rfinance.data.csv_market_import import (
@@ -25,10 +24,9 @@ from rfinance.storage.models.data_ingestion import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
     from datetime import datetime
 
-    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import Session, sessionmaker
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,7 +109,9 @@ class DataIngestionRepository:
                         ).in_(key_chunk),
                     )
                 ).all()
-                existing_keys.update((instrument_id, observed_at) for instrument_id, observed_at in existing)
+                existing_keys.update(
+                    (instrument_id, observed_at) for instrument_id, observed_at in existing
+                )
 
             accepted_count = 0
             rejected_records: list[RejectedMarketCSVRow] = list(rejected_rows)
