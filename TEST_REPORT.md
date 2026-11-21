@@ -23,7 +23,7 @@ The checkpoint includes the desktop foundation, portfolio ledger, local CSV prov
 | Ruff 0.17.6 lint (`src`, `tests`) | Passed |
 | Ruff 0.17.6 format check (`src`, `tests`) | Passed |
 | Mypy (new dividend module) | Passed |
-| pytest (non-UI) | 89 passed |
+| pytest (non-UI) | 106 passed |
 
 UI tests were not run locally because PySide6 is unavailable on this Termux/Android runtime. Python 3.12 CI has not yet run for post-`e5cff0a` commits.
 
@@ -56,6 +56,7 @@ UI tests were not run locally because PySide6 is unavailable on this Termux/Andr
 - Property-based constant-series checks and rejection of invalid periods and non-Decimal/non-positive price values.
 - Dividend eligibility selection (cash types only, currency and quality gating, duplicate collapse, conflict rejection, deterministic ordering, window bounds), trailing/gross/net amounts, labelled trailing versus forward yield, payout/coverage ratios, growth/CAGR, consistency with gaps and reductions, simulated cash projection, and exact confirmed-receipt allocation reconciliation.
 - Property-based checks that net amounts never exceed gross, trailing sums never decrease as the window grows, allocation parts always sum to the confirmed net amount, and selection never includes non-cash or unverified records.
+- Observation eligibility gates: instrument identity/status/activity/currency, observation quality, look-ahead, staleness, acquisition lag, close validity, source policy, UTC normalization, and combined diagnostics. Property-based checks that unverified, stale and future observations are never eligible.
 
 ## Known boundaries
 
@@ -69,7 +70,8 @@ UI tests were not run locally because PySide6 is unavailable on this Termux/Andr
 ## Remaining validation work
 
 - Dedicated instrument-review UI and evidence-artifact workflow.
-- Observation-quality review, source-policy approval, and freshness/eligibility gates.
+- Observation-quality review that can promote a price to `VERIFIED`; the eligibility gate consumes but does not grant that state.
+- Connecting the implemented eligibility gate to screening and portfolio valuation.
 - Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.
 - Migration downgrade/upgrade and corruption recovery.
