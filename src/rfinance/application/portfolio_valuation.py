@@ -148,13 +148,13 @@ class PortfolioValuationService:
         for row in rows:
             observation = row.observation
             if row.instrument is not None:
-                state = self._instrument_state(row.instrument)
-                if state is not None:
-                    instruments[observation.instrument_id] = state
+                instrument_state = self._instrument_state(row.instrument)
+                if instrument_state is not None:
+                    instruments[observation.instrument_id] = instrument_state
             if row.source is not None:
-                state = self._source_state(row.source)
-                if state is not None:
-                    sources[observation.source_id] = state
+                source_state = self._source_state(row.source)
+                if source_state is not None:
+                    sources[observation.source_id] = source_state
 
             effective_quality = latest_decisions.get(
                 observation.observation_id,
@@ -261,12 +261,12 @@ class PortfolioValuationService:
         for candidate, decision in report.rejected:
             instrument_id = candidate.instrument_id
             observed_at = candidate.observed_at.astimezone(UTC)
-            reasons = {reason.value for reason in decision.reasons}
+            rejection_reasons = {reason.value for reason in decision.reasons}
             current = latest_rejections.get(instrument_id)
             if current is None or observed_at > current[0]:
-                latest_rejections[instrument_id] = (observed_at, reasons)
+                latest_rejections[instrument_id] = (observed_at, rejection_reasons)
             elif observed_at == current[0]:
-                current[1].update(reasons)
+                current[1].update(rejection_reasons)
 
         malformed_by_instrument: dict[str, str] = {}
         for item in malformed:
@@ -275,14 +275,14 @@ class PortfolioValuationService:
         unvalued: list[UnvaluedPosition] = []
         for instrument_id in valuation.unvalued_instruments:
             if instrument_id in conflicts:
-                reasons = conflicts[instrument_id]
+                unvalued_reasons = conflicts[instrument_id]
             elif instrument_id in latest_rejections:
-                reasons = tuple(sorted(latest_rejections[instrument_id][1]))
+                unvalued_reasons = tuple(sorted(latest_rejections[instrument_id][1]))
             elif instrument_id in malformed_by_instrument:
-                reasons = (malformed_by_instrument[instrument_id],)
+                unvalued_reasons = (malformed_by_instrument[instrument_id],)
             else:
-                reasons = ("NO_OBSERVATIONS",)
-            unvalued.append(UnvaluedPosition(instrument_id, reasons))
+                unvalued_reasons = ("NO_OBSERVATIONS",)
+            unvalued.append(UnvaluedPosition(instrument_id, unvalued_reasons))
 
         return PortfolioValuationSnapshot(
             valuation=valuation,
