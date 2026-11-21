@@ -8,10 +8,9 @@ Last verified against the repository: 2026-11-21
 - Default branch: main
 - Working branch: foundation/bootstrap-core
 - Active foundation PR: https://github.com/RidTheWann/RFinance/pull/1
-- Latest GitHub Actions validated application-code commit: e5cff0a979bf75a8c8a8b3b949123a491896e0d6
+- Latest GitHub Actions validated application-code commit: `1c283f0deea85507465f985bd508445e679868e6` (Windows and Ubuntu, Python 3.12; 131 tests passed on each OS).
 - All work remains on the dedicated foundation branch. PR #1 is open and has not been merged into `main`.
-- Earlier development used GitHub API edits and hosted GitHub Actions; this session has a mounted local checkout and a Python 3.14 runtime, so local verification is now possible.
-- Python 3.12 CI has not yet run for the commits after `e5cff0a`; those are verified locally only.
+- This session has no mounted local checkout. Changes were committed to the feature branch through GitHub repository operations and verified with hosted Windows/Ubuntu CI; no local test or build result is claimed.
 
 ## Implemented in the foundation branch
 
@@ -20,8 +19,8 @@ Last verified against the repository: 2026-11-21
 - Canonical repository-wide `AGENTS.md` and Claude Code `CLAUDE.md`.
 - Python package metadata, Ruff, Mypy, pytest, pytest-qt, Hypothesis, Bandit, pip-audit configuration, Windows scripts, and Windows/Ubuntu CI.
 - Windows per-user persistent data paths, environment override, rotating logs, SQLite, and Alembic migrations.
-- PySide6 desktop shell with Overview, Portfolio Simulator, and Settings navigation.
-- Application composition root wires persistence, portfolio ledger, and market CSV importer.
+- PySide6 desktop navigation includes Overview, Portfolio Simulator, Instrument Review, Observation Review, and Settings.
+- Application composition root wires SQLite persistence, portfolio ledger, CSV ingestion, instrument review, and observation review services.
 
 ### Deterministic financial and portfolio logic
 
@@ -112,7 +111,6 @@ The tested head includes the instrument-master foreign-key import path, single-p
 
 ## Not implemented yet
 
-- A desktop UI for the observation-review workflow; the service, migration, and append-only audit ledger exist but are not yet exposed in the desktop application. The eligibility gate consumes review state but does not grant it.
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
 - Full financial statements, broader valuation metrics, dividend event persistence/calendar/UI, screening, and evidence-linked recommendations. The dividend calculation layer exists but is not yet connected to persistence or the desktop.
@@ -122,7 +120,7 @@ The tested head includes the instrument-master foreign-key import path, single-p
 
 ## Next engineering objectives
 
-1. Connect the valuation layer to persisted eligible observations and expose valuation and observation review in the desktop.
+1. Connect the existing valuation calculation to persisted, eligibility-qualified observations and expose portfolio market value, unrealized P/L, price freshness, and unvalued positions in the desktop.
 2. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
 3. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
 4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.

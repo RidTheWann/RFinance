@@ -49,3 +49,23 @@ see what will change. `candidates_for_eligibility` builds domain
 Verification here certifies only this explicit review decision. It does not
 prove licensing, corporate-action adjustment, or that the observation is still
 fresh; the eligibility gate checks those separately at use time.
+
+## Desktop workflow
+
+The `Observation Review` navigation page is connected to
+`ObservationReviewService`. It lists observation time, instrument, close,
+currency, raw quality, effective quality, and source ID. The table keeps the
+immutable raw quality visible beside the effective quality derived from the
+latest review event.
+
+To record a decision, the operator selects an observation, chooses a local
+evidence file, enters a reviewer label and notes, and explicitly selects
+`VERIFIED` or `REJECTED`. File archiving, SHA-256 computation, and database
+writes run on a Qt worker thread. Completion refreshes the queue and the
+selected observation's audit history; errors are shown in the page status.
+
+A `VERIFIED` action remains subject to the application-service gates above,
+including a separately VERIFIED instrument identity. A rejected or failed
+review does not alter the raw market-observation row. The interface does not
+fetch prices, grant source rights, or automatically promote imported data.
+
