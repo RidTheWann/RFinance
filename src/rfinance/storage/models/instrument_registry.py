@@ -34,6 +34,14 @@ class InstrumentRegistryRecord(Base):
             "currency IS NULL OR length(currency) = 3",
             name="ck_instrument_registry_currency",
         ),
+        CheckConstraint(
+            "lot_size IS NULL OR lot_size > 0",
+            name="ck_instrument_registry_lot_size",
+        ),
+        CheckConstraint(
+            "minimum_investment IS NULL OR CAST(minimum_investment AS NUMERIC) > 0",
+            name="ck_instrument_registry_minimum_investment",
+        ),
     )
 
     instrument_id: Mapped[str] = mapped_column(String(128), primary_key=True)
