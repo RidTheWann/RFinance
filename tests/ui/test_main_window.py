@@ -120,6 +120,10 @@ def test_market_csv_import_is_started_off_ui_thread_and_reported(
             window.market_import_status_label.text()
         )
         assert "UNVERIFIED" in window.market_import_status_label.text()
+        assert window.market_import_history_table.rowCount() == 1
+        assert window.market_import_history_table.item(0, 1).text() == "User-supplied BBCA file"
+        assert window.market_import_history_table.item(0, 5).text() == "UNVERIFIED"
+        assert "SHA-256:" in window.market_import_history_table.item(0, 2).toolTip()
         with database.sessions() as session:
             observation = session.scalar(select(MarketObservationRecord))
             assert observation is not None
