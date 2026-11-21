@@ -93,7 +93,7 @@ def test_verified_decision_requires_complete_contract_and_evidence(tmp_path) -> 
             instrument = session.get(InstrumentRegistryRecord, "IDX:BBCA")
             assert instrument is not None
             assert instrument.verification_status == "UNVERIFIED"
-            assert session.scalar(select(InstrumentReviewEventRecord)) is None
+            assert session.scalar(sqlalchemy.select(InstrumentReviewEventRecord)) is None
     finally:
         database.close()
 
@@ -175,7 +175,7 @@ def test_rejected_review_is_recorded_and_can_be_replaced_by_later_verified_revie
 
         with database.sessions() as session:
             events = session.scalars(
-                select(InstrumentReviewEventRecord).order_by(
+                sqlalchemy.select(InstrumentReviewEventRecord).order_by(
                     InstrumentReviewEventRecord.reviewed_at_utc
                 )
             ).all()
@@ -206,7 +206,7 @@ def test_review_events_are_append_only(tmp_path) -> None:
             pytest.raises(exc.IntegrityError, match="instrument_review_events is append-only"),
         ):
             connection.execute(
-                text(
+                sqlalchemy.text(
                     "UPDATE instrument_review_events SET notes = 'tampered' "
                     "WHERE review_id = :review_id"
                 ),
