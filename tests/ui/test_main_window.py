@@ -86,8 +86,7 @@ def test_market_csv_import_is_started_off_ui_thread_and_reported(
     database.upgrade()
     csv_file = tmp_path / "market.csv"
     csv_file.write_text(
-        "instrument_id,observed_at,currency,close\n"
-        "IDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9100\n",
+        "instrument_id,observed_at,currency,close\nIDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9100\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(
@@ -107,8 +106,10 @@ def test_market_csv_import_is_started_off_ui_thread_and_reported(
 
         qtbot.mouseClick(window.import_market_csv_button, Qt.MouseButton.LeftButton)
         qtbot.waitUntil(
-            lambda: window._import_thread is None
-            and window.market_import_status_label.text().startswith("Import complete"),
+            lambda: (
+                window._import_thread is None
+                and window.market_import_status_label.text().startswith("Import complete")
+            ),
             timeout=10000,
         )
 
