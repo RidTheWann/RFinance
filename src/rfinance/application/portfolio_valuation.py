@@ -18,7 +18,6 @@ from rfinance.analysis.portfolio.valuation import (
 from rfinance.domain.eligibility.observation import (
     FORMULA_VERSION as ELIGIBILITY_FORMULA_VERSION,
     EligibilityPolicy,
-    EligibilityReason,
     InstrumentState,
     InstrumentStatus,
     ObservationCandidate,
