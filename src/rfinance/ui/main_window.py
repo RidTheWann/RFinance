@@ -187,12 +187,8 @@ class MainWindow(QMainWindow):
         self.portfolio_cash_label.setText(
             f"Cash balance: {self._format_idr(snapshot.cash_balance)}"
         )
-        self.portfolio_positions_label.setText(
-            f"Open positions: {len(snapshot.positions)}"
-        )
-        self.portfolio_events_label.setText(
-            f"Recorded ledger events: {snapshot.applied_events}"
-        )
+        self.portfolio_positions_label.setText(f"Open positions: {len(snapshot.positions)}")
+        self.portfolio_events_label.setText(f"Recorded ledger events: {snapshot.applied_events}")
 
     def _initialize_portfolio(self) -> None:
         try:
