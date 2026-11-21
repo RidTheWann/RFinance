@@ -16,6 +16,17 @@ Application-code commit `e5cff0a979bf75a8c8a8b3b949123a491896e0d6` completed suc
 
 The checkpoint includes the desktop foundation, portfolio ledger, local CSV provenance pipeline, instrument master and manual-review application service, append-only review audit, instrument foreign-key linkage, and Decimal technical indicators. All tests pass on both operating systems.
 
+## Local checkpoint (current session)
+
+| Check | Local result |
+|---|---|
+| Ruff 0.17.6 lint (`src`, `tests`) | Passed |
+| Ruff 0.17.6 format check (`src`, `tests`) | Passed |
+| Mypy (new dividend module) | Passed |
+| pytest (non-UI) | 89 passed |
+
+UI tests were not run locally because PySide6 is unavailable on this Termux/Android runtime. Python 3.12 CI has not yet run for post-`e5cff0a` commits.
+
 ## Coverage
 
 ### Application and persistence
@@ -43,6 +54,8 @@ The checkpoint includes the desktop foundation, portfolio ledger, local CSV prov
 - Decimal margin, ROE, and debt/equity edge behavior.
 - SMA/EMA seed and missing-value behavior, RSI/Wilder smoothing conventions, MACD alignment, Bollinger population standard deviation, True Range/ATR, rolling sample volatility, drawdown/maximum drawdown, price momentum, and benchmark-relative strength.
 - Property-based constant-series checks and rejection of invalid periods and non-Decimal/non-positive price values.
+- Dividend eligibility selection (cash types only, currency and quality gating, duplicate collapse, conflict rejection, deterministic ordering, window bounds), trailing/gross/net amounts, labelled trailing versus forward yield, payout/coverage ratios, growth/CAGR, consistency with gaps and reductions, simulated cash projection, and exact confirmed-receipt allocation reconciliation.
+- Property-based checks that net amounts never exceed gross, trailing sums never decrease as the window grows, allocation parts always sum to the confirmed net amount, and selection never includes non-cash or unverified records.
 
 ## Known boundaries
 
@@ -50,12 +63,14 @@ The checkpoint includes the desktop foundation, portfolio ledger, local CSV prov
 - Instrument verification does not promote market observations to VERIFIED. Price/source quality, freshness, corporate-action adjustment, and provider entitlement remain separate gates.
 - No IDX scraper or automated market-data provider is enabled.
 - The technical-analysis module is a pure Decimal calculation layer and does not fetch, resample, or adjust data.
-- Screening, evidence-linked recommendations, extended financial statements, valuation, dividend analytics, portfolio trade UI/valuation, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
+- The dividend module is likewise a pure calculation layer; dividend event persistence, calendar, and desktop UI are not connected.
+- Screening, evidence-linked recommendations, extended financial statements, valuation, portfolio trade UI/valuation, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
 
 ## Remaining validation work
 
 - Dedicated instrument-review UI and evidence-artifact workflow.
 - Observation-quality review, source-policy approval, and freshness/eligibility gates.
+- Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.
 - Migration downgrade/upgrade and corruption recovery.
 - Backup/restore, offline operation, security/dependency audit, and clean Windows environment installation.

@@ -8,9 +8,10 @@ Last verified against the repository: 2026-11-21
 - Default branch: main
 - Working branch: foundation/bootstrap-core
 - Active foundation PR: https://github.com/RidTheWann/RFinance/pull/1
-- Latest fully validated application-code commit: e5cff0a979bf75a8c8a8b3b949123a491896e0d6
+- Latest GitHub Actions validated application-code commit: e5cff0a979bf75a8c8a8b3b949123a491896e0d6
 - All work remains on the dedicated foundation branch. PR #1 is open and has not been merged into `main`.
-- Development used GitHub API edits and hosted GitHub Actions; no mounted local checkout or local Python runtime was available in the execution session.
+- Earlier development used GitHub API edits and hosted GitHub Actions; this session has a mounted local checkout and a Python 3.14 runtime, so local verification is now possible.
+- Python 3.12 CI has not yet run for the commits after `e5cff0a`; those are verified locally only.
 
 ## Implemented in the foundation branch
 
@@ -45,7 +46,8 @@ Last verified against the repository: 2026-11-21
 - Instrument master fields and verification lifecycle are persisted through Alembic migration `0004_instrument_master`. Existing observation identifiers are backfilled as `UNVERIFIED` instruments, and market observations reference the master through a foreign key.
 - `InstrumentReviewService` supports explicit operator decisions (`VERIFIED` or `REJECTED`). A `VERIFIED` decision requires a complete validated `InstrumentContract` whose ID matches the reviewed instrument.
 - Every review appends an immutable audit event containing the previous state, decision, reviewer label, evidence reference, SHA-256 digest, notes, timestamp, and reviewed metadata snapshot. Database triggers prevent review-event updates/deletes.
-- The review service records a caller-supplied evidence reference and digest; evidence-file selection, digest computation, and the dedicated review UI are not yet wired into the desktop.
+- The desktop now exposes an instrument-review queue with evidence-file selection, SHA-256 digest computation, reviewer/notes entry, and review-history display; long-running review work executes on a Qt worker thread.
+- Manual instrument identity verification remains separate from price-observation verification and does not promote imported market observations from `UNVERIFIED`.
 - File size and row-count limits, archive path containment checks, and a Qt worker thread keep import processing out of the UI thread.
 - Overview displays recent import history, source labels, filenames, UTC timestamps, accepted/rejected counts, and trust status. Batch ID, SHA-256, and archive path are available in row tooltips.
 - Indonesia data-access review documents why IDX scraping/crawling is not enabled and why official/licensed feed terms must be verified before an automated adapter is introduced.
@@ -57,6 +59,14 @@ Last verified against the repository: 2026-11-21
 - Warm-up alignment, missing-data resets, positivity/finite-value validation, look-ahead limitations, units, and standard-deviation conventions are documented and tested.
 - EMA preserves a constant series without accumulating Decimal rounding drift. MACD tests account for finite Decimal-context rounding with a tight Decimal tolerance.
 - The technical module is a pure calculation layer: it does not fetch market data, infer sampling frequency, adjust corporate actions, or certify the quality/freshness of its inputs.
+
+### Dividend analytics
+
+- Added `dividend-analytics-v1`, a Decimal-only, dependency-free calculation layer in `src/rfinance/analysis/dividend/analytics.py` documented in `docs/DIVIDEND_ANALYTICS.md`.
+- Implemented cash-dividend eligibility selection with currency filtering, quality gating, duplicate-event collapse, conflict rejection, and deterministic ordering.
+- Implemented trailing dividend per share, trailing yield, explicitly labelled forward yield, net amount under a known withholding rate, payout ratio, earnings and free-cash-flow coverage, growth, CAGR, consecutive distribution years, and consistency summaries.
+- Implemented clearly labelled simulated dividend cash projection and exact-reconciliation allocation for **confirmed** net receipts only.
+- Missing observations and unusable denominators return `None`; no missing value is converted to zero. Forward estimates, simulations, and confirmed receipts are distinct labelled states.
 
 ## Verified CI
 
@@ -72,22 +82,28 @@ Application-code commit `e5cff0a979bf75a8c8a8b3b949123a491896e0d6` completed suc
 
 The tested head includes the instrument-master foreign-key import path, single-placeholder-per-instrument-per-batch handling, review audit workflow, and the technical-indicator test suite. The PR remains open for review and has not been merged.
 
+## Local verification (current session)
+
+- Branch `foundation/bootstrap-core`; Python 3.14 editable install with `--no-deps`.
+- Ruff 0.17.6 lint and format checks: passed on `src` and `tests`.
+- Mypy: no issues in `src/rfinance/analysis/dividend/analytics.py`; the six remaining diagnostics are pre-existing PySide6-stub artifacts because PySide6 is not installable on this Termux/Android runtime.
+- pytest: 89 passed (62 pre-existing non-UI tests plus 27 new dividend tests). UI tests were not run locally because PySide6 is unavailable.
+
 ## Not implemented yet
 
-- Dedicated desktop UI for instrument review, evidence-file selection/archiving, and computing/verifying evidence digests from the selected artifact.
 - A separate price-observation review process. Manual instrument identity verification must not automatically promote imported market observations from `UNVERIFIED`.
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
-- Full financial statements, broader valuation metrics, dividend intelligence, screening, and evidence-linked recommendations.
+- Full financial statements, broader valuation metrics, dividend event persistence/calendar/UI, screening, and evidence-linked recommendations. The dividend calculation layer exists but is not yet connected to persistence or the desktop.
 - Portfolio trade-entry UI, market valuation, unrealized P/L, corporate actions, rebalancing, allocation execution, and full risk controls.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
 
-1. Wire the explicit instrument-review service into the desktop with controlled evidence-file handling, digest computation, and review history.
-2. Implement separate market-observation quality review, source eligibility, and freshness gates; never infer price verification from instrument identity verification.
-3. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
-4. Extend fundamental metrics, valuation, and dividend analytics with documented formula versions and independent tests.
+1. Implement separate market-observation quality review, source eligibility, and freshness gates; never infer price verification from instrument identity verification.
+2. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
+3. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
+4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
 5. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.
 6. Continue portfolio valuation/trade flows, risk controls, automation, reporting, backup/restore, and Windows packaging in tested vertical slices.
