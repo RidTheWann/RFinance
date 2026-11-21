@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
-from rfinance.application.technical_analysis import TechnicalAnalysisService
+    from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
@@ -783,7 +783,8 @@ class MainWindow(QMainWindow):
             return
         if self.technical_analysis_page is not None and self.technical_analysis_page.is_busy:
             self.technical_analysis_page.status_label.setText(
-                "Technical analysis is still running. Wait for it to finish before closing RFinance."
+                "Technical analysis is still running. "
+                "Wait for it to finish before closing RFinance."
             )
             event.ignore()
             return

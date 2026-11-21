@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from rfinance.analysis.technical.indicators import (
     atr,
@@ -20,11 +21,12 @@ from rfinance.analysis.technical.indicators import (
     rsi,
     sma,
 )
-from rfinance.application.historical_price_series import (
-    HistoricalPriceSeriesService,
-    HistoricalPriceSeriesSnapshot,
-    HistoricalSeriesChoice,
-)
+if TYPE_CHECKING:
+    from rfinance.application.historical_price_series import (
+        HistoricalPriceSeriesService,
+        HistoricalPriceSeriesSnapshot,
+        HistoricalSeriesChoice,
+    )
 
 
 TECHNICAL_ANALYSIS_VERSION = "technical-analysis-report-v1"
