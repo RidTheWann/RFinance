@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 
 def ratio(numerator: Decimal, denominator: Decimal) -> Decimal | None:
