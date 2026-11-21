@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 RFinance Contributors
 # See LICENSE for the full GNU General Public License version 3.
-"""Deterministic technical indicators using decimal.Decimal arithmetic.
+"""Deterministic technical indicators using Decimal arithmetic.
 
 All functions preserve input alignment. Values are None during warm-up or
 where the explicitly documented input window is incomplete.
@@ -18,8 +18,8 @@ ONE = decimal.Decimal("1")
 TWO = decimal.Decimal("2")
 HUNDRED = decimal.Decimal("100")
 
-decimal.DecimalValue = decimal.Decimal | None
-PriceSeries = list[decimal.DecimalValue] | tuple[decimal.DecimalValue, ...]
+DecimalValue = decimal.Decimal | None
+PriceSeries = list[DecimalValue] | tuple[DecimalValue, ...]
 
 
 def _period(value: int, *, minimum: int = 1) -> None:
@@ -27,25 +27,25 @@ def _period(value: int, *, minimum: int = 1) -> None:
         raise ValueError(f"period must be an integer greater than or equal to {minimum}")
 
 
-def _series(values: PriceSeries, *, positive: bool = False) -> tuple[decimal.DecimalValue, ...]:
+def _series(values: PriceSeries, *, positive: bool = False) -> tuple[DecimalValue, ...]:
     normalized = tuple(values)
     for index, value in enumerate(normalized):
         if value is None:
             continue
         if not isinstance(value, decimal.Decimal) or not value.is_finite():
-            raise ValueError(f"series value at index {index} must be a finite decimal.Decimal or None")
+            raise ValueError(f"series value at index {index} must be a finite Decimal or None")
         if positive and value <= ZERO:
             raise ValueError(f"price at index {index} must be greater than zero")
     return normalized
 
 
-def sma(values: PriceSeries, period: int) -> tuple[decimal.DecimalValue, ...]:
+def sma(values: PriceSeries, period: int) -> tuple[DecimalValue, ...]:
     """Simple moving average over period consecutive non-missing values."""
 
     _period(period)
     data = _series(values)
-    result: list[decimal.DecimalValue] = []
-    window: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
+    window: list[DecimalValue] = []
 
     for value in data:
         window.append(value)
@@ -59,7 +59,7 @@ def sma(values: PriceSeries, period: int) -> tuple[decimal.DecimalValue, ...]:
     return tuple(result)
 
 
-def ema(values: PriceSeries, period: int) -> tuple[decimal.DecimalValue, ...]:
+def ema(values: PriceSeries, period: int) -> tuple[DecimalValue, ...]:
     """Exponential moving average seeded by an SMA of period consecutive values.
 
     After a missing value, EMA state is reset and reseeded from the next full
@@ -72,7 +72,7 @@ def ema(values: PriceSeries, period: int) -> tuple[decimal.DecimalValue, ...]:
     one_minus_alpha = ONE - alpha
     seed: list[decimal.Decimal] = []
     current: decimal.Decimal | None = None
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
 
     for value in data:
         if value is None:
@@ -97,7 +97,7 @@ def ema(values: PriceSeries, period: int) -> tuple[decimal.DecimalValue, ...]:
     return tuple(result)
 
 
-def rsi(prices: PriceSeries, period: int = 14) -> tuple[decimal.DecimalValue, ...]:
+def rsi(prices: PriceSeries, period: int = 14) -> tuple[DecimalValue, ...]:
     """Wilder RSI from close-to-close changes, expressed on a 0..100 scale.
 
     The first value appears after period price changes. Missing prices reset
@@ -108,7 +108,7 @@ def rsi(prices: PriceSeries, period: int = 14) -> tuple[decimal.DecimalValue, ..
 
     _period(period)
     data = _series(prices, positive=True)
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
     gains: list[decimal.Decimal] = []
     losses: list[decimal.Decimal] = []
     average_gain: decimal.Decimal | None = None
@@ -171,9 +171,9 @@ def rsi(prices: PriceSeries, period: int = 14) -> tuple[decimal.DecimalValue, ..
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class MACDResult:
-    line: tuple[decimal.DecimalValue, ...]
-    signal: tuple[decimal.DecimalValue, ...]
-    histogram: tuple[decimal.DecimalValue, ...]
+    line: tuple[DecimalValue, ...]
+    signal: tuple[DecimalValue, ...]
+    histogram: tuple[DecimalValue, ...]
 
 
 def macd(
@@ -192,7 +192,7 @@ def macd(
 
     fast = ema(prices, fast_period)
     slow = ema(prices, slow_period)
-    line: list[decimal.DecimalValue] = [
+    line: list[DecimalValue] = [
         fast_value - slow_value
         if fast_value is not None and slow_value is not None
         else None
@@ -210,9 +210,9 @@ def macd(
 
 @dataclass(frozen=True, slots=True)
 class BollingerBands:
-    upper: tuple[decimal.DecimalValue, ...]
-    middle: tuple[decimal.DecimalValue, ...]
-    lower: tuple[decimal.DecimalValue, ...]
+    upper: tuple[DecimalValue, ...]
+    middle: tuple[DecimalValue, ...]
+    lower: tuple[DecimalValue, ...]
 
 
 def bollinger_bands(
@@ -230,8 +230,8 @@ def bollinger_bands(
 
     data = _series(prices)
     middle = sma(data, period)
-    upper: list[decimal.DecimalValue] = []
-    lower: list[decimal.DecimalValue] = []
+    upper: list[DecimalValue] = []
+    lower: list[DecimalValue] = []
 
     for index, average in enumerate(middle):
         start = index - period + 1
@@ -258,7 +258,7 @@ def true_range(
     highs: PriceSeries,
     lows: PriceSeries,
     closes: PriceSeries,
-) -> tuple[decimal.DecimalValue, ...]:
+) -> tuple[DecimalValue, ...]:
     """True range; first valid bar uses high-low because no prior close exists."""
 
     high_values = _series(highs, positive=True)
@@ -267,7 +267,7 @@ def true_range(
     if not (len(high_values) == len(low_values) == len(close_values)):
         raise ValueError("high, low, and close series must have equal lengths")
 
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
     previous_close: decimal.Decimal | None = None
     for index, (high, low, close) in enumerate(
         zip(high_values, low_values, close_values, strict=True)
@@ -298,12 +298,12 @@ def atr(
     lows: PriceSeries,
     closes: PriceSeries,
     period: int = 14,
-) -> tuple[decimal.DecimalValue, ...]:
+) -> tuple[DecimalValue, ...]:
     """Wilder average true range; first ATR follows period valid true ranges."""
 
     _period(period)
     ranges = true_range(highs, lows, closes)
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
     seed: list[decimal.Decimal] = []
     current: decimal.Decimal | None = None
 
@@ -333,7 +333,7 @@ def atr(
 def rolling_volatility(
     prices: PriceSeries,
     period: int = 20,
-) -> tuple[decimal.DecimalValue, ...]:
+) -> tuple[DecimalValue, ...]:
     """Sample standard deviation of period consecutive simple returns.
 
     This function does not annualize volatility. The first value requires
@@ -342,7 +342,7 @@ def rolling_volatility(
 
     _period(period, minimum=2)
     data = _series(prices, positive=True)
-    returns: list[decimal.DecimalValue] = []
+    returns: list[DecimalValue] = []
     previous: decimal.Decimal | None = None
 
     for price in data:
@@ -353,8 +353,8 @@ def rolling_volatility(
         returns.append(price / previous - ONE)
         previous = price
 
-    result: list[decimal.DecimalValue] = []
-    window: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
+    window: list[DecimalValue] = []
     for value in returns:
         window.append(value)
         if len(window) > period:
@@ -373,12 +373,12 @@ def rolling_volatility(
     return tuple(result)
 
 
-def drawdown_series(prices: PriceSeries) -> tuple[decimal.DecimalValue, ...]:
+def drawdown_series(prices: PriceSeries) -> tuple[DecimalValue, ...]:
     """Peak-to-current drawdown as a fraction; missing points retain the prior peak."""
 
     data = _series(prices, positive=True)
     peak: decimal.Decimal | None = None
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
 
     for price in data:
         if price is None:
@@ -397,12 +397,12 @@ def maximum_drawdown(prices: PriceSeries) -> decimal.Decimal | None:
     return min(drawdowns) if drawdowns else None
 
 
-def momentum(prices: PriceSeries, lookback: int) -> tuple[decimal.DecimalValue, ...]:
+def momentum(prices: PriceSeries, lookback: int) -> tuple[DecimalValue, ...]:
     """Price momentum as a fraction, requiring a complete lookback window."""
 
     _period(lookback)
     data = _series(prices, positive=True)
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
 
     for index, current in enumerate(data):
         start = index - lookback
@@ -425,7 +425,7 @@ def relative_strength(
     prices: PriceSeries,
     benchmark: PriceSeries,
     lookback: int,
-) -> tuple[decimal.DecimalValue, ...]:
+) -> tuple[DecimalValue, ...]:
     """Relative total-return ratio against a benchmark over the same lookback.
 
     Output = (asset return factor / benchmark return factor) - 1.
@@ -439,7 +439,7 @@ def relative_strength(
     if len(data) != len(benchmark_values):
         raise ValueError("price and benchmark series must have equal lengths")
 
-    result: list[decimal.DecimalValue] = []
+    result: list[DecimalValue] = []
     for index, (current, benchmark_current) in enumerate(
         zip(data, benchmark_values, strict=True)
     ):
