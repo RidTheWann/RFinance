@@ -27,9 +27,7 @@ if TYPE_CHECKING:
 
 ACQUIRED_AT = datetime(2026, 11, 21, 9, 0, tzinfo=UTC)
 
-GOOD_ROW = (
-    "IDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9000,9200,8900,9100,1000\n"
-)
+GOOD_ROW = "IDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9000,9200,8900,9100,1000\n"
 
 
 def write_csv(tmp_path: Path, content: str, name: str = "market.csv") -> Path:
@@ -64,8 +62,7 @@ def test_parser_accepts_valid_row_and_records_invalid_and_duplicate_rows(tmp_pat
 def test_parser_requires_timezone_and_canonical_columns(tmp_path) -> None:
     naive = write_csv(
         tmp_path,
-        "instrument_id,observed_at,currency,close\n"
-        "IDX:BBCA,2026-11-20T09:00:00,IDR,9100\n",
+        "instrument_id,observed_at,currency,close\nIDX:BBCA,2026-11-20T09:00:00,IDR,9100\n",
     )
     parsed = parse_market_observation_csv(naive, acquired_at=ACQUIRED_AT)
     assert len(parsed.accepted) == 0
