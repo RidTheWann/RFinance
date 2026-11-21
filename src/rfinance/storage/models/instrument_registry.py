@@ -87,8 +87,7 @@ class InstrumentReviewEventRecord(Base):
             name="ck_instrument_review_evidence",
         ),
         CheckConstraint(
-            "length(evidence_sha256) = 64 AND "
-            "lower(evidence_sha256) NOT GLOB '*[^0-9a-f]*'",
+            "length(evidence_sha256) = 64 AND lower(evidence_sha256) NOT GLOB '*[^0-9a-f]*'",
             name="ck_instrument_review_evidence_sha256",
         ),
         CheckConstraint("length(trim(notes)) > 0", name="ck_instrument_review_notes"),
