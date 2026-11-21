@@ -23,3 +23,4 @@ All notable changes to RFinance are documented here.
 - Expanded cross-platform CI validation to 65 passing pytest tests on Windows and Ubuntu with Ruff and Mypy passing.
 - Added a desktop instrument-review queue with evidence-file selection, SHA-256 digest computation, reviewer notes, and review history on a worker thread.
 - Added `dividend-analytics-v1`: Decimal-only trailing/forward yield, net-dividend, payout/coverage, growth/CAGR, consistency, simulated cash projection, and confirmed-receipt allocation, with documented formulas and 27 new tests.
+- Added `eligibility-observation-v1`: dependency-free observation eligibility gates for quality, identity, source policy, currency, look-ahead and freshness, with 17 new tests.
