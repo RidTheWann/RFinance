@@ -11,12 +11,12 @@ from rfinance.domain.portfolio.ledger import (
     LedgerValidationError,
     replay_ledger,
 )
-from rfinance.storage.repositories.portfolio_ledger import LedgerRepository
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from rfinance.domain.portfolio.ledger import VerifiedLotSize
+    from rfinance.storage.repositories.portfolio_ledger import LedgerRepository
 
 
 class PortfolioLedgerService:
