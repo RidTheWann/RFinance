@@ -155,6 +155,44 @@ def test_market_csv_import_persists_source_provenance_and_unverified_rows(tmp_pa
         database.close()
 
 
+def test_new_instrument_with_multiple_rows_creates_one_placeholder(tmp_path) -> None:
+    source_file = write_csv(
+        tmp_path,
+        "instrument_id,observed_at,currency,close\n"
+        "IDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9100\n"
+        "IDX:BBCA,2026-11-20T10:00:00+07:00,IDR,9150\n",
+    )
+    database = Database.open(tmp_path / "multiple-bars.sqlite3")
+    database.upgrade()
+    try:
+        service = MarketCSVImportService(
+            DataIngestionRepository(database.sessions),
+            data_directory=tmp_path / "RFinanceData",
+        )
+        result = service.import_market_csv(source_file, source_name="Multi-row BBCA CSV")
+
+        assert result.accepted_rows == 2
+        assert result.rejected_rows == 0
+        with database.sessions() as session:
+            assert (
+                session.scalar(
+                    select(func.count()).select_from(InstrumentRegistryRecord)
+                )
+                == 1
+            )
+            assert (
+                session.scalar(
+                    select(func.count()).select_from(MarketObservationRecord)
+                )
+                == 2
+            )
+            instrument = session.get(InstrumentRegistryRecord, "IDX:BBCA")
+            assert instrument is not None
+            assert instrument.verification_status == "UNVERIFIED"
+    finally:
+        database.close()
+
+
 def test_reimport_does_not_duplicate_observations_and_reconciles_issues(tmp_path) -> None:
     source_file = write_csv(
         tmp_path,
