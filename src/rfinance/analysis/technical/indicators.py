@@ -9,7 +9,6 @@ where the explicitly documented input window is incomplete.
 
 from __future__ import annotations
 
-import dataclasses
 import decimal
 
 
@@ -169,11 +168,21 @@ def rsi(prices: PriceSeries, period: int = 14) -> tuple[DecimalValue, ...]:
     return tuple(result)
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
 class MACDResult:
-    line: tuple[DecimalValue, ...]
-    signal: tuple[DecimalValue, ...]
-    histogram: tuple[DecimalValue, ...]
+    """Aligned MACD line, signal, and histogram output."""
+
+    __slots__ = ("line", "signal", "histogram")
+
+    def __init__(
+        self,
+        line: tuple[DecimalValue, ...],
+        signal: tuple[DecimalValue, ...],
+        histogram: tuple[DecimalValue, ...],
+    ) -> None:
+        self.line = line
+        self.signal = signal
+        self.histogram = histogram
+
 
 
 def macd(
@@ -208,11 +217,21 @@ def macd(
     return MACDResult(tuple(line), signal, histogram)
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
 class BollingerBands:
-    upper: tuple[DecimalValue, ...]
-    middle: tuple[DecimalValue, ...]
-    lower: tuple[DecimalValue, ...]
+    """Aligned upper, middle, and lower Bollinger band output."""
+
+    __slots__ = ("upper", "middle", "lower")
+
+    def __init__(
+        self,
+        upper: tuple[DecimalValue, ...],
+        middle: tuple[DecimalValue, ...],
+        lower: tuple[DecimalValue, ...],
+    ) -> None:
+        self.upper = upper
+        self.middle = middle
+        self.lower = lower
+
 
 
 def bollinger_bands(
