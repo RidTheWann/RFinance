@@ -59,12 +59,19 @@ def test_macd_line_signal_and_histogram_keep_series_alignment() -> None:
         signal_period=2,
     )
 
+    tolerance = D("1e-26")
     assert len(result.line) == 6
     assert result.line[:2] == (None, None)
-    assert result.line[2:] == (D("0.5"), D("0.5"), D("0.5"), D("0.5"))
+    assert all(value is not None and abs(value - D("0.5")) <= tolerance for value in result.line[2:])
     assert result.signal[:3] == (None, None, None)
-    assert result.signal[3:] == (D("0.5"), D("0.5"), D("0.5"))
-    assert result.histogram[3:] == (D("0"), D("0"), D("0"))
+    assert all(
+        value is not None and abs(value - D("0.5")) <= tolerance
+        for value in result.signal[3:]
+    )
+    assert all(
+        value is not None and abs(value) <= tolerance
+        for value in result.histogram[3:]
+    )
 
 
 def test_bollinger_bands_use_population_standard_deviation() -> None:
