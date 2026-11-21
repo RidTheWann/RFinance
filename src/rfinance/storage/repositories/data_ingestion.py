@@ -168,6 +168,7 @@ class DataIngestionRepository:
             accepted_count = 0
             rejected_records: list[RejectedMarketCSVRow] = list(rejected_rows)
             observation_records: list[MarketObservationRecord] = []
+            checked_instrument_ids: set[str] = set()
 
             for row in accepted_rows:
                 observation = row.observation
@@ -186,15 +187,17 @@ class DataIngestionRepository:
                     )
                     continue
                 existing_keys.add(key)
-                if session.get(InstrumentRegistryRecord, observation.instrument_id) is None:
-                    session.add(
-                        InstrumentRegistryRecord(
-                            instrument_id=observation.instrument_id,
-                            verification_status="UNVERIFIED",
-                            created_at_utc=imported_at_utc,
-                            updated_at_utc=imported_at_utc,
+                if observation.instrument_id not in checked_instrument_ids:
+                    checked_instrument_ids.add(observation.instrument_id)
+                    if session.get(InstrumentRegistryRecord, observation.instrument_id) is None:
+                        session.add(
+                            InstrumentRegistryRecord(
+                                instrument_id=observation.instrument_id,
+                                verification_status="UNVERIFIED",
+                                created_at_utc=imported_at_utc,
+                                updated_at_utc=imported_at_utc,
+                            )
                         )
-                    )
                 observation_records.append(
                     MarketObservationRecord(
                         observation_id=str(uuid4()),
