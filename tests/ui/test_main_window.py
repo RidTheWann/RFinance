@@ -77,9 +77,11 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         qtbot.mouseClick(window.initialize_portfolio_button, Qt.MouseButton.LeftButton)
         assert window.portfolio_valuation_page is not None
         qtbot.waitUntil(
-            lambda: window.portfolio_valuation_page is not None
-            and window.portfolio_valuation_page.status_label.text().startswith(
-                "Cash-only simulation"
+            lambda: (
+                window.portfolio_valuation_page is not None
+                and window.portfolio_valuation_page.status_label.text().startswith(
+                    "Cash-only simulation"
+                )
             ),
             timeout=10000,
         )

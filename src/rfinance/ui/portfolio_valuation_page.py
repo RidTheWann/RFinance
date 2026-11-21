@@ -166,8 +166,7 @@ class PortfolioValuationPage(QWidget):
             f"{self._idr(valuation.total_value)}"
         )
         self.unrealized_label.setText(
-            "Unrealized P/L (priced positions): "
-            f"{self._idr(valuation.unrealized_profit_loss)}"
+            f"Unrealized P/L (priced positions): {self._idr(valuation.unrealized_profit_loss)}"
         )
 
         evidence_by_instrument = {item.instrument_id: item for item in snapshot.price_evidence}

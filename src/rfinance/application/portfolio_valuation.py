@@ -238,8 +238,7 @@ class PortfolioValuationService:
                     age_days=max(
                         0,
                         int(
-                            (reference_utc - selected.observed_at.astimezone(UTC))
-                            .total_seconds()
+                            (reference_utc - selected.observed_at.astimezone(UTC)).total_seconds()
                             // 86_400
                         ),
                     ),
@@ -308,8 +307,7 @@ class PortfolioValuationService:
                 )
                 .outerjoin(
                     InstrumentRegistryRecord,
-                    InstrumentRegistryRecord.instrument_id
-                    == MarketObservationRecord.instrument_id,
+                    InstrumentRegistryRecord.instrument_id == MarketObservationRecord.instrument_id,
                 )
                 .outerjoin(
                     SourceRegistryRecord,
