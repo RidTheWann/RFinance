@@ -86,8 +86,8 @@ def test_events_replay_identically_after_database_reopen(tmp_path) -> None:
         assert second_service.events()[1].occurred_at == NOW
         assert after_restart.cash_balance == before_restart.cash_balance
         assert after_restart.positions == before_restart.positions
-        assert after_restart.positions["BBCA"].cost_basis == (
-            Decimal("901012.345678912345678901")
+        assert after_restart.positions["BBCA"].cost_basis == Decimal(
+            "901012.345678912345678901"
         )
     finally:
         second_database.close()
@@ -186,10 +186,7 @@ def test_database_triggers_reject_ledger_update_and_delete(tmp_path) -> None:
             pytest.raises(IntegrityError, match="portfolio ledger is append-only"),
         ):
             connection.execute(
-                text(
-                    "UPDATE portfolio_ledger_events SET amount = '1' "
-                    "WHERE event_id = 'capital'"
-                )
+                text("UPDATE portfolio_ledger_events SET amount = '1' WHERE event_id = 'capital'")
             )
 
         with (
