@@ -119,9 +119,7 @@ class ObservationReviewPage(QWidget):
         )
         self.observation_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.observation_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.observation_table.setSelectionMode(
-            QAbstractItemView.SelectionMode.SingleSelection
-        )
+        self.observation_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.observation_table.setAlternatingRowColors(True)
         self.observation_table.setMaximumHeight(240)
         self.observation_table.horizontalHeader().setStretchLastSection(True)
@@ -140,9 +138,7 @@ class ObservationReviewPage(QWidget):
         self.reviewer_input = QLineEdit()
         self.reviewer_input.setPlaceholderText("Operator / reviewer label")
         self.notes_input = QLineEdit()
-        self.notes_input.setPlaceholderText(
-            "What was checked and why is this decision justified?"
-        )
+        self.notes_input.setPlaceholderText("What was checked and why is this decision justified?")
         form.addRow("Reviewer", self.reviewer_input)
         form.addRow("Review notes", self.notes_input)
 
@@ -162,14 +158,10 @@ class ObservationReviewPage(QWidget):
         actions = QHBoxLayout()
         self.verify_button = QPushButton("Record VERIFIED decision")
         self.verify_button.setObjectName("verifyObservationButton")
-        self.verify_button.clicked.connect(
-            lambda: self._submit(ObservationReviewDecision.VERIFIED)
-        )
+        self.verify_button.clicked.connect(lambda: self._submit(ObservationReviewDecision.VERIFIED))
         self.reject_button = QPushButton("Record REJECTED decision")
         self.reject_button.setObjectName("rejectObservationButton")
-        self.reject_button.clicked.connect(
-            lambda: self._submit(ObservationReviewDecision.REJECTED)
-        )
+        self.reject_button.clicked.connect(lambda: self._submit(ObservationReviewDecision.REJECTED))
         actions.addWidget(self.verify_button)
         actions.addWidget(self.reject_button)
         actions.addStretch(1)
@@ -208,9 +200,7 @@ class ObservationReviewPage(QWidget):
     def refresh_queue(self, *, select_observation_id: str | None = None) -> None:
         """Refresh raw/effective quality without changing observation records."""
 
-        previous_selection = (
-            select_observation_id or self._selected_observation_id()
-        )
+        previous_selection = select_observation_id or self._selected_observation_id()
         candidates = self._service.list_candidates(limit=500)
         self.observation_table.setRowCount(len(candidates))
         has_candidates = bool(candidates)
@@ -254,18 +244,14 @@ class ObservationReviewPage(QWidget):
 
     def _on_selection_changed(self) -> None:
         observation_id = self._selected_observation_id()
-        self.selected_observation_label.setText(
-            observation_id or "Select an observation above"
-        )
+        self.selected_observation_label.setText(observation_id or "Select an observation above")
         self.refresh_history()
 
     def refresh_history(self) -> None:
         """Render append-only review history for the selected observation."""
 
         observation_id = self._selected_observation_id()
-        history = (
-            () if observation_id is None else self._service.review_history(observation_id)
-        )
+        history = () if observation_id is None else self._service.review_history(observation_id)
         self.history_table.setRowCount(len(history))
         self.history_table.setVisible(bool(history))
         for row_index, event in enumerate(history):
