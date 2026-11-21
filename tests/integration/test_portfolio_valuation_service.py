@@ -263,9 +263,23 @@ def test_conflicting_latest_verified_sources_do_not_choose_a_price_arbitrarily(t
             )
             session.flush()
             session.add(
+                DataImportBatchRecord(
+                    batch_id="batch-second",
+                    source_id="source-second",
+                    original_filename="second-prices.csv",
+                    file_sha256="c" * 64,
+                    document_relative_path="Documents/MarketImports/second-prices.csv",
+                    imported_at_utc=NOW.isoformat(),
+                    row_count=1,
+                    accepted_rows=1,
+                    rejected_rows=0,
+                )
+            )
+            session.flush()
+            session.add(
                 MarketObservationRecord(
                     observation_id="observation-conflict",
-                    batch_id="batch-bbca",
+                    batch_id="batch-second",
                     source_id="source-second",
                     instrument_id="IDX:BBCA",
                     observed_at_utc=(NOW - timedelta(hours=1)).isoformat(),

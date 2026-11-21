@@ -197,6 +197,7 @@ class PortfolioValuationService:
         evidence: list[PriceEvidence] = []
         categories: dict[str, ValuationCategory] = {}
         conflicts: dict[str, tuple[str, ...]] = {}
+        conflicting_observation_count = 0
 
         for instrument_id, observations in eligible_by_instrument.items():
             latest_observed_at = max(item.observed_at.astimezone(UTC) for item in observations)
@@ -210,6 +211,7 @@ class PortfolioValuationService:
                 # Multiple sources disagree about the latest price. Do not pick
                 # one arbitrarily or fall back to an older observation.
                 conflicts[instrument_id] = ("CONFLICTING_LATEST_OBSERVATIONS",)
+                conflicting_observation_count += len(latest_observations)
                 continue
 
             selected = max(
@@ -256,16 +258,16 @@ class PortfolioValuationService:
             max_age_days=self._policy.max_observation_age_days,
         )
 
-        latest_rejections: dict[str, tuple[datetime, tuple[str, ...]]] = {}
+        latest_rejections: dict[str, tuple[datetime, set[str]]] = {}
         for candidate, decision in report.rejected:
             instrument_id = candidate.instrument_id
             observed_at = candidate.observed_at.astimezone(UTC)
+            reasons = {reason.value for reason in decision.reasons}
             current = latest_rejections.get(instrument_id)
-            if current is None or observed_at >= current[0]:
-                latest_rejections[instrument_id] = (
-                    observed_at,
-                    tuple(reason.value for reason in decision.reasons),
-                )
+            if current is None or observed_at > current[0]:
+                latest_rejections[instrument_id] = (observed_at, reasons)
+            elif observed_at == current[0]:
+                current[1].update(reasons)
 
         malformed_by_instrument: dict[str, str] = {}
         for item in malformed:
@@ -276,7 +278,7 @@ class PortfolioValuationService:
             if instrument_id in conflicts:
                 reasons = conflicts[instrument_id]
             elif instrument_id in latest_rejections:
-                reasons = latest_rejections[instrument_id][1]
+                reasons = tuple(sorted(latest_rejections[instrument_id][1]))
             elif instrument_id in malformed_by_instrument:
                 reasons = (malformed_by_instrument[instrument_id],)
             else:
@@ -288,7 +290,9 @@ class PortfolioValuationService:
             price_evidence=tuple(evidence),
             unvalued_positions=tuple(unvalued),
             observations_considered=len(rows),
-            observations_rejected=len(report.rejected) + len(malformed) + len(conflicts),
+            observations_rejected=(
+                len(report.rejected) + len(malformed) + conflicting_observation_count
+            ),
         )
 
     def _load_observations(
