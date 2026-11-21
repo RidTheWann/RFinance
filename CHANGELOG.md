@@ -31,4 +31,4 @@ All notable changes to RFinance are documented here.
 - Fixed outdated UI test wiring/navigation expectations and verified the complete 131-test suite on Windows and Ubuntu with Ruff, format, and Mypy checks passing.
 - Connected persisted observations and review-adjusted quality to portfolio valuation through the full instrument, source, currency, freshness, and data-quality eligibility gates.
 - Added safe handling for conflicting latest prices, evidence-linked valuation diagnostics, and a background Portfolio Simulator valuation view with partial-total disclosure.
-- Added integration and Qt tests for persisted valuation, eligibility rejection, source conflicts, and the desktop refresh workflow; CI validation is pending for this change set.
+- Added integration and Qt tests for persisted valuation, eligibility rejection, source conflicts, and the desktop refresh workflow; **141 tests passed on Windows and Ubuntu**, with Ruff lint/format and Mypy passing.

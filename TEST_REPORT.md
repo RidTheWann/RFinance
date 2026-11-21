@@ -4,25 +4,25 @@ Last updated: 2026-11-21
 
 ## Latest fully verified application-code checkpoint
 
-Application-code commit `1c283f0deea85507465f985bd508445e679868e6` completed successfully on Windows and Ubuntu using Python 3.12. [GitHub Actions run 44907489580](https://github.com/RidTheWann/RFinance/actions/runs/44907489580).
+Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed successfully on Windows and Ubuntu using Python 3.12. [Push CI run 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI run 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
 
 | Check | Windows | Ubuntu |
 |---|---:|---:|
 | Dependency installation | Passed | Passed |
 | Ruff lint | Passed | Passed |
-| Ruff format check | Passed | Passed |
-| Mypy | Passed | Passed |
-| pytest | **131 passed** | **131 passed** |
+| Ruff format check | Passed; 94 files already formatted | Passed; 94 files already formatted |
+| Mypy | Passed; 53 source files | Passed; 53 source files |
+| pytest | **141 passed** | **141 passed** |
 
-The checkpoint includes the PySide6 shell, local portfolio ledger, CSV provenance pipeline, instrument identity review, append-only observation review service and desktop workflow, observation queue refresh after import, eligibility gate, Decimal technical indicators, dividend analytics, and portfolio valuation calculations. All 131 tests pass on both operating systems.
+The verified commit includes the PySide6 shell, local portfolio ledger, CSV provenance pipeline, instrument identity review, append-only observation review, eligibility gates, Decimal technical and dividend calculations, and the persisted-observation PortfolioValuationService plus background desktop valuation page. All 141 tests pass on both operating systems.
 
 ## Historical developer checkpoint
 
 A prior Termux/Python 3.14 session reported Ruff lint/format passing, Mypy passing for new dividend modules, and 127 non-UI pytest tests passing. PySide6 was unavailable in that environment, so this historical checkpoint did not validate UI behavior. It is superseded by the current Windows and Ubuntu Python 3.12 CI run above.
 
-## Current implementation candidate — validation pending
+## Current verified implementation slice
 
-The feature branch adds a persisted-observation valuation service, background desktop valuation view, source/price eligibility diagnostics, explicit rejection of conflicting latest prices, and integration/UI tests. These new changes have not yet been included in the last fully verified CI checkpoint above. Do not treat their tests as passing until the GitHub Actions run for the new commit completes successfully.
+The persisted-observation valuation service joins ledger positions to stored prices, current instrument/source policy, and append-only review decisions. It applies the observation eligibility policy before valuation and rejects conflicting latest prices instead of choosing a provider arbitrarily. The desktop refresh runs in a worker thread and exposes price provenance, freshness, unvalued positions and explicit partial-total semantics. The integration and Qt coverage is included in the 141-test Windows/Ubuntu checkpoint above.
 
 ## Coverage
 
@@ -56,8 +56,8 @@ The feature branch adds a persisted-observation valuation service, background de
 - Observation eligibility gates: instrument identity/status/activity/currency, observation quality, look-ahead, staleness, acquisition lag, close validity, source policy, UTC normalization, and combined diagnostics. Property-based checks that unverified, stale and future observations are never eligible.
 - Observation review: promotion gates (raw status, verified instrument, source policy), evidence/digest validation, append-only audit events, immutable raw rows, effective-quality derivation, review history, eligibility candidate mapping, file archiving, and append-only trigger enforcement.
 - Portfolio valuation: market value and unrealized P/L per position, unvalued-position handling without cost fallback, portfolio reconciliation, allocation versus targets, rejection of unverified/stale/future/wrong-currency quotes, and property-based reconciliation invariants.
-- Persisted-observation valuation integration tests: effective quality from append-only price-review events, verified instrument state, source-policy gates, freshness, provenance selection, source-conflict rejection, cash-only behavior, and base-currency enforcement. These tests are pending CI execution for the current candidate.
-- Desktop valuation test: background refresh and cash-only rendering; main-window integration is covered separately. These tests are pending CI execution for the current candidate.
+- Persisted-observation valuation integration tests: effective quality from append-only price-review events, verified instrument state, source-policy gates, freshness, provenance selection, source-conflict rejection, cash-only behavior, and base-currency enforcement.
+- Desktop valuation test: background refresh and cash-only rendering; main-window integration is covered separately.
 
 ## Known boundaries
 
@@ -70,7 +70,8 @@ The feature branch adds a persisted-observation valuation service, background de
 
 ## Remaining validation work
 
-- Connecting the implemented eligibility gate and valuation layer to screening and persisted portfolio queries.
+- Connecting the implemented eligibility gate to deterministic screening and evidence-linked recommendations.
+- Connecting technical indicators to persisted, evidence-qualified and consistently sampled historical series; do not infer adjustment policy or frequency.
 - Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.
 - Migration downgrade/upgrade and corruption recovery.
