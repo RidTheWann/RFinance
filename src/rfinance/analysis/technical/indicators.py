@@ -6,8 +6,8 @@ where the explicitly documented input window is incomplete.
 
 from __future__ import annotations
 
-import dataclasses
 import decimal
+import dataclasses
 
 
 ZERO = decimal.Decimal("0")
@@ -205,7 +205,7 @@ def macd(
     return MACDResult(tuple(line), signal, histogram)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclasses.dataclass(frozen=True, slots=True)
 class BollingerBands:
     upper: tuple[DecimalValue, ...]
     middle: tuple[DecimalValue, ...]
