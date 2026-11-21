@@ -117,10 +117,7 @@ def historical_observation_reasons(
         reasons.append(HistoricalEligibilityReason.SOURCE_BLOCKED)
     elif source.policy_status is SourcePolicyStatus.RESTRICTED:
         reasons.append(HistoricalEligibilityReason.SOURCE_RESTRICTED)
-    elif (
-        source.policy_status is SourcePolicyStatus.UNREVIEWED
-        and not allow_unreviewed_sources
-    ):
+    elif source.policy_status is SourcePolicyStatus.UNREVIEWED and not allow_unreviewed_sources:
         reasons.append(HistoricalEligibilityReason.SOURCE_UNREVIEWED)
 
     return tuple(reasons)

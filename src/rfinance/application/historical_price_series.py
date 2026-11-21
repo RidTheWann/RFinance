@@ -127,9 +127,7 @@ class HistoricalPriceSeriesService:
         max_observations: int = MAX_HISTORY_OBSERVATIONS,
     ) -> None:
         if max_observations <= 0 or max_observations > MAX_HISTORY_OBSERVATIONS:
-            raise ValueError(
-                f"max_observations must be between 1 and {MAX_HISTORY_OBSERVATIONS}"
-            )
+            raise ValueError(f"max_observations must be between 1 and {MAX_HISTORY_OBSERVATIONS}")
         self._sessions = sessions
         self._allow_unreviewed_sources = allow_unreviewed_sources
         self._max_observations = max_observations
@@ -149,8 +147,7 @@ class HistoricalPriceSeriesService:
                 )
                 .join(
                     MarketObservationRecord,
-                    MarketObservationRecord.instrument_id
-                    == InstrumentRegistryRecord.instrument_id,
+                    MarketObservationRecord.instrument_id == InstrumentRegistryRecord.instrument_id,
                 )
                 .join(
                     SourceRegistryRecord,
@@ -282,10 +279,7 @@ class HistoricalPriceSeriesService:
         deduplicated: list[_ParsedObservation] = []
         for item in parsed:
             current_time = item.point.observed_at.astimezone(UTC)
-            if (
-                deduplicated
-                and deduplicated[-1].point.observed_at.astimezone(UTC) == current_time
-            ):
+            if deduplicated and deduplicated[-1].point.observed_at.astimezone(UTC) == current_time:
                 previous = deduplicated.pop()
                 rejected["DUPLICATE_UTC_TIMESTAMP"] += 2
                 # The stored unique key normally prevents this. If alternate
@@ -302,10 +296,7 @@ class HistoricalPriceSeriesService:
         for index, point in enumerate(points):
             if index:
                 previous = points[index - 1]
-                elapsed = (
-                    point.observed_at.astimezone(UTC)
-                    - previous.observed_at.astimezone(UTC)
-                )
+                elapsed = point.observed_at.astimezone(UTC) - previous.observed_at.astimezone(UTC)
                 if elapsed > timedelta(days=max_gap_days):
                     gaps.append(
                         HistoricalGap(
@@ -353,8 +344,7 @@ class HistoricalPriceSeriesService:
                 )
                 .outerjoin(
                     InstrumentRegistryRecord,
-                    InstrumentRegistryRecord.instrument_id
-                    == MarketObservationRecord.instrument_id,
+                    InstrumentRegistryRecord.instrument_id == MarketObservationRecord.instrument_id,
                 )
                 .outerjoin(
                     SourceRegistryRecord,
