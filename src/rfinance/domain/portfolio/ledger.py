@@ -8,7 +8,6 @@ estimated income, or external position is ever added implicitly.
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
@@ -16,6 +15,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from datetime import datetime
 
 
@@ -115,7 +115,9 @@ class LedgerEvent:
         if not self.instrument_id or not self.instrument_id.strip():
             raise LedgerValidationError("trade event requires instrument_id")
         if self.amount is not None or self.source_reference is not None:
-            raise LedgerValidationError("trade event cannot contain cash amount or source reference")
+            raise LedgerValidationError(
+                "trade event cannot contain cash amount or source reference"
+            )
         if self.quantity is None or self.unit_price is None:
             raise LedgerValidationError("trade event requires quantity and unit_price")
         _decimal("quantity", self.quantity)
@@ -166,7 +168,7 @@ class LedgerReplayResult:
 
     currency: str
     cash_balance: Decimal
-    positions: MappingABC[str, PositionSnapshot]
+    positions: Mapping[str, PositionSnapshot]
     realized_profit_loss: Decimal
     simulated_dividends: Decimal
     total_fees: Decimal
@@ -180,7 +182,7 @@ class LedgerReplayResult:
 def replay_ledger(
     events: list[LedgerEvent] | tuple[LedgerEvent, ...],
     *,
-    lot_sizes: MappingABC[str, Decimal],
+    lot_sizes: Mapping[str, Decimal],
     base_currency: str = "IDR",
 ) -> LedgerReplayResult:
     """Rebuild cash and positions in sequence order, enforcing accounting rules.
