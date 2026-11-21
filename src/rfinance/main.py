@@ -6,13 +6,16 @@
 from __future__ import annotations
 
 import sys
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from rfinance import __version__
 from rfinance.bootstrap import create_application_context
 from rfinance.ui.main_window import MainWindow
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def main(argv: Sequence[str] | None = None) -> int:
