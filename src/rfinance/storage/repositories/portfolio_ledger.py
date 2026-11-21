@@ -89,14 +89,11 @@ class LedgerRepository:
 
         try:
             with self._sessions.begin() as session:
-                latest_sequence = session.scalar(
-                    select(func.max(PortfolioLedgerRecord.sequence))
-                )
+                latest_sequence = session.scalar(select(func.max(PortfolioLedgerRecord.sequence)))
                 expected_sequence = 1 if latest_sequence is None else latest_sequence + 1
                 if event.sequence != expected_sequence:
                     raise LedgerValidationError(
-                        f"next ledger sequence must be {expected_sequence}, "
-                        f"not {event.sequence}"
+                        f"next ledger sequence must be {expected_sequence}, not {event.sequence}"
                     )
                 session.add(self._to_record(event))
         except IntegrityError as error:
