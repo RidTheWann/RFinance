@@ -142,8 +142,7 @@ def test_market_csv_import_persists_source_provenance_and_unverified_rows(tmp_pa
 def test_reimport_does_not_duplicate_observations_and_reconciles_issues(tmp_path) -> None:
     source_file = write_csv(
         tmp_path,
-        "instrument_id,observed_at,currency,close\n"
-        "IDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9100\n",
+        "instrument_id,observed_at,currency,close\nIDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9100\n",
     )
     database = Database.open(tmp_path / "database.sqlite3")
     database.upgrade()
