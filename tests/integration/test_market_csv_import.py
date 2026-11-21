@@ -7,7 +7,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from decimal import Decimal
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import func, select
@@ -23,6 +23,10 @@ from rfinance.storage.models.data_ingestion import (
     SourceRegistryRecord,
 )
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 ACQUIRED_AT = datetime(2026, 11, 21, 9, 0, tzinfo=UTC)
 
