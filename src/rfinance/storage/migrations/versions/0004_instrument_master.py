@@ -48,6 +48,13 @@ def upgrade() -> None:
         sa.Column("currency", sa.String(length=3), nullable=True),
         sa.Column("sector", sa.String(length=128), nullable=True),
         sa.Column("active", sa.Boolean(), nullable=True),
+        sa.Column("lot_size", sa.Integer(), nullable=True),
+        sa.Column("minimum_investment", sa.Text(), nullable=True),
+        sa.CheckConstraint("lot_size IS NULL OR lot_size > 0", name="ck_instrument_registry_lot_size"),
+        sa.CheckConstraint(
+            "minimum_investment IS NULL OR CAST(minimum_investment AS NUMERIC) > 0",
+            name="ck_instrument_registry_minimum_investment",
+        ),
         sa.Column("verification_status", sa.String(length=24), nullable=False),
         sa.Column("created_at_utc", sa.String(length=40), nullable=False),
         sa.Column("updated_at_utc", sa.String(length=40), nullable=False),
