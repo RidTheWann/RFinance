@@ -9,7 +9,6 @@ where the explicitly documented input window is incomplete.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -20,7 +19,7 @@ TWO = Decimal("2")
 HUNDRED = Decimal("100")
 
 DecimalValue = Decimal | None
-PriceSeries = Sequence[DecimalValue]
+PriceSeries = list[DecimalValue] | tuple[DecimalValue, ...]
 
 
 def _period(value: int, *, minimum: int = 1) -> None:
