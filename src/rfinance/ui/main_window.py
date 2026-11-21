@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QObject, QThread, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
@@ -22,6 +23,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QPushButton,
     QStackedWidget,
+    QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
@@ -36,7 +39,10 @@ if TYPE_CHECKING:
 
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.core.config import AppPaths
-    from rfinance.storage.repositories.data_ingestion import DataImportSummary
+    from rfinance.storage.repositories.data_ingestion import (
+        DataImportHistoryItem,
+        DataImportSummary,
+    )
 
 
 class MarketCSVImportWorker(QObject):
@@ -110,6 +116,7 @@ class MainWindow(QMainWindow):
         self.navigation.currentRowChanged.connect(self.pages.setCurrentIndex)
         self.navigation.setCurrentRow(0)
         self.refresh_portfolio()
+        self.refresh_market_import_history()
 
     def _overview_page(self) -> QWidget:
         page = QWidget()
@@ -144,6 +151,34 @@ class MainWindow(QMainWindow):
         self.market_import_status_label.setObjectName("marketImportStatus")
         self.market_import_status_label.setWordWrap(True)
         layout.addWidget(self.market_import_status_label)
+
+        history_title = QLabel("Recent import history")
+        history_title.setStyleSheet("font-size: 16px; font-weight: 600;")
+        layout.addWidget(history_title)
+        self.market_import_history_empty_label = QLabel(
+            "No local market-data import batches have been recorded."
+        )
+        self.market_import_history_empty_label.setObjectName("marketImportHistoryEmpty")
+        layout.addWidget(self.market_import_history_empty_label)
+
+        self.market_import_history_table = QTableWidget(0, 6)
+        self.market_import_history_table.setObjectName("marketImportHistoryTable")
+        self.market_import_history_table.setHorizontalHeaderLabels(
+            ["Imported (UTC)", "Source", "File", "Accepted", "Rejected", "Trust status"]
+        )
+        self.market_import_history_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+        self.market_import_history_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+        self.market_import_history_table.setAlternatingRowColors(True)
+        self.market_import_history_table.setSortingEnabled(False)
+        self.market_import_history_table.setMaximumHeight(230)
+        self.market_import_history_table.horizontalHeader().setStretchLastSection(True)
+        self.market_import_history_table.resizeColumnsToContents()
+        self.market_import_history_table.hide()
+        layout.addWidget(self.market_import_history_table)
         layout.addStretch(1)
         return page
 
@@ -295,6 +330,7 @@ class MainWindow(QMainWindow):
             f"{result.rejected_rows:,} rows rejected. All accepted observations are "
             f"UNVERIFIED. Batch: {result.batch_id}"
         )
+        self.refresh_market_import_history()
 
     def _on_market_csv_import_failed(self, message: str) -> None:
         self.market_import_status_label.setText(f"CSV import failed: {message}")
@@ -313,6 +349,36 @@ class MainWindow(QMainWindow):
             event.ignore()
             return
         super().closeEvent(event)
+
+    def refresh_market_import_history(self) -> None:
+        """Render recent import batches without calculating or altering financial data."""
+
+        batches = self.market_csv_import.recent_imports(limit=20)
+        self.market_import_history_table.setRowCount(len(batches))
+        has_batches = bool(batches)
+        self.market_import_history_empty_label.setVisible(not has_batches)
+        self.market_import_history_table.setVisible(has_batches)
+
+        for row_index, batch in enumerate(batches):
+            trust_status = "UNVERIFIED" if batch.accepted_rows else "No accepted rows"
+            values = (
+                batch.imported_at_utc.replace("T", " "),
+                batch.source_name,
+                batch.original_filename,
+                str(batch.accepted_rows),
+                str(batch.rejected_rows),
+                trust_status,
+            )
+            for column, value in enumerate(values):
+                cell = QTableWidgetItem(value)
+                cell.setToolTip(
+                    f"Batch: {batch.batch_id}\n"
+                    f"SHA-256: {batch.file_sha256}\n"
+                    f"Archived file: {batch.document_relative_path}"
+                )
+                self.market_import_history_table.setItem(row_index, column, cell)
+
+        self.market_import_history_table.resizeColumnsToContents()
 
     @staticmethod
     def _format_idr(amount: Decimal) -> str:
