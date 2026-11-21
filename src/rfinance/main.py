@@ -35,7 +35,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 1
 
-    window = MainWindow(context.paths, context.portfolio_ledger)
+    window = MainWindow(
+        context.paths,
+        context.portfolio_ledger,
+        context.market_csv_import,
+    )
     application.aboutToQuit.connect(context.close)
     window.show()
     return application.exec()
