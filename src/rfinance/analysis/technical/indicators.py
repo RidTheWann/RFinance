@@ -62,7 +62,6 @@ def ema(values: PriceSeries, period: int) -> tuple[DecimalValue, ...]:
     _period(period)
     data = _series(values)
     alpha = TWO / decimal.Decimal(period + 1)
-    one_minus_alpha = ONE - alpha
     seed: list[decimal.Decimal] = []
     current: decimal.Decimal | None = None
     result: list[DecimalValue] = []
@@ -84,7 +83,10 @@ def ema(values: PriceSeries, period: int) -> tuple[DecimalValue, ...]:
                 result.append(None)
             continue
 
-        current = alpha * value + one_minus_alpha * current
+        if value == current:
+            current = value
+        else:
+            current += alpha * (value - current)
         result.append(current)
 
     return tuple(result)
