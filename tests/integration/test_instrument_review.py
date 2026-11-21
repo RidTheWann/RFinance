@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import exc, select, text
+import sqlalchemy
 
 from rfinance.application.instrument_review import (
     InstrumentReviewDecision,
@@ -200,7 +200,7 @@ def test_review_events_are_append_only(tmp_path) -> None:
 
         with (
             database.engine.connect() as connection,
-            pytest.raises(exc.IntegrityError, match="instrument_review_events is append-only"),
+            pytest.raises(sqlalchemy.exc.IntegrityError, match="instrument_review_events is append-only"),
         ):
             connection.execute(
                 sqlalchemy.text(
@@ -212,10 +212,10 @@ def test_review_events_are_append_only(tmp_path) -> None:
 
         with (
             database.engine.connect() as connection,
-            pytest.raises(exc.IntegrityError, match="instrument_review_events is append-only"),
+            pytest.raises(sqlalchemy.exc.IntegrityError, match="instrument_review_events is append-only"),
         ):
             connection.execute(
-                text("DELETE FROM instrument_review_events WHERE review_id = :review_id"),
+                sqlalchemy.text("DELETE FROM instrument_review_events WHERE review_id = :review_id"),
                 {"review_id": result.review_id},
             )
     finally:
