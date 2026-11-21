@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-import sqlalchemy
 import pytest
+import sqlalchemy
 
 from rfinance.application.instrument_review import (
     InstrumentReviewDecision,
@@ -215,7 +215,10 @@ def test_review_events_are_append_only(tmp_path) -> None:
 
         with (
             database.engine.connect() as connection,
-            pytest.raises(sqlalchemy.exc.IntegrityError, match="instrument_review_events is append-only"),
+            pytest.raises(
+                sqlalchemy.exc.IntegrityError,
+                match="instrument_review_events is append-only",
+            ),
         ):
             connection.execute(
                 sqlalchemy.text(
