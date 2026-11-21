@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from pydantic import ValidationError
 
 from rfinance.data.contracts import DataQualityStatus, MarketObservationContract
 
@@ -159,9 +160,11 @@ def parse_market_observation_csv(
                 )
             reader.fieldnames = fieldnames
 
+            processed_rows = 0
             for row in reader:
+                processed_rows += 1
                 row_number = reader.line_num
-                if row_number - 1 > max_rows:
+                if processed_rows > max_rows:
                     raise CSVImportError(
                         f"CSV exceeds the maximum of {max_rows:,} data rows"
                     )
@@ -179,7 +182,7 @@ def parse_market_observation_csv(
                     )
                     key = (
                         observation.instrument_id,
-                        observation.observed_at.isoformat(),
+                        observation.observed_at.astimezone(UTC).isoformat(),
                     )
                     if key in seen_keys:
                         raise ValueError(
@@ -193,7 +196,7 @@ def parse_market_observation_csv(
                             observation=observation,
                         )
                     )
-                except (ValueError, TypeError) as error:
+                except (ValueError, TypeError, ValidationError) as error:
                     rejected.append(
                         RejectedMarketCSVRow(
                             row_number=row_number,
@@ -210,9 +213,3 @@ def parse_market_observation_csv(
         accepted=tuple(accepted),
         rejected=tuple(rejected),
     )
-
-
-def serialize_original_row(row: Mapping[str, str | None]) -> str:
-    """Serialize raw source cells without converting missing values to zero."""
-
-    return json.dumps(dict(row), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
