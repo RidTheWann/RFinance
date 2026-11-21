@@ -29,6 +29,15 @@ are Decimal. Missing or unusable denominators return `None`, never zero. A
 forward estimate, a simulated cash flow, and a confirmed receipt are distinct
 states and are labelled accordingly.
 
+## Portfolio valuation (`portfolio-valuation-v1`)
+
+Portfolio valuation is specified in `docs/PORTFOLIO_VALUATION.md`. It values
+ledger positions only from eligible, verified, currency-matching, fresh prices.
+A position without such a price is unvalued and reported explicitly; it is
+never valued at cost or zero. Market value plus cash gives total value, and
+allocation deviations compare actual weights with configurable targets. Results
+are labelled as simulated.
+
 ## Planned metric conventions
 
 Before release, document and test period alignment, treatment of negative earnings/equity, leases, minority interests, preferred equity, financial-sector exceptions, corporate actions, split adjustments, and restatements for every supported formula. Do not publish EV/EBITDA, yield, payout, coverage, or valuation outputs until their required inputs and conventions are defined.

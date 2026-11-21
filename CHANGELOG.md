@@ -25,3 +25,4 @@ All notable changes to RFinance are documented here.
 - Added `dividend-analytics-v1`: Decimal-only trailing/forward yield, net-dividend, payout/coverage, growth/CAGR, consistency, simulated cash projection, and confirmed-receipt allocation, with documented formulas and 27 new tests.
 - Added `eligibility-observation-v1`: dependency-free observation eligibility gates for quality, identity, source policy, currency, look-ahead and freshness, with 17 new tests.
 - Added an append-only observation-review ledger and service (`0005_observation_review`) requiring explicit evidence, a verified instrument, and an eligible source before a price can be verified; 14 new integration tests.
+- Added `portfolio-valuation-v1`: ledger-based market value, unrealized P/L, explicit unvalued positions, and allocation-versus-target diagnostics using only eligible prices, with 7 new tests.
