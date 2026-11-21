@@ -8,7 +8,6 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
-from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -20,6 +19,8 @@ from rfinance.storage.models.instrument_registry import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from sqlalchemy.orm import Session, sessionmaker
 
     from rfinance.data.contracts import InstrumentContract
@@ -183,7 +184,9 @@ class InstrumentReviewService:
         """
 
         if self._data_directory is None:
-            raise RuntimeError("a persistent RFinance data directory is required for evidence review")
+            raise RuntimeError(
+                "a persistent RFinance data directory is required for evidence review"
+            )
 
         try:
             source_path = evidence_file.expanduser().resolve(strict=True)

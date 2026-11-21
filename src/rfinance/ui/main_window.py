@@ -6,7 +6,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QObject, QThread, QUrl, Qt, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QThread, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -37,9 +37,9 @@ from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
 )
+from rfinance.data.contracts import InstrumentContract, InstrumentType
 
 if TYPE_CHECKING:
-    from rfinance.data.contracts import InstrumentContract
     from PySide6.QtGui import QCloseEvent
 
     from rfinance.application.market_csv_import import MarketCSVImportService
@@ -75,7 +75,6 @@ class MarketCSVImportWorker(QObject):
             self.failed.emit(str(error))
             return
         self.completed.emit(result)
-
 
 
 class InstrumentReviewWorker(QObject):
@@ -338,9 +337,7 @@ class MainWindow(QMainWindow):
         self.instrument_review_table.setHorizontalHeaderLabels(
             ["Instrument ID", "Ticker", "Exchange", "Issuer", "Currency", "Type", "Status"]
         )
-        self.instrument_review_table.setEditTriggers(
-            QAbstractItemView.EditTrigger.NoEditTriggers
-        )
+        self.instrument_review_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.instrument_review_table.setSelectionBehavior(
             QAbstractItemView.SelectionBehavior.SelectRows
         )
@@ -390,7 +387,9 @@ class MainWindow(QMainWindow):
         self.review_reviewer_input = QLineEdit()
         self.review_reviewer_input.setPlaceholderText("Operator / reviewer label")
         self.review_notes_input = QLineEdit()
-        self.review_notes_input.setPlaceholderText("What was checked and which source details matched?")
+        self.review_notes_input.setPlaceholderText(
+            "What was checked and which source details matched?"
+        )
         form.addRow("Reviewer", self.review_reviewer_input)
         form.addRow("Review notes", self.review_notes_input)
 
@@ -425,7 +424,8 @@ class MainWindow(QMainWindow):
         layout.addLayout(actions)
 
         self.instrument_review_status_label = QLabel(
-            "A manual decision requires a selected instrument, evidence file, reviewer label, and notes."
+            "A manual decision requires a selected instrument, evidence file, "
+            "reviewer label, and notes."
         )
         self.instrument_review_status_label.setObjectName("instrumentReviewStatus")
         self.instrument_review_status_label.setWordWrap(True)
@@ -505,7 +505,9 @@ class MainWindow(QMainWindow):
 
     def refresh_instrument_review_history(self) -> None:
         instrument_id = self._selected_review_instrument_id()
-        history = () if instrument_id is None else self.instrument_review.review_history(instrument_id)
+        history = (
+            () if instrument_id is None else self.instrument_review.review_history(instrument_id)
+        )
         self.instrument_review_history_table.setRowCount(len(history))
         self.instrument_review_history_table.setVisible(bool(history))
         for row_index, event in enumerate(history):
@@ -551,7 +553,9 @@ class MainWindow(QMainWindow):
             self.instrument_review_status_label.setText("Choose a local evidence file first.")
             return
         if not reviewer_label or not notes:
-            self.instrument_review_status_label.setText("Reviewer label and review notes are required.")
+            self.instrument_review_status_label.setText(
+                "Reviewer label and review notes are required."
+            )
             return
 
         verified_instrument: InstrumentContract | None = None
@@ -720,7 +724,8 @@ class MainWindow(QMainWindow):
             return
         if self._review_thread is not None and self._review_thread.isRunning():
             self.instrument_review_status_label.setText(
-                "An instrument review is still running. Wait for it to finish before closing RFinance."
+                "An instrument review is still running. "
+                "Wait for it to finish before closing RFinance."
             )
             event.ignore()
             return
