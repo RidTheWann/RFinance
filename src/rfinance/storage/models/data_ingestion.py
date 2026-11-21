@@ -106,7 +106,8 @@ class MarketObservationRecord(Base):
         ),
         CheckConstraint(
             "quality_status IN "
-            "('VERIFIED', 'UNVERIFIED', 'ESTIMATED', 'STALE', 'INCOMPLETE', 'REJECTED', 'SIMULATED')",
+            "('VERIFIED', 'UNVERIFIED', 'ESTIMATED', 'STALE', 'INCOMPLETE', "
+            "'REJECTED', 'SIMULATED')",
             name="ck_market_observation_quality_status",
         ),
         CheckConstraint("length(currency) = 3", name="ck_market_observation_currency_length"),
