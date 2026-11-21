@@ -21,8 +21,18 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("terms_url", sa.Text(), nullable=True),
         sa.Column("reviewed_at_utc", sa.String(length=40), nullable=True),
-        sa.Column("automated_access_allowed", sa.Boolean(), nullable=False, server_default=sa.false()),
-        sa.Column("redistribution_allowed", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column(
+            "automated_access_allowed",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.false(),
+        ),
+        sa.Column(
+            "redistribution_allowed",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.false(),
+        ),
         sa.Column("created_at_utc", sa.String(length=40), nullable=False),
         sa.CheckConstraint(
             "access_method IN "
