@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
 from rfinance.application.instrument_review import InstrumentReviewService
-from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
+from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.core.config import AppPaths
 from rfinance.storage.database import Database

@@ -33,7 +33,6 @@ from rfinance.application.instrument_review import (
     InstrumentReviewResult,
     InstrumentReviewService,
 )
-from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
@@ -43,6 +42,8 @@ from rfinance.ui.observation_review_page import ObservationReviewPage
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
+
+    from rfinance.application.observation_review import ObservationReviewService
 
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.core.config import AppPaths
