@@ -8,15 +8,19 @@ from __future__ import annotations
 from datetime import UTC, datetime
 import hashlib
 import os
-from pathlib import Path
 import re
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from rfinance.data.csv_market_import import CSVImportError, parse_market_observation_csv
-from rfinance.storage.repositories.data_ingestion import (
-    DataImportSummary,
-    DataIngestionRepository,
-)
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from rfinance.storage.repositories.data_ingestion import (
+        DataImportSummary,
+        DataIngestionRepository,
+    )
 
 
 MAX_MARKET_CSV_BYTES = 50 * 1024 * 1024
