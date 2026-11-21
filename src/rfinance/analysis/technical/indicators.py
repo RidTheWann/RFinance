@@ -6,8 +6,8 @@ where the explicitly documented input window is incomplete.
 
 from __future__ import annotations
 
-import decimal
 import dataclasses
+import decimal
 
 
 ZERO = decimal.Decimal("0")
