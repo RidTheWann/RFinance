@@ -52,6 +52,29 @@ def _decimal(name: str, value: Decimal) -> None:
 
 
 @dataclass(frozen=True, slots=True)
+class VerifiedLotSize:
+    """Lot-size metadata accepted by the ledger only with provenance and verification time.
+
+    The instrument registry/provider boundary must construct this value only
+    after verifying the applicable market rule. Unit tests may use explicit
+    fixture provenance; production code must not infer a value.
+    """
+
+    size: Decimal
+    source_reference: str
+    verified_at: datetime
+
+    def __post_init__(self) -> None:
+        _decimal("lot size", self.size)
+        if self.size <= _ZERO:
+            raise LedgerValidationError("lot size must be positive")
+        if not self.source_reference.strip():
+            raise LedgerValidationError("lot size requires a source reference")
+        if self.verified_at.tzinfo is None or self.verified_at.utcoffset() is None:
+            raise LedgerValidationError("lot-size verification time must be timezone-aware")
+
+
+@dataclass(frozen=True, slots=True)
 class LedgerEvent:
     """A single immutable, auditable portfolio event.
 
@@ -185,13 +208,13 @@ class LedgerReplayResult:
 def replay_ledger(
     events: list[LedgerEvent] | tuple[LedgerEvent, ...],
     *,
-    lot_sizes: Mapping[str, Decimal],
+    lot_sizes: Mapping[str, VerifiedLotSize],
     base_currency: str = "IDR",
 ) -> LedgerReplayResult:
     """Rebuild cash and positions in sequence order, enforcing accounting rules.
 
-    Equity and other tradable units must have a known lot size. Unknown lot sizes
-    block BUY/SELL rather than silently assuming a trading convention.
+    Tradable units must have a lot-size value carrying a source reference and
+    verification timestamp. Unknown or unverified values block BUY/SELL.
     """
 
     if not _CURRENCY_PATTERN.fullmatch(base_currency):
@@ -237,13 +260,12 @@ def replay_ledger(
         assert instrument is not None
 
         if event.event_type in {LedgerEventType.BUY, LedgerEventType.SELL}:
-            lot_size = lot_sizes.get(instrument)
-            if lot_size is None:
-                raise LedgerValidationError(f"verified lot size is required for {instrument}")
-            _decimal(f"lot size for {instrument}", lot_size)
-            if lot_size <= _ZERO:
-                raise LedgerValidationError(f"lot size for {instrument} must be positive")
-
+            lot_rule = lot_sizes.get(instrument)
+            if not isinstance(lot_rule, VerifiedLotSize):
+                raise LedgerValidationError(
+                    f"verified lot-size evidence is required for {instrument}"
+                )
+            lot_size = lot_rule.size
             assert event.quantity is not None
             assert event.unit_price is not None
             if event.quantity % lot_size != _ZERO:
