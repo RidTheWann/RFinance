@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from rfinance.application.instrument_review import InstrumentReviewService
+from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.core.config import AppPaths
@@ -27,6 +28,7 @@ class ApplicationContext:
     portfolio_ledger: PortfolioLedgerService
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
+    observation_review: ObservationReviewService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -51,6 +53,10 @@ def create_application_context(data_directory: str | None = None) -> Application
             database.sessions,
             data_directory=paths.root,
         )
+        observation_review = ObservationReviewService(
+            database.sessions,
+            data_directory=paths.root,
+        )
     except Exception:
         database.close()
         logger.exception("Database initialization failed")
@@ -62,5 +68,6 @@ def create_application_context(data_directory: str | None = None) -> Application
         portfolio_ledger=portfolio_ledger,
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,
+        observation_review=observation_review,
         logger=logger,
     )

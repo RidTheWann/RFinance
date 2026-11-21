@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
 from rfinance.application.instrument_review import InstrumentReviewService
+from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.core.config import AppPaths
@@ -29,11 +30,16 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         database.sessions,
         data_directory=data_directory,
     )
+    observation_review_service = ObservationReviewService(
+        database.sessions,
+        data_directory=data_directory,
+    )
     return MainWindow(
         AppPaths.resolve(data_directory),
         portfolio_service,
         import_service,
         instrument_review_service,
+        observation_review_service,
     )
 
 
@@ -47,14 +53,15 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         window.navigation.setCurrentRow(1)
 
         assert window.windowTitle() == "RFinance"
-        assert window.navigation.count() == 4
-        assert [window.navigation.item(row).text() for row in range(4)] == [
+        assert window.navigation.count() == 5
+        assert [window.navigation.item(row).text() for row in range(5)] == [
             "Overview",
             "Portfolio",
             "Instrument Review",
+            "Observation Review",
             "Settings",
         ]
-        assert window.pages.count() == 4
+        assert window.pages.count() == 5
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()
@@ -138,6 +145,10 @@ def test_market_csv_import_is_started_off_ui_thread_and_reported(
         assert window.instrument_review_table.item(0, 0).text() == "IDX:BBCA"
         assert window.instrument_review_table.item(0, 6).text() == "UNVERIFIED"
         assert not window.instrument_review_empty_label.isVisible()
+        assert window.observation_review_page.observation_table.rowCount() == 1
+        assert window.observation_review_page.observation_table.item(0, 1).text() == "IDX:BBCA"
+        assert window.observation_review_page.observation_table.item(0, 4).text() == "UNVERIFIED"
+        assert window.observation_review_page.observation_table.item(0, 5).text() == "UNVERIFIED"
         with database.sessions() as session:
             observation = session.scalar(select(MarketObservationRecord))
             assert observation is not None
