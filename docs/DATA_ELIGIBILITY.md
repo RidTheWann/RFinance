@@ -74,3 +74,9 @@ duplicates. Downstream code must consume only the eligible partition. The gate
 is a necessary precondition, not a sufficient one: it does not assert that
 prices are corporate-action adjusted or that a provider entitlements check has
 passed.
+
+## Historical-price eligibility (separate policy)
+
+Historical technical analysis uses `historical-price-eligibility-v1`, implemented in `src/rfinance/domain/eligibility/historical.py`. It is intentionally separate from `eligibility-observation-v1` because a valid historical bar is normally older than seven days. The historical gate therefore does not apply `STALE_OBSERVATION` or the current-quote acquisition-lag limit. It still rejects malformed or timezone-naive timestamps, future observation times, acquisition timestamps earlier than the observed time, non-positive/non-finite closes, non-VERIFIED effective quality, missing or unverified/rejected/inactive instrument identity, currency mismatches, unknown sources, and `BLOCKED` or `RESTRICTED` sources. `UNREVIEWED` sources are allowed for local analysis only when the explicit `allow_unreviewed_sources` option remains enabled; that permission never authorizes retrieval or redistribution.
+
+`HistoricalPriceSeriesService` applies optional UTC start/end filters before quality diagnostics so rows outside the selected period do not inflate the rejection summary for that analysis. It loads one instrument/source pair only, derives effective quality from the latest append-only review event, and refuses duplicate UTC observation timestamps. Long gaps are represented as missing-value separators before technical indicators are calculated. Historical bar counts do not imply a known sampling frequency; no interpolation, resampling, corporate-action adjustment, or source blending occurs. The current adjustment status is `UNKNOWN_AS_SUPPLIED`.
