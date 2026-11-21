@@ -50,7 +50,10 @@ def upgrade() -> None:
         sa.Column("active", sa.Boolean(), nullable=True),
         sa.Column("lot_size", sa.Integer(), nullable=True),
         sa.Column("minimum_investment", sa.Text(), nullable=True),
-        sa.CheckConstraint("lot_size IS NULL OR lot_size > 0", name="ck_instrument_registry_lot_size"),
+        sa.CheckConstraint(
+            "lot_size IS NULL OR lot_size > 0",
+            name="ck_instrument_registry_lot_size",
+        ),
         sa.CheckConstraint(
             "minimum_investment IS NULL OR CAST(minimum_investment AS NUMERIC) > 0",
             name="ck_instrument_registry_minimum_investment",
