@@ -1,15 +1,18 @@
-"""Main desktop window and first functional portfolio setup workflow."""
+"""Main desktop window with local portfolio and market-import workflows."""
 
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QObject, QThread, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
+    QFileDialog,
     QFormLayout,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -20,6 +23,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
@@ -27,15 +31,54 @@ from rfinance.application.portfolio_ledger import (
 
 if TYPE_CHECKING:
     from rfinance.core.config import AppPaths
+    from rfinance.storage.repositories.data_ingestion import DataImportSummary
+
+
+class MarketCSVImportWorker(QObject):
+    """Execute CSV parsing and persistence outside the Qt main thread."""
+
+    completed = Signal(object)
+    failed = Signal(str)
+
+    def __init__(
+        self,
+        service: MarketCSVImportService,
+        selected_file: Path,
+        source_name: str,
+    ) -> None:
+        super().__init__()
+        self._service = service
+        self._selected_file = selected_file
+        self._source_name = source_name
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            result = self._service.import_market_csv(
+                self._selected_file,
+                source_name=self._source_name,
+            )
+        except Exception as error:
+            self.failed.emit(str(error))
+            return
+        self.completed.emit(result)
 
 
 class MainWindow(QMainWindow):
     """Navigable desktop shell connected to local application services."""
 
-    def __init__(self, paths: AppPaths, portfolio_ledger: PortfolioLedgerService) -> None:
+    def __init__(
+        self,
+        paths: AppPaths,
+        portfolio_ledger: PortfolioLedgerService,
+        market_csv_import: MarketCSVImportService,
+    ) -> None:
         super().__init__()
         self.paths = paths
         self.portfolio_ledger = portfolio_ledger
+        self.market_csv_import = market_csv_import
+        self._import_thread: QThread | None = None
+        self._import_worker: MarketCSVImportWorker | None = None
         self.setWindowTitle("RFinance")
         self.resize(1280, 800)
         self.setMinimumSize(900, 600)
@@ -67,14 +110,35 @@ class MainWindow(QMainWindow):
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(32, 28, 32, 28)
+        layout.setSpacing(14)
         title = QLabel("Overview")
         title.setObjectName("pageTitle")
         title.setStyleSheet("font-size: 26px; font-weight: 600;")
         layout.addWidget(title)
         layout.addWidget(QLabel("Local-first investment research workspace"))
         layout.addWidget(QLabel("Application storage: initialized"))
-        layout.addWidget(QLabel("Market data: no provider configured"))
+        layout.addWidget(QLabel("Automated market-data providers: none configured"))
         layout.addWidget(QLabel("Portfolio figures are available in Portfolio Simulator"))
+
+        import_title = QLabel("Local market-data import")
+        import_title.setStyleSheet("font-size: 18px; font-weight: 600;")
+        layout.addWidget(import_title)
+        layout.addWidget(
+            QLabel(
+                "Import a CSV file you obtained lawfully. Imported observations remain "
+                "UNVERIFIED until separately reviewed; this workflow does not fetch data "
+                "from IDX, OJK, KSEI, or any remote provider."
+            )
+        )
+        self.import_market_csv_button = QPushButton("Import market CSV")
+        self.import_market_csv_button.setObjectName("importMarketCSVButton")
+        self.import_market_csv_button.clicked.connect(self._select_market_csv)
+        layout.addWidget(self.import_market_csv_button)
+
+        self.market_import_status_label = QLabel("No user-supplied market data imported.")
+        self.market_import_status_label.setObjectName("marketImportStatus")
+        self.market_import_status_label.setWordWrap(True)
+        layout.addWidget(self.market_import_status_label)
         layout.addStretch(1)
         return page
 
@@ -168,6 +232,73 @@ class MainWindow(QMainWindow):
         layout.addWidget(open_folder)
         layout.addStretch(1)
         return page
+
+    def _select_market_csv(self) -> None:
+        if self._import_thread is not None:
+            return
+
+        selected_file, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select market-observation CSV",
+            str(Path.home()),
+            "CSV files (*.csv)",
+        )
+        if not selected_file:
+            return
+
+        default_source = f"Local CSV: {Path(selected_file).stem}"
+        source_name, accepted = QInputDialog.getText(
+            self,
+            "Import source details",
+            "Source label (who published or supplied this file):",
+            text=default_source,
+        )
+        if not accepted:
+            return
+        if not source_name.strip():
+            self.market_import_status_label.setText(
+                "Import cancelled: source label cannot be blank."
+            )
+            return
+
+        thread = QThread(self)
+        worker = MarketCSVImportWorker(
+            self.market_csv_import,
+            Path(selected_file),
+            source_name,
+        )
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.completed.connect(self._on_market_csv_imported)
+        worker.failed.connect(self._on_market_csv_import_failed)
+        worker.completed.connect(thread.quit)
+        worker.failed.connect(thread.quit)
+        worker.completed.connect(worker.deleteLater)
+        worker.failed.connect(worker.deleteLater)
+        thread.finished.connect(lambda: self._on_import_thread_finished(thread))
+        thread.finished.connect(thread.deleteLater)
+
+        self._import_thread = thread
+        self._import_worker = worker
+        self.import_market_csv_button.setEnabled(False)
+        self.market_import_status_label.setText("Importing and validating the selected CSV…")
+        thread.start()
+
+    def _on_market_csv_imported(self, result: DataImportSummary) -> None:
+        self.market_import_status_label.setText(
+            f"Import complete: {result.accepted_rows:,} observations accepted, "
+            f"{result.rejected_rows:,} rows rejected. All accepted observations are "
+            f"UNVERIFIED. Batch: {result.batch_id}"
+        )
+
+    def _on_market_csv_import_failed(self, message: str) -> None:
+        self.market_import_status_label.setText(f"CSV import failed: {message}")
+
+    def _on_import_thread_finished(self, thread: QThread) -> None:
+        if self._import_thread is thread:
+            self._import_thread = None
+            self._import_worker = None
+        self.import_market_csv_button.setEnabled(True)
 
     @staticmethod
     def _format_idr(amount: Decimal) -> str:
