@@ -26,3 +26,6 @@ All notable changes to RFinance are documented here.
 - Added `eligibility-observation-v1`: dependency-free observation eligibility gates for quality, identity, source policy, currency, look-ahead and freshness, with 17 new tests.
 - Added an append-only observation-review ledger and service (`0005_observation_review`) requiring explicit evidence, a verified instrument, and an eligible source before a price can be verified; 14 new integration tests.
 - Added `portfolio-valuation-v1`: ledger-based market value, unrealized P/L, explicit unvalued positions, and allocation-versus-target diagnostics using only eligible prices, with 7 new tests.
+- Added a dedicated Observation Review desktop workflow with an evidence-backed VERIFIED/REJECTED decision path, local evidence archiving, SHA-256 verification, append-only history, and off-thread file/database work.
+- Connected successful CSV import completion to refresh both instrument and observation review queues immediately, without requiring an application restart.
+- Fixed outdated UI test wiring/navigation expectations and verified the complete 131-test suite on Windows and Ubuntu with Ruff, format, and Mypy checks passing.

@@ -4,28 +4,21 @@ Last updated: 2026-11-21
 
 ## Latest fully verified application-code checkpoint
 
-Application-code commit `e5cff0a979bf75a8c8a8b3b949123a491896e0d6` completed successfully on Windows and Ubuntu using Python 3.12.
+Application-code commit `1c283f0deea85507465f985bd508445e679868e6` completed successfully on Windows and Ubuntu using Python 3.12. [GitHub Actions run 44907489580](https://github.com/RidTheWann/RFinance/actions/runs/44907489580).
 
 | Check | Windows | Ubuntu |
 |---|---:|---:|
 | Dependency installation | Passed | Passed |
 | Ruff lint | Passed | Passed |
-| Ruff format check | Passed; 71 files formatted | Passed; 71 files formatted |
+| Ruff format check | Passed | Passed |
 | Mypy | Passed | Passed |
-| pytest | 65 passed | 65 passed |
+| pytest | **131 passed** | **131 passed** |
 
-The checkpoint includes the desktop foundation, portfolio ledger, local CSV provenance pipeline, instrument master and manual-review application service, append-only review audit, instrument foreign-key linkage, and Decimal technical indicators. All tests pass on both operating systems.
+The checkpoint includes the PySide6 shell, local portfolio ledger, CSV provenance pipeline, instrument identity review, append-only observation review service and desktop workflow, observation queue refresh after import, eligibility gate, Decimal technical indicators, dividend analytics, and portfolio valuation calculations. All 131 tests pass on both operating systems.
 
-## Local checkpoint (current session)
+## Historical developer checkpoint
 
-| Check | Local result |
-|---|---|
-| Ruff 0.17.6 lint (`src`, `tests`) | Passed |
-| Ruff 0.17.6 format check (`src`, `tests`) | Passed |
-| Mypy (new dividend module) | Passed |
-| pytest (non-UI) | 127 passed |
-
-UI tests were not run locally because PySide6 is unavailable on this Termux/Android runtime. Python 3.12 CI has not yet run for post-`e5cff0a` commits.
+A prior Termux/Python 3.14 session reported Ruff lint/format passing, Mypy passing for new dividend modules, and 127 non-UI pytest tests passing. PySide6 was unavailable in that environment, so this historical checkpoint did not validate UI behavior. It is superseded by the current Windows and Ubuntu Python 3.12 CI run above.
 
 ## Coverage
 
@@ -62,8 +55,8 @@ UI tests were not run locally because PySide6 is unavailable on this Termux/Andr
 
 ## Known boundaries
 
-- Instrument identity review is implemented as an application service and database audit workflow; a dedicated desktop review UI and evidence-file acquisition/hash-computation flow are not yet wired.
-- Instrument verification does not promote market observations to VERIFIED. Price/source quality, freshness, corporate-action adjustment, and provider entitlement remain separate gates.
+- Instrument identity review and market-observation review are separate evidence-backed desktop workflows with file hashing and append-only audit history. Verifying an instrument does not promote its prices to VERIFIED.
+- Price review does not certify provider licensing, corporate-action adjustment, or freshness. Those remain independent gates.
 - No IDX scraper or automated market-data provider is enabled.
 - The technical-analysis module is a pure Decimal calculation layer and does not fetch, resample, or adjust data.
 - The dividend module is likewise a pure calculation layer; dividend event persistence, calendar, and desktop UI are not connected.
@@ -71,8 +64,7 @@ UI tests were not run locally because PySide6 is unavailable on this Termux/Andr
 
 ## Remaining validation work
 
-- Dedicated instrument-review UI and evidence-artifact workflow.
-- Desktop UI for the observation-review service and valuation view; the eligibility gate consumes but does not grant review state.
+- Persisted-observation portfolio valuation service and desktop valuation view; the pure Decimal valuation engine is implemented but not yet connected to the data repository/UI.
 - Connecting the implemented eligibility gate and valuation layer to screening and persisted portfolio queries.
 - Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.

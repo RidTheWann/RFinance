@@ -14,7 +14,7 @@ RFinance is a native desktop application in active development for Indonesian-ma
 
 ## Current development slice
 
-The current branch includes a functional PySide6 shell, local SQLite/Alembic storage, a Decimal-based simulated portfolio ledger with explicit first-run setup, and a user-selected CSV market-data import path. Imported observations are stored as UNVERIFIED with SHA-256, source/batch metadata, original row data, and row-level diagnostics. Recent import history is visible in the Overview page.
+The current branch includes a functional PySide6 shell, local SQLite/Alembic storage, a Decimal-based simulated portfolio ledger with explicit first-run setup, and a user-selected CSV market-data import path. Imported observations remain UNVERIFIED and retain SHA-256, source/batch metadata, original rows, and row-level diagnostics. Dedicated Instrument Review and Observation Review desktop workflows keep instrument identity and price verification separate, archive user-selected evidence, compute SHA-256 digests, and append audit decisions without mutating raw market observations. Recent import history is visible in Overview.
 
 No automated IDX/OJK/KSEI scraper or licensed market-data adapter is enabled. Publicly viewable data is not automatically approved for automated access or redistribution.
 
