@@ -36,10 +36,7 @@ if TYPE_CHECKING:
 
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.core.config import AppPaths
-    from rfinance.storage.repositories.data_ingestion import (
-        DataImportHistoryItem,
-        DataImportSummary,
-    )
+    from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
 
 class MarketCSVImportWorker(QObject):
