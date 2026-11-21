@@ -227,6 +227,9 @@ class DataIngestionRepository:
                 rejected_rows=len(rejected_records),
             )
             session.add(batch)
+            # Persist the batch and any new UNVERIFIED instrument placeholders
+            # before observations reference them through database foreign keys.
+            session.flush()
             session.add_all(observation_records)
             session.add_all(
                 DataImportIssueRecord(
