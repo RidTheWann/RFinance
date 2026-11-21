@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from decimal import Decimal
 
 import pytest
@@ -22,7 +23,11 @@ from rfinance.analysis.technical.indicators import (
 D = Decimal
 
 
-def assert_decimal_series_close(values, expected, tolerance) -> None:
+def assert_decimal_series_close(
+    values: Sequence[Decimal | None],
+    expected: Decimal,
+    tolerance: Decimal,
+) -> None:
     assert all(item is not None and abs(item - expected) <= tolerance for item in values)
 
 
