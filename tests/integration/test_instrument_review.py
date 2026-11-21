@@ -18,7 +18,6 @@ from rfinance.storage.models.instrument_registry import (
     InstrumentReviewEventRecord,
 )
 
-
 NOW = datetime(2026, 11, 21, 10, 0, tzinfo=UTC)
 EVIDENCE_SHA256 = "a" * 64
 
