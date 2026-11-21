@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=75.8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rfinance"
+version = "0.1.0"
+description = "Local-first investment research and simulated portfolio management"
+readme = "README.md"
+requires-python = ">=3.12,<3.16"
+license = { text = "Proprietary - license not yet selected" }
+authors = [{ name = "RFinance Contributors" }]
+dependencies = [
+  "alembic>=1.20,<1.21",
+  "pydantic>=2.14,<3",
+  "PySide6>=6.8,<7",
+  "SQLAlchemy>=2.1,<2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "bandit>=1.8,<2",
+  "hypothesis>=6.0,<7",
+  "mypy>=1.18,<2",
+  "pip-audit>=2.9,<3",
+  "pytest>=8.4,<10",
+  "pytest-qt>=4.5,<5",
+  "ruff>=0.14,<1",
+]
+
+[project.scripts]
+rfinance = "rfinance.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+qt_api = "pyside6"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["rfinance"]
+strict = true
+warn_unused_ignores = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["PySide6.*", "alembic.*"]
+ignore_missing_imports = true
