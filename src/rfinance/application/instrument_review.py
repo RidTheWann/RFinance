@@ -18,8 +18,9 @@ from rfinance.storage.models.instrument_registry import (
 )
 
 if TYPE_CHECKING:
-    from rfinance.data.contracts import InstrumentContract
     from sqlalchemy.orm import Session, sessionmaker
+
+    from rfinance.data.contracts import InstrumentContract
 
 
 _SHA256_PATTERN = re.compile(r"^[0-9a-fA-F]{64}$")
