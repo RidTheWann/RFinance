@@ -7,17 +7,16 @@ estimated income, or external position is ever added implicitly.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
-import re
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from datetime import datetime
-    from typing import Mapping
 
 
 _ZERO = Decimal("0")
@@ -167,7 +166,7 @@ class LedgerReplayResult:
 
     currency: str
     cash_balance: Decimal
-    positions: Mapping[str, PositionSnapshot]
+    positions: MappingABC[str, PositionSnapshot]
     realized_profit_loss: Decimal
     simulated_dividends: Decimal
     total_fees: Decimal
