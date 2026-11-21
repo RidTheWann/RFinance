@@ -170,21 +170,19 @@ def test_user_import_source_cannot_enable_automation_or_redistribution(tmp_path)
     database = Database.open(tmp_path / "policy.sqlite3")
     database.upgrade()
     try:
-        with database.sessions.begin() as session:
-            session.add(
-                SourceRegistryRecord(
-                    source_id="invalid-user-source",
-                    display_name="Invalid source",
-                    access_method="USER_IMPORT",
-                    policy_status="APPROVED",
-                    automated_access_allowed=True,
-                    redistribution_allowed=False,
-                    created_at_utc=ACQUIRED_AT.isoformat(),
-                )
-            )
-
         with pytest.raises(IntegrityError):
-            pass
+            with database.sessions.begin() as session:
+                session.add(
+                    SourceRegistryRecord(
+                        source_id="invalid-user-source",
+                        display_name="Invalid source",
+                        access_method="USER_IMPORT",
+                        policy_status="APPROVED",
+                        automated_access_allowed=True,
+                        redistribution_allowed=False,
+                        created_at_utc=ACQUIRED_AT.isoformat(),
+                    )
+                )
     finally:
         database.close()
 
