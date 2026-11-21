@@ -32,3 +32,8 @@ All notable changes to RFinance are documented here.
 - Connected persisted observations and review-adjusted quality to portfolio valuation through the full instrument, source, currency, freshness, and data-quality eligibility gates.
 - Added safe handling for conflicting latest prices, evidence-linked valuation diagnostics, and a background Portfolio Simulator valuation view with partial-total disclosure.
 - Added integration and Qt tests for persisted valuation, eligibility rejection, source conflicts, and the desktop refresh workflow; **141 tests passed on Windows and Ubuntu**, with Ruff lint/format and Mypy passing.
+
+- Added a separate `historical-price-eligibility-v1` gate so old, verified historical bars are not incorrectly rejected by current-quote staleness rules; future bars, unverified observations/instruments, currency mismatches, and blocked/restricted sources remain ineligible.
+- Connected persisted single-instrument/single-source historical bars to Decimal technical reports and the Technical Analysis desktop page, with asynchronous loading/calculation and visible provenance/rejection diagnostics.
+- Added gap sentinels so rolling indicator windows restart after configured large calendar gaps; no source blending, resampling, interpolation, frequency inference, or automatic corporate-action adjustment occurs.
+- Added 15 historical-eligibility, persisted-series, technical-analysis and Qt workflow tests. Full Windows/Ubuntu Python 3.12 CI passed at `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6`: 156 tests passed on each OS.

@@ -8,7 +8,7 @@ Last verified against the repository: 2026-11-21
 - Default branch: main
 - Working branch: foundation/bootstrap-core
 - Active foundation PR: https://github.com/RidTheWann/RFinance/pull/1
-- Latest GitHub Actions validated application-code commit: `b37a15ef78afe4885c4282384923e27c5b0b5bd6` (Windows and Ubuntu, Python 3.12; Ruff lint/format and Mypy passed; 141 tests passed on each OS).
+- Latest GitHub Actions validated application-code commit: `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` (Windows and Ubuntu, Python 3.12; Ruff lint/format and Mypy passed; 156 tests passed on each OS).
 - All work remains on the dedicated foundation branch. PR #1 is open and has not been merged into `main`.
 - This session has no mounted local checkout. Changes were committed to the feature branch through GitHub repository operations and verified with hosted Windows/Ubuntu CI; no local test or build result is claimed.
 
@@ -19,8 +19,8 @@ Last verified against the repository: 2026-11-21
 - Canonical repository-wide `AGENTS.md` and Claude Code `CLAUDE.md`.
 - Python package metadata, Ruff, Mypy, pytest, pytest-qt, Hypothesis, Bandit, pip-audit configuration, Windows scripts, and Windows/Ubuntu CI.
 - Windows per-user persistent data paths, environment override, rotating logs, SQLite, and Alembic migrations.
-- PySide6 desktop navigation includes Overview, Portfolio Simulator, Instrument Review, Observation Review, and Settings.
-- Application composition root wires SQLite persistence, portfolio ledger, CSV ingestion, instrument review, observation review, and persisted-observation portfolio valuation services.
+- PySide6 desktop navigation includes Overview, Portfolio Simulator, Instrument Review, Observation Review, Technical Analysis, and Settings.
+- Application composition root wires SQLite persistence, portfolio ledger, CSV ingestion, instrument review, observation review, persisted-observation portfolio valuation, and historical technical-analysis services.
 
 ### Deterministic financial and portfolio logic
 
@@ -57,7 +57,9 @@ Last verified against the repository: 2026-11-21
 - Implemented indicators: SMA, EMA, Wilder RSI, MACD, Bollinger Bands, True Range, Wilder ATR, rolling sample volatility, drawdown, maximum drawdown, price momentum, and relative strength versus a benchmark.
 - Warm-up alignment, missing-data resets, positivity/finite-value validation, look-ahead limitations, units, and standard-deviation conventions are documented and tested.
 - EMA preserves a constant series without accumulating Decimal rounding drift. MACD tests account for finite Decimal-context rounding with a tight Decimal tolerance.
-- The technical module is a pure calculation layer: it does not fetch market data, infer sampling frequency, adjust corporate actions, or certify the quality/freshness of its inputs.
+- `HistoricalPriceSeriesService` connects local persisted observations to technical analysis using the separate `historical-price-eligibility-v1` gate. It selects one instrument/source pair, uses the latest append-only price-review decision, rejects future observations, unverified prices, unverified/inactive instrument identities, currency mismatches, and blocked/restricted sources, but deliberately does not apply the current-quote 7-day staleness rule to historical bars.
+- A large calendar gap inserts a `None` separator before indicator calculation, restarting rolling warm-up windows. Periods count stored observations, not inferred trading days. No source blending, resampling, interpolation, frequency inference, or corporate-action adjustment is performed; adjustment remains `UNKNOWN_AS_SUPPLIED`.
+- The Technical Analysis desktop page loads the locally available instrument/source catalogue and runs indicator calculations on a Qt worker thread. Each report displays source identity, period, rejected-row diagnostics, gap count, formula version, and adjustment limitation.
 
 ### Dividend analytics
 
@@ -103,7 +105,7 @@ Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed suc
 | Mypy | Passed; 53 source files | Passed; 53 source files |
 | pytest | **141 passed** | **141 passed** |
 
-The tested head includes persisted-observation portfolio valuation, append-only price-review integration, source and instrument eligibility, explicit latest-price conflict rejection, and background Qt valuation UI. The PR remains open for review and has not been merged.
+The tested head includes persisted-observation portfolio valuation, append-only price-review integration, source and instrument eligibility, explicit latest-price conflict rejection, historical-series eligibility and loading, the Technical Analysis Qt workflow, and indicator warm-up resets across large date gaps. The PR remains open for review and has not been merged.
 
 ## Historical local developer checkpoint (previous Termux session)
 
@@ -123,8 +125,8 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 
 ## Next engineering objectives
 
-1. Connect technical indicators to persisted historical series with explicit sampling, currency, quality and corporate-action adjustment metadata; do not infer missing adjustment policy or frequency.
-2. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
+1. Persist dividend events with provenance and add a dividend calendar/UI connected to the existing Decimal calculation layer.
+2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
 3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
 4. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.
 5. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.

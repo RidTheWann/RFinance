@@ -4,17 +4,17 @@ Last updated: 2026-11-21
 
 ## Latest fully verified application-code checkpoint
 
-Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed successfully on Windows and Ubuntu using Python 3.12. [Push CI run 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI run 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
+Application-code commit `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` completed successfully on Windows and Ubuntu using Python 3.12. [Push CI run 44911435637](https://github.com/RidTheWann/RFinance/actions/runs/44911435637) and [PR CI run 44911439980](https://github.com/RidTheWann/RFinance/actions/runs/44911439980).
 
 | Check | Windows | Ubuntu |
 |---|---:|---:|
 | Dependency installation | Passed | Passed |
 | Ruff lint | Passed | Passed |
-| Ruff format check | Passed; 94 files already formatted | Passed; 94 files already formatted |
-| Mypy | Passed; 53 source files | Passed; 53 source files |
-| pytest | **141 passed** | **141 passed** |
+| Ruff format check | Passed; 101 files already formatted | Passed; 101 files already formatted |
+| Mypy | Passed; 57 source files | Passed; 57 source files |
+| pytest | **156 passed** | **156 passed** |
 
-The verified commit includes the PySide6 shell, local portfolio ledger, CSV provenance pipeline, instrument identity review, append-only observation review, eligibility gates, Decimal technical and dividend calculations, and the persisted-observation PortfolioValuationService plus background desktop valuation page. All 141 tests pass on both operating systems.
+The verified commit includes the persisted-observation PortfolioValuationService and background valuation view, a separate historical-price eligibility gate, persisted single-source historical series loading, and the Technical Analysis desktop page. All 156 tests pass on both operating systems.
 
 ## Historical developer checkpoint
 
@@ -22,7 +22,7 @@ A prior Termux/Python 3.14 session reported Ruff lint/format passing, Mypy passi
 
 ## Current verified implementation slice
 
-The persisted-observation valuation service joins ledger positions to stored prices, current instrument/source policy, and append-only review decisions. It applies the observation eligibility policy before valuation and rejects conflicting latest prices instead of choosing a provider arbitrarily. The desktop refresh runs in a worker thread and exposes price provenance, freshness, unvalued positions and explicit partial-total semantics. The integration and Qt coverage is included in the 141-test Windows/Ubuntu checkpoint above.
+The persisted-observation valuation service joins ledger positions to stored prices, current instrument/source policy, and append-only review decisions; conflicting latest prices remain unvalued. The historical-series service uses its own no-look-ahead and provenance gate without applying the current-price staleness rule, selects one source per series, and inserts gap separators so rolling indicator windows cannot bridge long missing intervals. The Technical Analysis page computes the existing Decimal indicators off the UI thread and exposes source, freshness/eligibility diagnostics, gap information, and the unknown-as-supplied adjustment state. Both feature slices are covered by the 156-test Windows/Ubuntu checkpoint above.
 
 ## Coverage
 
@@ -64,14 +64,14 @@ The persisted-observation valuation service joins ledger positions to stored pri
 - Instrument identity review and market-observation review are separate evidence-backed desktop workflows with file hashing and append-only audit history. Verifying an instrument does not promote its prices to VERIFIED.
 - Price review does not certify provider licensing, corporate-action adjustment, or freshness. Those remain independent gates.
 - No IDX scraper or automated market-data provider is enabled.
-- The technical-analysis module is a pure Decimal calculation layer and does not fetch, resample, or adjust data.
+- Historical technical analysis is connected to local persisted observations through a single-source series service and `historical-price-eligibility-v1`; it does not fetch, blend sources, resample, interpolate, infer frequency, or adjust corporate actions. The adjustment state is `UNKNOWN_AS_SUPPLIED` until source evidence says otherwise.
 - The dividend module is likewise a pure calculation layer; dividend event persistence, calendar, and desktop UI are not connected.
 - Screening, evidence-linked recommendations, extended financial statements, portfolio trade UI, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
 
 ## Remaining validation work
 
 - Connecting the implemented eligibility gate to deterministic screening and evidence-linked recommendations.
-- Connecting technical indicators to persisted, evidence-qualified and consistently sampled historical series; do not infer adjustment policy or frequency.
+- Explicit sampling-frequency and corporate-action adjustment metadata, including verified adjusted/unadjusted source semantics.
 - Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.
 - Migration downgrade/upgrade and corruption recovery.
