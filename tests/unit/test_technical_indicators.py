@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 RFinance Contributors
 # See LICENSE for the full GNU General Public License version 3.
+from collections.abc import Sequence
 from decimal import Decimal
 
 import pytest
@@ -25,7 +26,11 @@ from rfinance.analysis.technical.indicators import (
 D = Decimal
 
 
-def assert_decimal_series_close(values, expected, tolerance) -> None:
+def assert_decimal_series_close(
+    values: Sequence[Decimal | None],
+    expected: Decimal,
+    tolerance: Decimal,
+) -> None:
     assert all(item is not None and abs(item - expected) <= tolerance for item in values)
 
 
