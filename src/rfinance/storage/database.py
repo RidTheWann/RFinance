@@ -12,8 +12,6 @@ from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from rfinance.storage.models import Base
-
 
 @dataclass(slots=True)
 class Database:
