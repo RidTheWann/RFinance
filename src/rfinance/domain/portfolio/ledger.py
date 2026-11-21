@@ -10,13 +10,17 @@ estimated income, or external position is ever added implicitly.
 
 from __future__ import annotations
 
+from collections.abc import Mapping as MappingABC
 from dataclasses import dataclass
-from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 import re
 from types import MappingProxyType
-from typing import Mapping
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from typing import Mapping
 
 
 _ZERO = Decimal("0")
@@ -180,7 +184,7 @@ class LedgerReplayResult:
 def replay_ledger(
     events: list[LedgerEvent] | tuple[LedgerEvent, ...],
     *,
-    lot_sizes: Mapping[str, Decimal],
+    lot_sizes: MappingABC[str, Decimal],
     base_currency: str = "IDR",
 ) -> LedgerReplayResult:
     """Rebuild cash and positions in sequence order, enforcing accounting rules.
@@ -265,8 +269,10 @@ def replay_ledger(
                     )
                 current_cost = cost_bases[instrument]
                 average_cost = current_cost / held_quantity
-                removed_cost = current_cost if event.quantity == held_quantity else (
-                    average_cost * event.quantity
+                removed_cost = (
+                    current_cost
+                    if event.quantity == held_quantity
+                    else average_cost * event.quantity
                 )
                 net_proceeds = gross - event.fees - event.taxes
                 cash += net_proceeds
