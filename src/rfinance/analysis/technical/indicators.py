@@ -174,7 +174,6 @@ class MACDResult:
         self.histogram = histogram
 
 
-
 def macd(
     prices: PriceSeries,
     fast_period: int = 12,
@@ -217,7 +216,6 @@ class BollingerBands:
         self.upper = upper
         self.middle = middle
         self.lower = lower
-
 
 
 def bollinger_bands(
