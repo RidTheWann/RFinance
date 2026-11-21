@@ -1,24 +1,41 @@
 from decimal import Decimal
 
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFileDialog, QInputDialog
+from sqlalchemy import func, select
 
+from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.core.config import AppPaths
 from rfinance.storage.database import Database
+from rfinance.storage.models.data_ingestion import MarketObservationRecord
+from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
 from rfinance.storage.repositories.portfolio_ledger import LedgerRepository
 from rfinance.ui.main_window import MainWindow
+
+
+def create_window(database: Database, tmp_path) -> MainWindow:
+    data_directory = tmp_path / "rfinance-data"
+    portfolio_service = PortfolioLedgerService(
+        LedgerRepository(database.sessions),
+        lot_sizes={},
+    )
+    import_service = MarketCSVImportService(
+        DataIngestionRepository(database.sessions),
+        data_directory=data_directory,
+    )
+    return MainWindow(
+        AppPaths.resolve(data_directory),
+        portfolio_service,
+        import_service,
+    )
 
 
 def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> None:
     database = Database.open(tmp_path / "rfinance.sqlite3")
     database.upgrade()
     try:
-        service = PortfolioLedgerService(
-            LedgerRepository(database.sessions),
-            lot_sizes={},
-        )
-        paths = AppPaths.resolve(tmp_path / "rfinance-data")
-        window = MainWindow(paths, service)
+        window = create_window(database, tmp_path)
         qtbot.addWidget(window)
         window.show()
         window.navigation.setCurrentRow(1)
@@ -33,9 +50,9 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         window.initial_capital_input.setText("1250000")
         qtbot.mouseClick(window.initialize_portfolio_button, Qt.MouseButton.LeftButton)
 
-        assert service.snapshot().cash_balance == Decimal("1250000")
-        assert len(service.events()) == 1
-        assert service.events()[0].event_type.value == "CAPITAL_INJECTION"
+        assert window.portfolio_ledger.snapshot().cash_balance == Decimal("1250000")
+        assert len(window.portfolio_ledger.events()) == 1
+        assert window.portfolio_ledger.events()[0].event_type.value == "CAPITAL_INJECTION"
         assert not window._portfolio_dashboard.isHidden()
         assert window._portfolio_empty_panel.isHidden()
         assert window.portfolio_cash_label.text() == "Cash balance: Rp1,250,000.00"
@@ -47,11 +64,7 @@ def test_invalid_initial_capital_does_not_create_ledger_event(qtbot, tmp_path) -
     database = Database.open(tmp_path / "invalid-capital.sqlite3")
     database.upgrade()
     try:
-        service = PortfolioLedgerService(
-            LedgerRepository(database.sessions),
-            lot_sizes={},
-        )
-        window = MainWindow(AppPaths.resolve(tmp_path / "rfinance-data"), service)
+        window = create_window(database, tmp_path)
         qtbot.addWidget(window)
         window.show()
         window.navigation.setCurrentRow(1)
@@ -59,8 +72,54 @@ def test_invalid_initial_capital_does_not_create_ledger_event(qtbot, tmp_path) -
 
         qtbot.mouseClick(window.initialize_portfolio_button, Qt.MouseButton.LeftButton)
 
-        assert service.events() == ()
+        assert window.portfolio_ledger.events() == ()
         assert "not initialized" in window.portfolio_status_label.text()
         assert not window._portfolio_empty_panel.isHidden()
+    finally:
+        database.close()
+
+
+def test_market_csv_import_is_started_off_ui_thread_and_reported(
+    qtbot, tmp_path, monkeypatch
+) -> None:
+    database = Database.open(tmp_path / "market-import.sqlite3")
+    database.upgrade()
+    csv_file = tmp_path / "market.csv"
+    csv_file.write_text(
+        "instrument_id,observed_at,currency,close\n"
+        "IDX:BBCA,2026-11-20T09:00:00+07:00,IDR,9100\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        QFileDialog,
+        "getOpenFileName",
+        lambda *_args, **_kwargs: (str(csv_file), "CSV files (*.csv)"),
+    )
+    monkeypatch.setattr(
+        QInputDialog,
+        "getText",
+        lambda *_args, **_kwargs: ("User-supplied BBCA file", True),
+    )
+    try:
+        window = create_window(database, tmp_path)
+        qtbot.addWidget(window)
+        window.show()
+
+        qtbot.mouseClick(window.import_market_csv_button, Qt.MouseButton.LeftButton)
+        qtbot.waitUntil(
+            lambda: window._import_thread is None
+            and window.market_import_status_label.text().startswith("Import complete"),
+            timeout=10000,
+        )
+
+        assert "1 observations accepted, 0 rows rejected" in (
+            window.market_import_status_label.text()
+        )
+        assert "UNVERIFIED" in window.market_import_status_label.text()
+        with database.sessions() as session:
+            observation = session.scalar(select(MarketObservationRecord))
+            assert observation is not None
+            assert observation.quality_status == "UNVERIFIED"
+            assert session.scalar(select(func.count()).select_from(MarketObservationRecord)) == 1
     finally:
         database.close()
