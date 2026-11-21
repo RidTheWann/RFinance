@@ -45,6 +45,7 @@ def seed_registry(
                 updated_at_utc=NOW.isoformat(),
             )
         )
+        session.flush()
         for index, source_id in enumerate(source_ids):
             session.add(
                 SourceRegistryRecord(
@@ -60,6 +61,8 @@ def seed_registry(
                     created_at_utc=NOW.isoformat(),
                 )
             )
+        session.flush()
+        for index, source_id in enumerate(source_ids):
             session.add(
                 DataImportBatchRecord(
                     batch_id=f"batch-{source_id}",
