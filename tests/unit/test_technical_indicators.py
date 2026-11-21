@@ -25,6 +25,10 @@ from rfinance.analysis.technical.indicators import (
 D = Decimal
 
 
+def assert_decimal_series_close(values, expected, tolerance) -> None:
+    assert all(item is not None and abs(item - expected) <= tolerance for item in values)
+
+
 def test_sma_and_ema_seed_with_simple_average_and_realign_after_missing_values() -> None:
     values = [D("1"), D("2"), D("3"), D("4")]
     expected = (None, D("1.5"), D("2.5"), D("3.5"))
@@ -62,10 +66,10 @@ def test_macd_line_signal_and_histogram_keep_series_alignment() -> None:
     tolerance = D("1e-26")
     assert len(result.line) == 6
     assert result.line[:2] == (None, None)
-    assert all(value is not None and abs(value - D("0.5")) <= tolerance for value in result.line[2:])
+    assert_decimal_series_close(result.line[2:], D("0.5"), tolerance)
     assert result.signal[:3] == (None, None, None)
-    assert all(value is not None and abs(value - D("0.5")) <= tolerance for value in result.signal[3:])
-    assert all(value is not None and abs(value) <= tolerance for value in result.histogram[3:])
+    assert_decimal_series_close(result.signal[3:], D("0.5"), tolerance)
+    assert_decimal_series_close(result.histogram[3:], D("0"), tolerance)
 
 
 def test_bollinger_bands_use_population_standard_deviation() -> None:
