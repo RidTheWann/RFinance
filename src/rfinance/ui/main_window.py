@@ -708,6 +708,7 @@ class MainWindow(QMainWindow):
             f"UNVERIFIED. Batch: {result.batch_id}"
         )
         self.refresh_market_import_history()
+        self.refresh_instrument_review_queue()
 
     def _on_market_csv_import_failed(self, message: str) -> None:
         self.market_import_status_label.setText(f"CSV import failed: {message}")
