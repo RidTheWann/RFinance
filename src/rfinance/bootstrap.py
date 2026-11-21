@@ -8,9 +8,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
 from rfinance.storage.database import Database
+from rfinance.storage.repositories.portfolio_ledger import LedgerRepository
 
 if TYPE_CHECKING:
     import logging
@@ -22,6 +24,7 @@ class ApplicationContext:
 
     paths: AppPaths
     database: Database
+    portfolio_ledger: PortfolioLedgerService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -35,9 +38,16 @@ def create_application_context(data_directory: str | None = None) -> Application
     database = Database.open(paths.database_file)
     try:
         database.upgrade()
+        ledger_repository = LedgerRepository(database.sessions)
+        portfolio_ledger = PortfolioLedgerService(ledger_repository, lot_sizes={})
     except Exception:
         database.close()
         logger.exception("Database initialization failed")
         raise
     logger.info("RFinance initialized using local data directory: %s", paths.root)
-    return ApplicationContext(paths=paths, database=database, logger=logger)
+    return ApplicationContext(
+        paths=paths,
+        database=database,
+        portfolio_ledger=portfolio_ledger,
+        logger=logger,
+    )
