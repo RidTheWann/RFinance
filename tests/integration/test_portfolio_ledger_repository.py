@@ -181,20 +181,24 @@ def test_database_triggers_reject_ledger_update_and_delete(tmp_path) -> None:
             )
         )
 
-        with database.engine.connect() as connection:
-            with pytest.raises(IntegrityError, match="portfolio ledger is append-only"):
-                connection.execute(
-                    text(
-                        "UPDATE portfolio_ledger_events SET amount = '1' "
-                        "WHERE event_id = 'capital'"
-                    )
+        with (
+            database.engine.connect() as connection,
+            pytest.raises(IntegrityError, match="portfolio ledger is append-only"),
+        ):
+            connection.execute(
+                text(
+                    "UPDATE portfolio_ledger_events SET amount = '1' "
+                    "WHERE event_id = 'capital'"
                 )
+            )
 
-        with database.engine.connect() as connection:
-            with pytest.raises(IntegrityError, match="portfolio ledger is append-only"):
-                connection.execute(
-                    text("DELETE FROM portfolio_ledger_events WHERE event_id = 'capital'")
-                )
+        with (
+            database.engine.connect() as connection,
+            pytest.raises(IntegrityError, match="portfolio ledger is append-only"),
+        ):
+            connection.execute(
+                text("DELETE FROM portfolio_ledger_events WHERE event_id = 'capital'")
+            )
 
         assert len(repository.events()) == 1
     finally:
