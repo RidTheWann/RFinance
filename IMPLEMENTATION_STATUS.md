@@ -20,7 +20,7 @@ Last verified against the repository: 2026-11-21
 - Python package metadata, Ruff, Mypy, pytest, pytest-qt, Hypothesis, Bandit, pip-audit configuration, Windows scripts, and Windows/Ubuntu CI.
 - Windows per-user persistent data paths, environment override, rotating logs, SQLite, and Alembic migrations.
 - PySide6 desktop navigation includes Overview, Portfolio Simulator, Instrument Review, Observation Review, and Settings.
-- Application composition root wires SQLite persistence, portfolio ledger, CSV ingestion, instrument review, and observation review services.
+- Application composition root wires SQLite persistence, portfolio ledger, CSV ingestion, instrument review, observation review, and persisted-observation portfolio valuation services.
 
 ### Deterministic financial and portfolio logic
 
@@ -87,6 +87,9 @@ Last verified against the repository: 2026-11-21
 - Values ledger positions only from verified, currency-matching, fresh quotes that passed the eligibility gate; unverified, stale, future, or wrong-currency quotes are rejected.
 - Reports unvalued positions explicitly instead of valuing them at cost or zero, with `is_complete`, per-position market value and unrealized P/L, portfolio totals, and allocation versus configurable targets.
 - `quotes_from_eligible_candidates` connects gated observation candidates to valuation quotes. No currency conversion, brokerage claim, or rebalancing is performed.
+- `PortfolioValuationService` joins persisted observations to instrument/source policy and append-only price-review decisions, then applies `eligibility-observation-v1` before selecting the newest eligible quote.
+- Conflicting latest prices from different sources are not resolved arbitrarily; the position remains unvalued with a diagnostic. Instrument type is mapped conservatively; generic equities and ETFs are not assumed to be dividend stocks or index trackers.
+- The Portfolio Simulator now has a background valuation refresh and displays price provenance, observation age, price, market value, unrealized P/L, and eligibility diagnostics. Partial totals are explicitly labeled; missing positions are not substituted at cost or zero.
 
 ## Verified CI
 
@@ -114,15 +117,15 @@ The tested head includes the instrument-master foreign-key import path, single-p
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
 - Full financial statements, broader valuation metrics, dividend event persistence/calendar/UI, screening, and evidence-linked recommendations. The dividend calculation layer exists but is not yet connected to persistence or the desktop.
-- Portfolio trade-entry UI, desktop market-valuation view, corporate actions, rebalancing, allocation execution, and full risk controls. The valuation calculation layer exists but is not yet connected to persistence queries or the desktop.
+- Portfolio trade-entry UI, corporate actions, rebalancing, allocation execution, and full risk controls remain incomplete. Portfolio market valuation is now connected to persisted review-adjusted observations and the desktop, but its source values still depend on lawfully obtained and manually reviewable data.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
 
-1. Connect the existing valuation calculation to persisted, eligibility-qualified observations and expose portfolio market value, unrealized P/L, price freshness, and unvalued positions in the desktop.
-2. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
-3. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
-4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
-5. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.
-6. Continue portfolio valuation/trade flows, risk controls, automation, reporting, backup/restore, and Windows packaging in tested vertical slices.
+1. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
+2. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
+3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
+4. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.
+5. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.
+6. Continue risk controls, automation, reporting, backup/restore, and Windows packaging in tested vertical slices.

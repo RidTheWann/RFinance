@@ -20,6 +20,10 @@ The checkpoint includes the PySide6 shell, local portfolio ledger, CSV provenanc
 
 A prior Termux/Python 3.14 session reported Ruff lint/format passing, Mypy passing for new dividend modules, and 127 non-UI pytest tests passing. PySide6 was unavailable in that environment, so this historical checkpoint did not validate UI behavior. It is superseded by the current Windows and Ubuntu Python 3.12 CI run above.
 
+## Current implementation candidate — validation pending
+
+The feature branch adds a persisted-observation valuation service, background desktop valuation view, source/price eligibility diagnostics, explicit rejection of conflicting latest prices, and integration/UI tests. These new changes have not yet been included in the last fully verified CI checkpoint above. Do not treat their tests as passing until the GitHub Actions run for the new commit completes successfully.
+
 ## Coverage
 
 ### Application and persistence
@@ -52,6 +56,8 @@ A prior Termux/Python 3.14 session reported Ruff lint/format passing, Mypy passi
 - Observation eligibility gates: instrument identity/status/activity/currency, observation quality, look-ahead, staleness, acquisition lag, close validity, source policy, UTC normalization, and combined diagnostics. Property-based checks that unverified, stale and future observations are never eligible.
 - Observation review: promotion gates (raw status, verified instrument, source policy), evidence/digest validation, append-only audit events, immutable raw rows, effective-quality derivation, review history, eligibility candidate mapping, file archiving, and append-only trigger enforcement.
 - Portfolio valuation: market value and unrealized P/L per position, unvalued-position handling without cost fallback, portfolio reconciliation, allocation versus targets, rejection of unverified/stale/future/wrong-currency quotes, and property-based reconciliation invariants.
+- Persisted-observation valuation integration tests: effective quality from append-only price-review events, verified instrument state, source-policy gates, freshness, provenance selection, source-conflict rejection, cash-only behavior, and base-currency enforcement. These tests are pending CI execution for the current candidate.
+- Desktop valuation test: background refresh and cash-only rendering; main-window integration is covered separately. These tests are pending CI execution for the current candidate.
 
 ## Known boundaries
 
@@ -60,11 +66,10 @@ A prior Termux/Python 3.14 session reported Ruff lint/format passing, Mypy passi
 - No IDX scraper or automated market-data provider is enabled.
 - The technical-analysis module is a pure Decimal calculation layer and does not fetch, resample, or adjust data.
 - The dividend module is likewise a pure calculation layer; dividend event persistence, calendar, and desktop UI are not connected.
-- Screening, evidence-linked recommendations, extended financial statements, valuation, portfolio trade UI/valuation, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
+- Screening, evidence-linked recommendations, extended financial statements, portfolio trade UI, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
 
 ## Remaining validation work
 
-- Persisted-observation portfolio valuation service and desktop valuation view; the pure Decimal valuation engine is implemented but not yet connected to the data repository/UI.
 - Connecting the implemented eligibility gate and valuation layer to screening and persisted portfolio queries.
 - Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.

@@ -37,8 +37,10 @@ from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
 )
+from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.observation_review_page import ObservationReviewPage
+from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
@@ -131,12 +133,15 @@ class MainWindow(QMainWindow):
         market_csv_import: MarketCSVImportService,
         instrument_review: InstrumentReviewService,
         observation_review: ObservationReviewService,
+        portfolio_valuation: PortfolioValuationService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
         self.portfolio_ledger = portfolio_ledger
         self.market_csv_import = market_csv_import
         self.instrument_review = instrument_review
+        self.portfolio_valuation = portfolio_valuation
+        self.portfolio_valuation_page: PortfolioValuationPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -291,13 +296,16 @@ class MainWindow(QMainWindow):
         dashboard_layout.addWidget(self.portfolio_cash_label)
         dashboard_layout.addWidget(self.portfolio_positions_label)
         dashboard_layout.addWidget(self.portfolio_events_label)
-        dashboard_layout.addWidget(
-            QLabel(
-                "Market value and unrealized P/L are unavailable until verified market "
-                "observations are configured. The current balance is reconstructed from "
-                "the local event ledger."
+        if self.portfolio_valuation is None:
+            dashboard_layout.addWidget(
+                QLabel("Portfolio price valuation is unavailable in this application context.")
             )
-        )
+        else:
+            self.portfolio_valuation_page = PortfolioValuationPage(
+                self.portfolio_valuation,
+                self._portfolio_dashboard,
+            )
+            dashboard_layout.addWidget(self.portfolio_valuation_page)
         dashboard_layout.addWidget(
             QLabel(
                 "Allocation targets only — not executed holdings: "
@@ -746,6 +754,13 @@ class MainWindow(QMainWindow):
             )
             event.ignore()
             return
+        if self.portfolio_valuation_page is not None and self.portfolio_valuation_page.is_busy:
+            self.portfolio_status_label.setText(
+                "A portfolio valuation refresh is still running. "
+                "Wait for it to finish before closing RFinance."
+            )
+            event.ignore()
+            return
         super().closeEvent(event)
 
     def refresh_market_import_history(self) -> None:
@@ -798,6 +813,8 @@ class MainWindow(QMainWindow):
         )
         self.portfolio_positions_label.setText(f"Open positions: {len(snapshot.positions)}")
         self.portfolio_events_label.setText(f"Recorded ledger events: {snapshot.applied_events}")
+        if self.portfolio_valuation_page is not None:
+            self.portfolio_valuation_page.refresh()
 
     def _initialize_portfolio(self) -> None:
         try:

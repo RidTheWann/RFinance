@@ -38,6 +38,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.market_csv_import,
         context.instrument_review,
         context.observation_review,
+        context.portfolio_valuation,
     )
     application.aboutToQuit.connect(context.close)
     window.show()

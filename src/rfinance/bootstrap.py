@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
+from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
@@ -29,6 +30,7 @@ class ApplicationContext:
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
     observation_review: ObservationReviewService
+    portfolio_valuation: PortfolioValuationService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -44,6 +46,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         database.upgrade()
         ledger_repository = LedgerRepository(database.sessions)
         portfolio_ledger = PortfolioLedgerService(ledger_repository, lot_sizes={})
+        portfolio_valuation = PortfolioValuationService(database.sessions, portfolio_ledger)
         data_ingestion_repository = DataIngestionRepository(database.sessions)
         market_csv_import = MarketCSVImportService(
             data_ingestion_repository,
@@ -69,5 +72,6 @@ def create_application_context(data_directory: str | None = None) -> Application
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,
         observation_review=observation_review,
+        portfolio_valuation=portfolio_valuation,
         logger=logger,
     )

@@ -10,7 +10,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 3 | Fundamental, valuation, technical and dividend calculations | Decimal margin/ROE/debt-equity primitives, technical indicator suite, and `dividend-analytics-v1` calculation layer implemented with methodology docs and tests. Broader statements and valuation formulas remain |
 | 4 | Screening and deterministic evidence-linked recommendations | Not started; eligibility gate and observation-review ledger implemented, but screening and recommendations are not built; they must consume only eligible inputs |
 | 5 | Dividend event calendar and analytics | Deterministic calculation layer implemented; event persistence, calendar and desktop UI remain |
-| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup, dashboard, and `portfolio-valuation-v1` calculation layer implemented; trade UI, desktop valuation view, allocation execution and risk automation remain |
+| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup, dashboard, `portfolio-valuation-v1`, persisted-observation eligibility integration, and desktop price valuation implemented; trade UI, verified instrument-to-category mapping, allocation execution and risk automation remain |
 | 7 | Optional Ollama intelligence and secure document analysis | Not started |
 | 8 | Local automation and reporting | Not started |
 | 9 | Backup/restore, offline operation, reliability and security hardening | Not started |
@@ -25,10 +25,10 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 
 ## Next implementation sequence
 
-1. Connect the already implemented eligibility gate and Decimal valuation layer to persisted observations; expose verified-price valuation, freshness, and incomplete-position diagnostics in the desktop. Instrument identity review must remain separate from price verification.
-2. Connect the technical indicator calculation layer to consistently sampled, adjusted, quality-qualified historical series.
-3. Persist dividend events with provenance and connect the dividend calculation layer to a calendar and desktop UI.
-4. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.
-5. Build deterministic screening and evidence-linked recommendations using only eligible observations.
-6. Expand dividends, portfolio valuation/trade flows, drawdown and allocation controls.
+1. Connect the technical indicator calculation layer to consistently sampled, adjusted, quality-qualified historical series.
+2. Persist dividend events with provenance and connect the dividend calculation layer to a calendar and desktop UI.
+3. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.
+4. Build deterministic screening and evidence-linked recommendations using only eligible observations.
+5. Add verified instrument lot-size and category evidence, then complete simulated trade-entry, dividend receipt and position-management workflows.
+6. Implement drawdown/allocation controls, risk-event audit, and portfolio review workflows.
 7. Add optional local AI, automation, reporting, backup/restore, and production Windows delivery.

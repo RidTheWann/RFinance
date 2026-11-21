@@ -8,6 +8,7 @@ from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
+from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.core.config import AppPaths
 from rfinance.storage.database import Database
 from rfinance.storage.models.data_ingestion import MarketObservationRecord
@@ -34,12 +35,17 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         database.sessions,
         data_directory=data_directory,
     )
+    portfolio_valuation_service = PortfolioValuationService(
+        database.sessions,
+        portfolio_service,
+    )
     return MainWindow(
         AppPaths.resolve(data_directory),
         portfolio_service,
         import_service,
         instrument_review_service,
         observation_review_service,
+        portfolio_valuation_service,
     )
 
 
@@ -69,6 +75,14 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert window.pages.currentIndex() == 1
         window.initial_capital_input.setText("1250000")
         qtbot.mouseClick(window.initialize_portfolio_button, Qt.MouseButton.LeftButton)
+        assert window.portfolio_valuation_page is not None
+        qtbot.waitUntil(
+            lambda: window.portfolio_valuation_page is not None
+            and window.portfolio_valuation_page.status_label.text().startswith(
+                "Cash-only simulation"
+            ),
+            timeout=10000,
+        )
 
         assert window.portfolio_ledger.snapshot().cash_balance == Decimal("1250000")
         assert len(window.portfolio_ledger.events()) == 1

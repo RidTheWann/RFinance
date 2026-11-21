@@ -53,3 +53,15 @@ unrealized P/L.
 - No brokerage truth, corporate-action price adjustment, or live market data is
   implied.
 - Allocation execution and rebalancing are not performed by this module.
+
+## Persisted-observation application workflow
+
+The application-level `PortfolioValuationService` loads market observations only for instruments held in the reconstructed ledger. For each observation it resolves the current instrument-master record, source policy, and most recent append-only observation-review decision. It then applies `eligibility-observation-v1` before passing any price to the Decimal valuation engine.
+
+An observation is usable only when all configured gates pass: effective quality is `VERIFIED`; the instrument identity is `VERIFIED`, active, and currency-matched; the source is not `BLOCKED` or `RESTRICTED`; timestamps are timezone-aware and not future-dated; acquisition lag is within policy; the close is positive; and the observation is no older than the configured freshness window (7 days by default). An `UNREVIEWED` source remains allowed only because the current eligibility policy explicitly permits it; `BLOCKED` and `RESTRICTED` are never allowed. Production provider access and licensing are separate approval questions.
+
+The service selects the newest eligible observation by observation time. When multiple sources publish different closes for the same latest observation timestamp, the service refuses to choose one arbitrarily and marks the position unvalued with `CONFLICTING_LATEST_OBSERVATIONS`. It does not fall back to an older quote in that conflict case.
+
+The Portfolio Simulator runs the query in a Qt worker thread and displays the selected observation ID, source identity, acquisition and observation timestamps, age, effective quality, and both eligibility and valuation methodology versions in the row tooltip. Unvalued positions show their gate failures. A partial portfolio total is explicitly labeled and excludes unpriced positions; it must not be interpreted as a complete net-asset value.
+
+Category mapping is deliberately conservative: only an explicit `MONEY_MARKET` instrument type is mapped to the money-market category. Generic `EQUITY`, `ETF`, or `INDEX` labels alone do not prove that a position is a dividend equity or an investable index-tracking instrument. Other positions remain `OTHER` until the instrument master gains separately evidenced classification metadata.
