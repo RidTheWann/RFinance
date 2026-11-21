@@ -289,7 +289,7 @@ class HistoricalPriceSeriesService:
         for item in parsed:
             current_time = item.point.observed_at.astimezone(UTC)
             if deduplicated and deduplicated[-1].point.observed_at.astimezone(UTC) == current_time:
-                previous = deduplicated.pop()
+                deduplicated.pop()
                 rejected["DUPLICATE_UTC_TIMESTAMP"] += 2
                 # The stored unique key normally prevents this. If alternate
                 # ISO representations bypass it, refuse both records.
