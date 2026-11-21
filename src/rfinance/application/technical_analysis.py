@@ -21,6 +21,7 @@ from rfinance.analysis.technical.indicators import (
     rsi,
     sma,
 )
+
 if TYPE_CHECKING:
     from rfinance.application.historical_price_series import (
         HistoricalPriceSeriesService,

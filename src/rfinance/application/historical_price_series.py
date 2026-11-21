@@ -15,8 +15,8 @@ from sqlalchemy import select
 
 from rfinance.domain.eligibility.historical import (
     FORMULA_VERSION as HISTORICAL_ELIGIBILITY_VERSION,
-    historical_observation_reasons,
 )
+from rfinance.domain.eligibility.historical import historical_observation_reasons
 from rfinance.domain.eligibility.observation import (
     InstrumentState,
     InstrumentStatus,
@@ -210,9 +210,12 @@ class HistoricalPriceSeriesService:
             self._validate_aware(start_at, "start_at")
         if end_at is not None:
             self._validate_aware(end_at, "end_at")
-        if start_at is not None and end_at is not None:
-            if start_at.astimezone(UTC) > end_at.astimezone(UTC):
-                raise ValueError("start_at must not be later than end_at")
+        if (
+            start_at is not None
+            and end_at is not None
+            and start_at.astimezone(UTC) > end_at.astimezone(UTC)
+        ):
+            raise ValueError("start_at must not be later than end_at")
         if end_at is not None and end_at.astimezone(UTC) > reference.astimezone(UTC):
             raise ValueError("end_at must not be later than as_of")
         if start_at is not None and start_at.astimezone(UTC) > reference.astimezone(UTC):
