@@ -5,6 +5,10 @@
 
 from rfinance.storage.models.app_setting import AppSetting
 from rfinance.storage.models.base import Base
+from rfinance.storage.models.instrument_registry import (
+    InstrumentRegistryRecord,
+    InstrumentReviewEventRecord,
+)
 from rfinance.storage.models.data_ingestion import (
     DataImportBatchRecord,
     DataImportIssueRecord,
@@ -18,6 +22,8 @@ __all__ = [
     "Base",
     "DataImportBatchRecord",
     "DataImportIssueRecord",
+    "InstrumentRegistryRecord",
+    "InstrumentReviewEventRecord",
     "MarketObservationRecord",
     "PortfolioLedgerRecord",
     "SourceRegistryRecord",
