@@ -6,7 +6,6 @@ where the explicitly documented input window is incomplete.
 
 import decimal
 
-
 ZERO = decimal.Decimal("0")
 ONE = decimal.Decimal("1")
 TWO = decimal.Decimal("2")
