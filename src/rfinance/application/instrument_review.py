@@ -5,20 +5,20 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
-import re
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from rfinance.data.contracts import InstrumentContract
 from rfinance.storage.models.instrument_registry import (
     InstrumentRegistryRecord,
     InstrumentReviewEventRecord,
 )
 
 if TYPE_CHECKING:
+    from rfinance.data.contracts import InstrumentContract
     from sqlalchemy.orm import Session, sessionmaker
 
 
