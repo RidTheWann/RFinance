@@ -20,8 +20,7 @@ def test_observation_review_page_rejects_with_evidence_and_preserves_raw_record(
     data_directory = tmp_path / "rfinance-data"
     csv_file = tmp_path / "market.csv"
     csv_file.write_text(
-        "instrument_id,observed_at,currency,close\n"
-        "IDX:BBCA,2026-11-21T09:00:00+07:00,IDR,9500\n",
+        "instrument_id,observed_at,currency,close\nIDX:BBCA,2026-11-21T09:00:00+07:00,IDR,9500\n",
         encoding="utf-8",
     )
     evidence_file = tmp_path / "price-evidence.txt"
@@ -68,10 +67,7 @@ def test_observation_review_page_rejects_with_evidence_and_preserves_raw_record(
 
         qtbot.mouseClick(page.reject_button, Qt.MouseButton.LeftButton)
         qtbot.waitUntil(
-            lambda: (
-                not page.is_busy
-                and page.status_label.text().startswith("Review recorded:")
-            ),
+            lambda: not page.is_busy and page.status_label.text().startswith("Review recorded:"),
             timeout=10000,
         )
 
