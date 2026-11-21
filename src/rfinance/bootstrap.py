@@ -8,11 +8,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.application.portfolio_valuation import PortfolioValuationService
+from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
 from rfinance.storage.database import Database
@@ -34,6 +36,7 @@ class ApplicationContext:
     instrument_review: InstrumentReviewService
     observation_review: ObservationReviewService
     portfolio_valuation: PortfolioValuationService
+    technical_analysis: TechnicalAnalysisService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -50,6 +53,9 @@ def create_application_context(data_directory: str | None = None) -> Application
         ledger_repository = LedgerRepository(database.sessions)
         portfolio_ledger = PortfolioLedgerService(ledger_repository, lot_sizes={})
         portfolio_valuation = PortfolioValuationService(database.sessions, portfolio_ledger)
+        technical_analysis = TechnicalAnalysisService(
+            HistoricalPriceSeriesService(database.sessions)
+        )
         data_ingestion_repository = DataIngestionRepository(database.sessions)
         market_csv_import = MarketCSVImportService(
             data_ingestion_repository,
@@ -76,5 +82,6 @@ def create_application_context(data_directory: str | None = None) -> Application
         instrument_review=instrument_review,
         observation_review=observation_review,
         portfolio_valuation=portfolio_valuation,
+        technical_analysis=technical_analysis,
         logger=logger,
     )
