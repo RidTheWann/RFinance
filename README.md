@@ -2,7 +2,7 @@
 
 **Local-first investment research and simulated portfolio management for Windows 11.**
 
-RFinance is designed as a native desktop application for Indonesian-market research, evidence-linked analysis, dividend monitoring, and local portfolio simulation. It does not connect to brokerage accounts or execute real-money transactions.
+RFinance is a native desktop application in active development for Indonesian-market research, evidence-linked analysis, dividend monitoring, and local portfolio simulation. It does not connect to brokerage accounts or execute real-money transactions.
 
 ## Product principles
 
@@ -10,36 +10,36 @@ RFinance is designed as a native desktop application for Indonesian-market resea
 - **Deterministic finance:** calculations and accounting are performed by tested application code; AI is optional and subordinate.
 - **Evidence and provenance:** financial observations retain source, timestamps, units, currency, quality, and verification state.
 - **Explicit simulation:** simulated positions and cash flows are never presented as actual brokerage activity.
-- **Safe acquisition:** data is obtained only through permitted APIs, downloads, licensed feeds, or user-provided documents.
+- **Safe acquisition:** data is obtained only through permitted APIs, licensed feeds, official downloads, or user-provided documents.
 
-## Development status
+## Current development slice
 
-The repository is being bootstrapped. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md), [ROADMAP.md](ROADMAP.md), and [TEST_REPORT.md](TEST_REPORT.md) for verified implementation state. Features are not considered complete merely because a UI surface exists.
+The current branch includes a functional PySide6 shell, local SQLite/Alembic storage, a Decimal-based simulated portfolio ledger with explicit first-run setup, and a user-selected CSV market-data import path. Imported observations are stored as UNVERIFIED with SHA-256, source/batch metadata, original row data, and row-level diagnostics. Recent import history is visible in the Overview page.
+
+No automated IDX/OJK/KSEI scraper or licensed market-data adapter is enabled. Publicly viewable data is not automatically approved for automated access or redistribution.
+
+See IMPLEMENTATION_STATUS.md, ROADMAP.md, and TEST_REPORT.md for implementation and validation state. See docs/MARKET_CSV_IMPORT.md for the import schema and trust boundaries.
 
 ## Development
 
 The initial supported development runtime is Python 3.12 on Windows 11 x64.
 
-Once the project environment is established:
+Use PowerShell:
 
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-python -m rfinance
-```
+    py -3.12 -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install --upgrade pip
+    python -m pip install -e ".[dev]"
+    python -m rfinance
 
 Run checks with:
 
-```powershell
-python -m pytest
-ruff check .
-ruff format --check .
-mypy src
-```
+    python -m pytest
+    ruff check .
+    ruff format --check .
+    mypy src
 
-Dependency locking and the Windows package are gated on successful resolution and validation in the supported Windows environment. Do not treat an unvalidated lockfile or build as production evidence.
+Dependency locking and the Windows production package remain validation gates. Do not treat an unvalidated lockfile, test run, or build as production evidence.
 
 ## Scope boundary
 
