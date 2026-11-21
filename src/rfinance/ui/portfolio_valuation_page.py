@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
@@ -16,10 +14,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from rfinance.application.portfolio_valuation import (
-    PortfolioValuationService,
-    PortfolioValuationSnapshot,
-)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from decimal import Decimal
+
+    from rfinance.application.portfolio_valuation import (
+        PortfolioValuationService,
+        PortfolioValuationSnapshot,
+    )
 
 
 class PortfolioValuationWorker(QObject):

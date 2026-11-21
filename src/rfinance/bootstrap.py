@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
-from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
+from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
 from rfinance.storage.database import Database
