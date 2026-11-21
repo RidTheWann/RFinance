@@ -11,11 +11,18 @@ from rfinance.domain.portfolio.ledger import (
     LedgerEvent,
     LedgerEventType,
     LedgerValidationError,
+    VerifiedLotSize,
     replay_ledger,
 )
 
 NOW = datetime(2026, 11, 21, 9, 0, tzinfo=UTC)
-LOT_SIZES = {"BBCA": Decimal("100")}
+LOT_SIZES = {
+    "BBCA": VerifiedLotSize(
+        size=Decimal("100"),
+        source_reference="test-fixture:verified-lot-size",
+        verified_at=NOW,
+    )
+}
 
 
 def event(
@@ -134,7 +141,7 @@ def test_purchase_cannot_create_negative_cash() -> None:
         replay_ledger(events, lot_sizes=LOT_SIZES)
 
 
-def test_unknown_lot_size_and_non_multiple_quantity_are_rejected() -> None:
+def test_unknown_and_unverified_lot_size_data_are_rejected() -> None:
     capital = event("capital", 1, LedgerEventType.CAPITAL_INJECTION, amount=Decimal("1000000"))
     unknown = event(
         "buy",
@@ -152,10 +159,13 @@ def test_unknown_lot_size_and_non_multiple_quantity_are_rejected() -> None:
         quantity=Decimal("150"),
         unit_price=Decimal("1000"),
     )
-    with pytest.raises(LedgerValidationError, match="lot size is required"):
+    raw_value = {"BBCA": Decimal("100")}
+    with pytest.raises(LedgerValidationError, match="verified lot-size evidence"):
         replay_ledger([capital, unknown], lot_sizes=LOT_SIZES)
     with pytest.raises(LedgerValidationError, match="multiple of lot size"):
         replay_ledger([capital, non_multiple], lot_sizes=LOT_SIZES)
+    with pytest.raises(LedgerValidationError, match="verified lot-size evidence"):
+        replay_ledger([capital, non_multiple], lot_sizes=raw_value)
 
 
 def test_duplicate_simulated_dividend_is_blocked() -> None:
