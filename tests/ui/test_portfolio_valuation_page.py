@@ -22,9 +22,7 @@ def test_portfolio_valuation_page_refreshes_cash_only_ledger_off_ui_thread(
     try:
         ledger = PortfolioLedgerService(LedgerRepository(database.sessions), lot_sizes={})
         ledger.initialize_portfolio(Decimal("5000000"))
-        page = PortfolioValuationPage(
-            PortfolioValuationService(database.sessions, ledger)
-        )
+        page = PortfolioValuationPage(PortfolioValuationService(database.sessions, ledger))
         qtbot.addWidget(page)
         page.show()
 

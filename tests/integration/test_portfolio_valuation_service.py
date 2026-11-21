@@ -301,9 +301,7 @@ def test_conflicting_latest_verified_sources_do_not_choose_a_price_arbitrarily(t
 
         assert result.valuation.is_complete is False
         assert result.price_evidence == ()
-        assert result.unvalued_positions[0].reasons == (
-            "CONFLICTING_LATEST_OBSERVATIONS",
-        )
+        assert result.unvalued_positions[0].reasons == ("CONFLICTING_LATEST_OBSERVATIONS",)
     finally:
         database.close()
 
