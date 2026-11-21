@@ -21,6 +21,7 @@ from rfinance.storage.models.data_ingestion import (
     MarketObservationRecord,
     SourceRegistryRecord,
 )
+from rfinance.storage.models.instrument_registry import InstrumentRegistryRecord
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -182,6 +183,15 @@ class DataIngestionRepository:
                     )
                     continue
                 existing_keys.add(key)
+                if session.get(InstrumentRegistryRecord, observation.instrument_id) is None:
+                    session.add(
+                        InstrumentRegistryRecord(
+                            instrument_id=observation.instrument_id,
+                            verification_status="UNVERIFIED",
+                            created_at_utc=imported_at_utc,
+                            updated_at_utc=imported_at_utc,
+                        )
+                    )
                 observation_records.append(
                     MarketObservationRecord(
                         observation_id=str(uuid4()),
