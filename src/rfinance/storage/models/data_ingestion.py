@@ -124,7 +124,10 @@ class MarketObservationRecord(Base):
         ForeignKey("source_registry.source_id", ondelete="RESTRICT"),
         nullable=False,
     )
-    instrument_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    instrument_id: Mapped[str] = mapped_column(
+        ForeignKey("instrument_registry.instrument_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
     observed_at_utc: Mapped[str] = mapped_column(String(40), nullable=False)
     acquired_at_utc: Mapped[str] = mapped_column(String(40), nullable=False)
     open: Mapped[str | None] = mapped_column(Text, nullable=True)
