@@ -6,6 +6,7 @@ from sqlalchemy import (
     CheckConstraint,
     ForeignKey,
     Index,
+    Integer,
     String,
     Text,
     UniqueConstraint,
@@ -43,6 +44,8 @@ class InstrumentRegistryRecord(Base):
     currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
     sector: Mapped[str | None] = mapped_column(String(128), nullable=True)
     active: Mapped[bool | None] = mapped_column(nullable=True)
+    lot_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    minimum_investment: Mapped[str | None] = mapped_column(Text, nullable=True)
     verification_status: Mapped[str] = mapped_column(
         String(24),
         nullable=False,
