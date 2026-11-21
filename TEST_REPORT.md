@@ -2,36 +2,46 @@
 
 Last updated: 2026-11-21
 
-## Last fully verified CI checkpoint
+## Fully verified CI checkpoint
 
-Commit 38bd85bf6280f9fdde53a701cc3770189d2fab7a:
-- Windows / Python 3.12: Ruff lint passed, Ruff format check passed, Mypy passed (26 source files), pytest **24 passed**.
-- Ubuntu / Python 3.12: Ruff lint passed, Ruff format check passed, Mypy passed (26 source files), pytest **24 passed**.
+Commit e6a024ece766d741567624cd42fcd5dbe6cc4df2 completed on both Windows and Ubuntu with Python 3.12:
 
-The newer SQLite persistence and first-run UI branch changes are not recorded as passing until the latest current-head GitHub Actions run has completed successfully on both runners.
+| Check | Windows | Ubuntu |
+|---|---:|---:|
+| Dependency installation | Passed | Passed |
+| Ruff lint | Passed | Passed |
+| Ruff format check | Passed | Passed |
+| Mypy | Passed | Passed |
+| pytest | 42 passed | 42 passed |
 
-## Test coverage added
+This checkpoint includes the repository foundation, local portfolio ledger and persistence, CSV parser/provenance pipeline, and Windows archive path containment hardening.
 
-- Explicit/environment application data path selection and directory creation.
-- Alembic migrations and database reopen.
-- Decimal margin, ROE, and debt-to-equity edge behavior.
-- Market-observation timezone, OHLC, currency, and quality-state validation.
-- PySide6 navigation and first-run portfolio setup workflow.
-- Portfolio ledger cash/position reconciliation, weighted-average cost, verified lot-size evidence, oversell and overspend rejection, duplicate simulated-dividend rejection, currency/sequence checks, and Hypothesis-generated buy/sell round trips.
-- SQLite portfolio-ledger migration, exact Decimal persistence through database reopen, atomic rejection of invalid events, sequence/idempotency behavior, and append-only update/delete triggers.
-- Explicit initial-capital setup, one-time initialization, invalid/non-finite capital rejection, and absence of implicit monthly contributions.
+## Latest development head
 
-## CI configuration
+Latest recorded head for this report: 930226d6939b5ad8ab243aa8ab25d11eaabc7ff0.
 
-Python 3.12 is tested on Windows and Ubuntu. Both jobs run Ruff lint, Ruff format check, Mypy, and pytest. Linux installs Qt runtime libraries for offscreen PySide6 tests.
+The later increment adds a recent-import-history query and a table in the Overview page, with batch ID, SHA-256, source label, and archive path available in row tooltips. Current-head Ubuntu Ruff, format, Mypy, and pytest results are passing; the full Windows matrix has not yet been confirmed completed at this report timestamp.
+
+## Coverage
+
+- Local application path resolution and directory creation.
+- SQLite schema migrations and database reopen.
+- Decimal margin, ROE, and debt/equity edge behavior.
+- Market observation timestamp, OHLC, currency, and data-quality validation.
+- Portfolio ledger reconciliation, weighted-average cost, fees/taxes, lot-size evidence, cash/position limits, duplicate dividend prevention, sequence and event ID integrity.
+- Property-based buy/sell replay reconciliation.
+- Exact Decimal persistence through SQLite close/reopen.
+- Atomic rejection of invalid ledger events and append-only database triggers.
+- Explicit one-time simulation initialization and invalid-capital rejection.
+- CSV schema/timezone/numeric validation, row-level rejection, duplicate handling, archive SHA-256, source provenance, unverified quality state, user-import policy constraints, and file-size/type limits.
+- Asynchronous UI import and recent import history display, including batch/source/hash tooltip information.
 
 ## Outstanding validation
 
-- Current-head Windows and Ubuntu CI completion.
-- Dependency lockfile generated and verified with Windows Python 3.12.
+- Current-head Windows CI completion for import-history UI and tests.
+- Dependency lockfile and reproducible locked installation.
+- Import-history persistence/reopen workflow in the current CI head.
 - Migration downgrade/upgrade and corruption recovery.
-- Backup/restore.
-- Security/dependency audit.
-- Full source-provider contract tests and permitted import workflow.
-- Full trade, valuation, risk, and portfolio reconciliation UI workflows.
-- Clean-install and production packaging tests.
+- Backup/restore and data integrity recovery.
+- Security/dependency audit and clean Windows environment installation.
+- Source verification/instrument-master tests, financial indicator formula tests, full portfolio workflows, and production packaging.
