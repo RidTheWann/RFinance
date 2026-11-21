@@ -107,9 +107,7 @@ class InstrumentReviewService:
         with self._sessions.begin() as session:
             instrument = session.get(InstrumentRegistryRecord, normalized_id)
             if instrument is None:
-                raise ValueError(
-                    "instrument must exist in the registry before it can be reviewed"
-                )
+                raise ValueError("instrument must exist in the registry before it can be reviewed")
 
             previous_status = instrument.verification_status
             event = InstrumentReviewEventRecord(
