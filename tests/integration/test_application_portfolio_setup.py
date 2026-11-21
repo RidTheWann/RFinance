@@ -17,7 +17,7 @@ def test_default_capital_is_a_suggestion_until_explicit_initialization(tmp_path)
     try:
         service = PortfolioLedgerService(LedgerRepository(database.sessions), lot_sizes={})
 
-        assert DEFAULT_SIMULATION_CAPITAL == Decimal("5000000")
+        assert Decimal("5000000") == DEFAULT_SIMULATION_CAPITAL
         assert service.events() == ()
         assert service.snapshot().cash_balance == Decimal("0")
 
