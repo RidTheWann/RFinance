@@ -8,7 +8,7 @@ Last verified against the repository: 2026-11-21
 - Default branch: main
 - Working branch: foundation/bootstrap-core
 - Active foundation PR: https://github.com/RidTheWann/RFinance/pull/1
-- Latest GitHub Actions validated application-code commit: `1c283f0deea85507465f985bd508445e679868e6` (Windows and Ubuntu, Python 3.12; 131 tests passed on each OS).
+- Latest GitHub Actions validated application-code commit: `b37a15ef78afe4885c4282384923e27c5b0b5bd6` (Windows and Ubuntu, Python 3.12; Ruff lint/format and Mypy passed; 141 tests passed on each OS).
 - All work remains on the dedicated foundation branch. PR #1 is open and has not been merged into `main`.
 - This session has no mounted local checkout. Changes were committed to the feature branch through GitHub repository operations and verified with hosted Windows/Ubuntu CI; no local test or build result is claimed.
 
@@ -93,19 +93,19 @@ Last verified against the repository: 2026-11-21
 
 ## Verified CI
 
-Application-code commit `e5cff0a979bf75a8c8a8b3b949123a491896e0d6` completed successfully on Windows and Ubuntu using Python 3.12.
+Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed successfully on Windows and Ubuntu using Python 3.12. See [push CI 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
 
 | Check | Windows | Ubuntu |
 |---|---:|---:|
 | Dependency installation | Passed | Passed |
 | Ruff lint | Passed | Passed |
-| Ruff format | Passed; 71 files formatted | Passed; 71 files formatted |
-| Mypy | Passed | Passed |
-| pytest | 65 passed | 65 passed |
+| Ruff format | Passed; 94 files already formatted | Passed; 94 files already formatted |
+| Mypy | Passed; 53 source files | Passed; 53 source files |
+| pytest | **141 passed** | **141 passed** |
 
-The tested head includes the instrument-master foreign-key import path, single-placeholder-per-instrument-per-batch handling, review audit workflow, and the technical-indicator test suite. The PR remains open for review and has not been merged.
+The tested head includes persisted-observation portfolio valuation, append-only price-review integration, source and instrument eligibility, explicit latest-price conflict rejection, and background Qt valuation UI. The PR remains open for review and has not been merged.
 
-## Local verification (current session)
+## Historical local developer checkpoint (previous Termux session)
 
 - Branch `foundation/bootstrap-core`; Python 3.14 editable install with `--no-deps`.
 - Ruff 0.17.6 lint and format checks: passed on `src` and `tests`.
@@ -123,7 +123,7 @@ The tested head includes the instrument-master foreign-key import path, single-p
 
 ## Next engineering objectives
 
-1. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
+1. Connect technical indicators to persisted historical series with explicit sampling, currency, quality and corporate-action adjustment metadata; do not infer missing adjustment policy or frequency.
 2. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
 3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
 4. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.

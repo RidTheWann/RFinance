@@ -18,8 +18,8 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 
 ## Latest verified engineering checkpoint
 
-- Latest application-code head validated by GitHub Actions: `1c283f0deea85507465f985bd508445e679868e6`.
-- Windows and Ubuntu, Python 3.12: Ruff lint, Ruff format, and Mypy passed; **131 pytest tests passed on each OS**. See [CI run 44907489580](https://github.com/RidTheWann/RFinance/actions/runs/44907489580).
+- Latest application-code head validated by GitHub Actions: `b37a15ef78afe4885c4282384923e27c5b0b5bd6`.
+- Windows and Ubuntu, Python 3.12: Ruff lint, Ruff format, and Mypy passed; **141 pytest tests passed on each OS**. See [push CI 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
 - A prior Termux/Python 3.14 developer checkpoint reported 127 non-UI tests; it is historical context only and is superseded by the current cross-platform Python 3.12 result.
 - PR #1 remains open and is not merged into `main`.
 
