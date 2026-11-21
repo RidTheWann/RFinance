@@ -40,6 +40,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.portfolio_ledger,
         context.market_csv_import,
         context.instrument_review,
+        context.observation_review,
     )
     application.aboutToQuit.connect(context.close)
     window.show()

@@ -36,11 +36,13 @@ from rfinance.application.instrument_review import (
     InstrumentReviewResult,
     InstrumentReviewService,
 )
+from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
 )
 from rfinance.data.contracts import InstrumentContract, InstrumentType
+from rfinance.ui.observation_review_page import ObservationReviewPage
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
@@ -131,6 +133,7 @@ class MainWindow(QMainWindow):
         portfolio_ledger: PortfolioLedgerService,
         market_csv_import: MarketCSVImportService,
         instrument_review: InstrumentReviewService,
+        observation_review: ObservationReviewService,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -153,12 +156,16 @@ class MainWindow(QMainWindow):
         self.navigation = QListWidget(root)
         self.navigation.setObjectName("mainNavigation")
         self.navigation.setFixedWidth(210)
-        self.navigation.addItems(["Overview", "Portfolio", "Instrument Review", "Settings"])
+        self.navigation.addItems(
+            ["Overview", "Portfolio", "Instrument Review", "Observation Review", "Settings"]
+        )
 
         self.pages = QStackedWidget(root)
         self.pages.addWidget(self._overview_page())
         self.pages.addWidget(self._portfolio_page())
         self.pages.addWidget(self._instrument_review_page())
+        self.observation_review_page = ObservationReviewPage(observation_review)
+        self.pages.addWidget(self.observation_review_page)
         self.pages.addWidget(self._settings_page())
 
         layout.addWidget(self.navigation)
@@ -170,6 +177,7 @@ class MainWindow(QMainWindow):
         self.refresh_portfolio()
         self.refresh_market_import_history()
         self.refresh_instrument_review_queue()
+        self.observation_review_page.refresh_queue()
 
     def _overview_page(self) -> QWidget:
         page = QWidget()
@@ -729,6 +737,13 @@ class MainWindow(QMainWindow):
         if self._review_thread is not None and self._review_thread.isRunning():
             self.instrument_review_status_label.setText(
                 "An instrument review is still running. "
+                "Wait for it to finish before closing RFinance."
+            )
+            event.ignore()
+            return
+        if self.observation_review_page.is_busy:
+            self.observation_review_page.status_label.setText(
+                "An observation review is still running. "
                 "Wait for it to finish before closing RFinance."
             )
             event.ignore()
