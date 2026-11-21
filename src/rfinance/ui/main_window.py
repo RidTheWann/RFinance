@@ -43,9 +43,8 @@ from rfinance.ui.observation_review_page import ObservationReviewPage
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
-    from rfinance.application.observation_review import ObservationReviewService
-
     from rfinance.application.market_csv_import import MarketCSVImportService
+    from rfinance.application.observation_review import ObservationReviewService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
