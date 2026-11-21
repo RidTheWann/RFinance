@@ -26,13 +26,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
 )
 
 if TYPE_CHECKING:
+    from PySide6.QtGui import QCloseEvent
+
+    from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
@@ -302,6 +304,15 @@ class MainWindow(QMainWindow):
             self._import_thread = None
             self._import_worker = None
         self.import_market_csv_button.setEnabled(True)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        if self._import_thread is not None and self._import_thread.isRunning():
+            self.market_import_status_label.setText(
+                "A CSV import is still running. Wait for it to finish before closing RFinance."
+            )
+            event.ignore()
+            return
+        super().closeEvent(event)
 
     @staticmethod
     def _format_idr(amount: Decimal) -> str:
