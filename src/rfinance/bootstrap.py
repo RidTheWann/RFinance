@@ -6,11 +6,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import logging
+from typing import TYPE_CHECKING
 
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
 from rfinance.storage.database import Database
+
+if TYPE_CHECKING:
+    import logging
 
 
 @dataclass(slots=True)
