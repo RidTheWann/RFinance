@@ -246,6 +246,21 @@ class HistoricalPriceSeriesService:
         for row in rows:
             record = row.observation
             try:
+                observed_at = datetime.fromisoformat(record.observed_at_utc)
+            except ValueError:
+                rejected["INVALID_TIMESTAMP"] += 1
+                continue
+            if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+                rejected["INVALID_TIMESTAMP"] += 1
+                continue
+
+            observed_utc = observed_at.astimezone(UTC)
+            if start_at is not None and observed_utc < start_at.astimezone(UTC):
+                continue
+            if end_at is not None and observed_utc > end_at.astimezone(UTC):
+                continue
+
+            try:
                 item = self._parse_observation(
                     record,
                     latest_decisions.get(record.observation_id, record.quality_status),
@@ -265,12 +280,6 @@ class HistoricalPriceSeriesService:
             if reasons:
                 rejected.update(reason.value for reason in reasons)
                 continue
-
-            observed_utc = item.point.observed_at.astimezone(UTC)
-            if start_at is not None and observed_utc < start_at.astimezone(UTC):
-                continue
-            if end_at is not None and observed_utc > end_at.astimezone(UTC):
-                continue
             parsed.append(item)
 
         parsed.sort(key=lambda item: item.point.observed_at.astimezone(UTC))
@@ -283,7 +292,7 @@ class HistoricalPriceSeriesService:
         for item in parsed:
             current_time = item.point.observed_at.astimezone(UTC)
             if deduplicated and deduplicated[-1].point.observed_at.astimezone(UTC) == current_time:
-                deduplicated.pop()
+                previous = deduplicated.pop()
                 rejected["DUPLICATE_UTC_TIMESTAMP"] += 2
                 # The stored unique key normally prevents this. If alternate
                 # ISO representations bypass it, refuse both records.
