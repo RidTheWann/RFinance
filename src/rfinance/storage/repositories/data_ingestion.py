@@ -39,11 +39,59 @@ class DataImportSummary:
     rejected_rows: int
 
 
+@dataclass(frozen=True, slots=True)
+class DataImportHistoryItem:
+    batch_id: str
+    source_name: str
+    original_filename: str
+    imported_at_utc: str
+    row_count: int
+    accepted_rows: int
+    rejected_rows: int
+    file_sha256: str
+    document_relative_path: str
+
+
 class DataIngestionRepository:
     """Writes one CSV import as an atomic source/batch/observation transaction."""
 
     def __init__(self, sessions: sessionmaker[Session]) -> None:
         self._sessions = sessions
+
+    def recent_imports(self, limit: int = 20) -> tuple[DataImportHistoryItem, ...]:
+        """Return recent import batches with their source labels for UI provenance."""
+
+        if limit <= 0 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+
+        with self._sessions() as session:
+            rows = session.execute(
+                select(DataImportBatchRecord, SourceRegistryRecord.display_name)
+                .join(
+                    SourceRegistryRecord,
+                    SourceRegistryRecord.source_id == DataImportBatchRecord.source_id,
+                )
+                .order_by(
+                    DataImportBatchRecord.imported_at_utc.desc(),
+                    DataImportBatchRecord.batch_id.desc(),
+                )
+                .limit(limit)
+            ).all()
+
+        return tuple(
+            DataImportHistoryItem(
+                batch_id=batch.batch_id,
+                source_name=source_name,
+                original_filename=batch.original_filename,
+                imported_at_utc=batch.imported_at_utc,
+                row_count=batch.row_count,
+                accepted_rows=batch.accepted_rows,
+                rejected_rows=batch.rejected_rows,
+                file_sha256=batch.file_sha256,
+                document_relative_path=batch.document_relative_path,
+            )
+            for batch, source_name in rows
+        )
 
     def persist_market_csv_import(
         self,
