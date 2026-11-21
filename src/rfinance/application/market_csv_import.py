@@ -7,7 +7,6 @@ import hashlib
 import os
 from pathlib import Path
 import re
-import shutil
 from uuid import uuid4
 
 from rfinance.data.csv_market_import import CSVImportError, parse_market_observation_csv
@@ -51,7 +50,10 @@ class MarketCSVImportService:
         if len(normalized_source_name) > 256:
             raise ValueError("source_name must not exceed 256 characters")
 
-        source_path = selected_file.expanduser().resolve(strict=True)
+        try:
+            source_path = selected_file.expanduser().resolve(strict=True)
+        except OSError as error:
+            raise CSVImportError(f"selected file is unavailable: {error}") from error
         if not source_path.is_file():
             raise CSVImportError("the selected path is not a regular file")
         if source_path.suffix.lower() != ".csv":
