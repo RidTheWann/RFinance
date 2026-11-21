@@ -53,7 +53,8 @@ def sma(values: PriceSeries, period: int) -> tuple[DecimalValue, ...]:
         if len(window) > period:
             window.pop(0)
         if len(window) == period and all(item is not None for item in window):
-            result.append(sum(window, start=ZERO) / Decimal(period))
+            numeric_window = [item for item in window if item is not None]
+            result.append(sum(numeric_window, start=ZERO) / Decimal(period))
         else:
             result.append(None)
     return tuple(result)
