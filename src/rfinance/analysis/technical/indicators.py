@@ -7,8 +7,6 @@ All functions preserve input alignment. Values are None during warm-up or
 where the explicitly documented input window is incomplete.
 """
 
-from __future__ import annotations
-
 import decimal
 
 
