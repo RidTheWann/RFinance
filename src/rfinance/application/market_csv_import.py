@@ -65,18 +65,31 @@ class MarketCSVImportService:
             raise CSVImportError("the selected path is not a regular file")
         if source_path.suffix.lower() != ".csv":
             raise CSVImportError("only .csv files are supported by this import workflow")
-        if source_path.stat().st_size > self._max_file_bytes:
-            raise CSVImportError(
-                f"CSV file exceeds the {self._max_file_bytes // (1024 * 1024)} MiB limit"
-            )
+        try:
+            if source_path.stat().st_size > self._max_file_bytes:
+                raise CSVImportError(
+                    f"CSV file exceeds the {self._max_file_bytes // (1024 * 1024)} MiB limit"
+                )
+        except OSError as error:
+            raise CSVImportError(f"could not inspect the selected CSV file: {error}") from error
+
+        self._data_directory.mkdir(parents=True, exist_ok=True)
+        documents_directory = self._documents_directory.resolve()
+        if not documents_directory.is_relative_to(self._data_directory):
+            raise CSVImportError("the Documents directory resolves outside RFinance data storage")
+        documents_directory.mkdir(parents=True, exist_ok=True)
+
+        import_directory = documents_directory / "MarketImports"
+        import_directory.mkdir(parents=True, exist_ok=True)
+        import_directory = import_directory.resolve()
+        if not import_directory.is_relative_to(self._data_directory):
+            raise CSVImportError("the market-import archive resolves outside RFinance data storage")
 
         batch_id = str(uuid4())
         safe_filename = re.sub(r"[^A-Za-z0-9._-]+", "_", source_path.name)[:120]
         if not safe_filename:
             safe_filename = "market-data.csv"
 
-        import_directory = self._documents_directory / "MarketImports"
-        import_directory.mkdir(parents=True, exist_ok=True)
         destination_name = f"{batch_id}_{safe_filename}"
         destination_path = import_directory / destination_name
         temporary_path = import_directory / f".{destination_name}.part"
