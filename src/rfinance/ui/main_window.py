@@ -40,7 +40,6 @@ from rfinance.application.portfolio_ledger import (
     DEFAULT_SIMULATION_CAPITAL,
     PortfolioLedgerService,
 )
-from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
@@ -50,6 +49,7 @@ if TYPE_CHECKING:
 
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
+    from rfinance.application.portfolio_valuation import PortfolioValuationService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
