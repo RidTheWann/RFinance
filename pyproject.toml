@@ -8,7 +8,6 @@ version = "0.1.0"
 description = "Local-first investment research and simulated portfolio management"
 readme = "README.md"
 requires-python = ">=3.12,<3.16"
-license = { text = "Proprietary - license not yet selected" }
 authors = [{ name = "RFinance Contributors" }]
 dependencies = [
   "alembic>=1.20,<1.21",
