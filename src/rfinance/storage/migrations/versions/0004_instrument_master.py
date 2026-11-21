@@ -151,8 +151,7 @@ def upgrade() -> None:
             name="ck_instrument_review_evidence",
         ),
         sa.CheckConstraint(
-            "length(evidence_sha256) = 64 AND "
-            "lower(evidence_sha256) NOT GLOB '*[^0-9a-f]*'",
+            "length(evidence_sha256) = 64 AND lower(evidence_sha256) NOT GLOB '*[^0-9a-f]*'",
             name="ck_instrument_review_evidence_sha256",
         ),
         sa.CheckConstraint(
