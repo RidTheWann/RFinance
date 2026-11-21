@@ -150,12 +150,8 @@ def rsi(prices: PriceSeries, period: int = 14) -> tuple[DecimalValue, ...]:
             losses.clear()
         else:
             divisor = decimal.Decimal(period)
-            average_gain = (
-                average_gain * decimal.Decimal(period - 1) + gain
-            ) / divisor
-            average_loss = (
-                average_loss * decimal.Decimal(period - 1) + loss
-            ) / divisor
+            average_gain = (average_gain * decimal.Decimal(period - 1) + gain) / divisor
+            average_loss = (average_loss * decimal.Decimal(period - 1) + loss) / divisor
 
         result.append(rsi_value(average_gain, average_loss))
 
@@ -196,16 +192,12 @@ def macd(
     fast = ema(prices, fast_period)
     slow = ema(prices, slow_period)
     line: list[DecimalValue] = [
-        fast_value - slow_value
-        if fast_value is not None and slow_value is not None
-        else None
+        fast_value - slow_value if fast_value is not None and slow_value is not None else None
         for fast_value, slow_value in zip(fast, slow, strict=True)
     ]
     signal = ema(line, signal_period)
     histogram = tuple(
-        line_value - signal_value
-        if line_value is not None and signal_value is not None
-        else None
+        line_value - signal_value if line_value is not None and signal_value is not None else None
         for line_value, signal_value in zip(line, signal, strict=True)
     )
     return MACDResult(tuple(line), signal, histogram)
@@ -335,9 +327,7 @@ def atr(
             current = sum(seed, start=ZERO) / decimal.Decimal(period)
             seed.clear()
         else:
-            current = (
-                current * decimal.Decimal(period - 1) + value
-            ) / decimal.Decimal(period)
+            current = (current * decimal.Decimal(period - 1) + value) / decimal.Decimal(period)
         result.append(current)
 
     return tuple(result)
@@ -420,11 +410,7 @@ def momentum(prices: PriceSeries, lookback: int) -> tuple[DecimalValue, ...]:
     for index, current in enumerate(data):
         start = index - lookback
         window = data[start : index + 1] if start >= 0 else ()
-        if (
-            current is None
-            or len(window) != lookback + 1
-            or any(value is None for value in window)
-        ):
+        if current is None or len(window) != lookback + 1 or any(value is None for value in window):
             result.append(None)
             continue
         base = window[0]
@@ -453,14 +439,10 @@ def relative_strength(
         raise ValueError("price and benchmark series must have equal lengths")
 
     result: list[DecimalValue] = []
-    for index, (current, benchmark_current) in enumerate(
-        zip(data, benchmark_values, strict=True)
-    ):
+    for index, (current, benchmark_current) in enumerate(zip(data, benchmark_values, strict=True)):
         start = index - lookback
         asset_window = data[start : index + 1] if start >= 0 else ()
-        benchmark_window = (
-            benchmark_values[start : index + 1] if start >= 0 else ()
-        )
+        benchmark_window = benchmark_values[start : index + 1] if start >= 0 else ()
         if (
             current is None
             or benchmark_current is None
