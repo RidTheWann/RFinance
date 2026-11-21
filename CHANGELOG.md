@@ -15,3 +15,9 @@ All notable changes to RFinance are documented here.
 - Added local CSV archive and SHA-256, UNVERIFIED default status, duplicate rejection, archive-path containment, and off-thread desktop import workflow.
 - Added Overview import history with recent source/file/row-count/trust details and provenance tooltips.
 - Documented Indonesia financial-data access restrictions; no IDX scraper or automated data provider is enabled.
+- Added an instrument master with UNVERIFIED placeholders, a foreign-key link from market observations, and migration backfill for existing identifiers.
+- Added an explicit instrument-review service with VERIFIED/REJECTED decisions, complete-contract checks, SHA-256 evidence metadata, and append-only review audit events.
+- Added Decimal technical indicators: SMA, EMA, Wilder RSI, MACD, Bollinger Bands, True Range, ATR, rolling volatility, drawdown, momentum, and benchmark-relative strength.
+- Documented technical formulas, units, warm-up and missing-data semantics, and input-quality limitations.
+- Hardened local CSV ingestion with explicit flush ordering for foreign-key parent rows and one placeholder per new instrument per import batch.
+- Expanded cross-platform CI validation to 65 passing pytest tests on Windows and Ubuntu with Ruff and Mypy passing.
