@@ -130,7 +130,9 @@ def test_history_uses_reviewed_prices_and_does_not_apply_current_staleness(tmp_p
         observed = datetime(2010, 1, 4, 9, 0, tzinfo=UTC)
         add_bars(
             database,
-            observations=(("old-bbca", observed, Decimal("9000"), "UNVERIFIED", "batch-source-main"),),
+            observations=(
+                ("old-bbca", observed, Decimal("9000"), "UNVERIFIED", "batch-source-main"),
+            ),
         )
         verify_observation(database, "old-bbca", "review-old")
 
@@ -264,7 +266,10 @@ def test_blocked_source_cannot_feed_historical_indicators(tmp_path) -> None:
         add_bars(
             database,
             observations=(
-                ("blocked", NOW - timedelta(days=1), Decimal("100"), "VERIFIED", "batch-source-main"),
+                (
+                    "blocked", NOW - timedelta(days=1), Decimal("100"),
+                    "VERIFIED", "batch-source-main",
+                ),
             ),
         )
 
@@ -289,7 +294,10 @@ def test_catalog_excludes_inactive_or_unverified_instruments(tmp_path) -> None:
         add_bars(
             database,
             observations=(
-                ("placeholder", NOW - timedelta(days=1), Decimal("100"), "VERIFIED", "batch-source-main"),
+                (
+                    "placeholder", NOW - timedelta(days=1), Decimal("100"),
+                    "VERIFIED", "batch-source-main",
+                ),
             ),
         )
 

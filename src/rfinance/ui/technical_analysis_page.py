@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from datetime import UTC
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 from PySide6.QtWidgets import (
@@ -21,11 +20,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from rfinance.application.historical_price_series import HistoricalSeriesChoice
 from rfinance.application.technical_analysis import (
     TechnicalAnalysisReport,
     TechnicalAnalysisService,
 )
-from rfinance.application.historical_price_series import HistoricalSeriesChoice
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from decimal import Decimal
 
 
 class TechnicalAnalysisWorker(QObject):
@@ -187,9 +190,12 @@ class TechnicalAnalysisPage(QWidget):
         self._worker = worker
         self._task = task
         self._set_busy(True)
-        self.status_label.setText(
-            "Loading eligible local series…" if task == "catalog" else "Calculating Decimal indicators…"
+        status_message = (
+            "Loading eligible local series…"
+            if task == "catalog"
+            else "Calculating Decimal indicators…"
         )
+        self.status_label.setText(status_message)
         thread.start()
 
     @Slot(object)

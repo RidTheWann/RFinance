@@ -12,7 +12,6 @@ from sqlalchemy import select
 
 from rfinance.domain.eligibility.historical import (
     FORMULA_VERSION as HISTORICAL_ELIGIBILITY_VERSION,
-    HistoricalEligibilityReason,
     historical_observation_reasons,
 )
 from rfinance.domain.eligibility.observation import (

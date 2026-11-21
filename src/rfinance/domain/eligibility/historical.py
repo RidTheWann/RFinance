@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from rfinance.domain.eligibility.observation import (
     InstrumentState,
@@ -14,6 +14,9 @@ from rfinance.domain.eligibility.observation import (
     SourcePolicyStatus,
     SourceState,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 FORMULA_VERSION = "historical-price-eligibility-v1"
