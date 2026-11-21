@@ -23,7 +23,7 @@ The checkpoint includes the desktop foundation, portfolio ledger, local CSV prov
 | Ruff 0.17.6 lint (`src`, `tests`) | Passed |
 | Ruff 0.17.6 format check (`src`, `tests`) | Passed |
 | Mypy (new dividend module) | Passed |
-| pytest (non-UI) | 120 passed |
+| pytest (non-UI) | 127 passed |
 
 UI tests were not run locally because PySide6 is unavailable on this Termux/Android runtime. Python 3.12 CI has not yet run for post-`e5cff0a` commits.
 
@@ -58,6 +58,7 @@ UI tests were not run locally because PySide6 is unavailable on this Termux/Andr
 - Property-based checks that net amounts never exceed gross, trailing sums never decrease as the window grows, allocation parts always sum to the confirmed net amount, and selection never includes non-cash or unverified records.
 - Observation eligibility gates: instrument identity/status/activity/currency, observation quality, look-ahead, staleness, acquisition lag, close validity, source policy, UTC normalization, and combined diagnostics. Property-based checks that unverified, stale and future observations are never eligible.
 - Observation review: promotion gates (raw status, verified instrument, source policy), evidence/digest validation, append-only audit events, immutable raw rows, effective-quality derivation, review history, eligibility candidate mapping, file archiving, and append-only trigger enforcement.
+- Portfolio valuation: market value and unrealized P/L per position, unvalued-position handling without cost fallback, portfolio reconciliation, allocation versus targets, rejection of unverified/stale/future/wrong-currency quotes, and property-based reconciliation invariants.
 
 ## Known boundaries
 
@@ -71,8 +72,8 @@ UI tests were not run locally because PySide6 is unavailable on this Termux/Andr
 ## Remaining validation work
 
 - Dedicated instrument-review UI and evidence-artifact workflow.
-- Desktop UI for the observation-review service; the eligibility gate consumes but does not grant review state.
-- Connecting the implemented eligibility gate to screening and portfolio valuation.
+- Desktop UI for the observation-review service and valuation view; the eligibility gate consumes but does not grant review state.
+- Connecting the implemented eligibility gate and valuation layer to screening and persisted portfolio queries.
 - Dividend event persistence, calendar, and end-to-end UI connection.
 - Dependency lockfile and reproducible locked installation.
 - Migration downgrade/upgrade and corruption recovery.

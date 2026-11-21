@@ -10,7 +10,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 3 | Fundamental, valuation, technical and dividend calculations | Decimal margin/ROE/debt-equity primitives, technical indicator suite, and `dividend-analytics-v1` calculation layer implemented with methodology docs and tests. Broader statements and valuation formulas remain |
 | 4 | Screening and deterministic evidence-linked recommendations | Not started; eligibility gate and observation-review ledger implemented, but screening and recommendations are not built; they must consume only eligible inputs |
 | 5 | Dividend event calendar and analytics | Deterministic calculation layer implemented; event persistence, calendar and desktop UI remain |
-| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup and dashboard implemented; trade UI, valuations, allocation execution and risk automation remain |
+| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup, dashboard, and `portfolio-valuation-v1` calculation layer implemented; trade UI, desktop valuation view, allocation execution and risk automation remain |
 | 7 | Optional Ollama intelligence and secure document analysis | Not started |
 | 8 | Local automation and reporting | Not started |
 | 9 | Backup/restore, offline operation, reliability and security hardening | Not started |
@@ -20,12 +20,12 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 
 - Last GitHub Actions validated application-code head: `e5cff0a979bf75a8c8a8b3b949123a491896e0d6`
 - Windows and Ubuntu, Python 3.12: Ruff lint, Ruff format, and Mypy passed; 65 pytest tests passed on each OS.
-- Local checkpoint (Python 3.14, Termux): Ruff 0.17.6 lint/format passed, Mypy clean for new modules, 120 non-UI pytest tests passed. UI tests and Python 3.12 CI have not been run for post-`e5cff0a` commits.
+- Local checkpoint (Python 3.14, Termux): Ruff 0.17.6 lint/format passed, Mypy clean for new modules, 127 non-UI pytest tests passed. UI tests and Python 3.12 CI have not been run for post-`e5cff0a` commits.
 - PR #1 remains open and is not merged into `main`.
 
 ## Next implementation sequence
 
-1. Expose the observation-review service in the desktop and wire the eligibility gate into screening and valuation. Verifying an instrument must not certify historical prices.
+1. Connect the eligibility gate and valuation layer to persisted observations and expose them in the desktop. Verifying an instrument must not certify historical prices.
 2. Connect the technical indicator calculation layer to consistently sampled, adjusted, quality-qualified historical series.
 3. Persist dividend events with provenance and connect the dividend calculation layer to a calendar and desktop UI.
 4. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.

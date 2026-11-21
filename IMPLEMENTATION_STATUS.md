@@ -82,6 +82,13 @@ Last verified against the repository: 2026-11-21
 - Added evidence-file archiving under the per-user data directory, review history, raw-versus-effective candidate listing, and `candidates_for_eligibility` to connect persisted reviews to the domain eligibility gate.
 - The workflow has no AI decision path and no automatic promotion; instrument identity verification still cannot certify a price.
 
+### Portfolio valuation
+
+- Added `portfolio-valuation-v1` in `src/rfinance/analysis/portfolio/valuation.py`, documented in `docs/PORTFOLIO_VALUATION.md`.
+- Values ledger positions only from verified, currency-matching, fresh quotes that passed the eligibility gate; unverified, stale, future, or wrong-currency quotes are rejected.
+- Reports unvalued positions explicitly instead of valuing them at cost or zero, with `is_complete`, per-position market value and unrealized P/L, portfolio totals, and allocation versus configurable targets.
+- `quotes_from_eligible_candidates` connects gated observation candidates to valuation quotes. No currency conversion, brokerage claim, or rebalancing is performed.
+
 ## Verified CI
 
 Application-code commit `e5cff0a979bf75a8c8a8b3b949123a491896e0d6` completed successfully on Windows and Ubuntu using Python 3.12.
@@ -101,7 +108,7 @@ The tested head includes the instrument-master foreign-key import path, single-p
 - Branch `foundation/bootstrap-core`; Python 3.14 editable install with `--no-deps`.
 - Ruff 0.17.6 lint and format checks: passed on `src` and `tests`.
 - Mypy: no issues in `src/rfinance/analysis/dividend/analytics.py`; the six remaining diagnostics are pre-existing PySide6-stub artifacts because PySide6 is not installable on this Termux/Android runtime.
-- pytest: 120 passed (62 pre-existing non-UI tests plus 27 dividend, 17 eligibility and 14 observation-review tests). UI tests were not run locally because PySide6 is unavailable.
+- pytest: 127 passed (62 pre-existing non-UI tests plus 27 dividend, 17 eligibility, 14 observation-review and 7 valuation tests). UI tests were not run locally because PySide6 is unavailable.
 
 ## Not implemented yet
 
@@ -109,13 +116,13 @@ The tested head includes the instrument-master foreign-key import path, single-p
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
 - Full financial statements, broader valuation metrics, dividend event persistence/calendar/UI, screening, and evidence-linked recommendations. The dividend calculation layer exists but is not yet connected to persistence or the desktop.
-- Portfolio trade-entry UI, market valuation, unrealized P/L, corporate actions, rebalancing, allocation execution, and full risk controls.
+- Portfolio trade-entry UI, desktop market-valuation view, corporate actions, rebalancing, allocation execution, and full risk controls. The valuation calculation layer exists but is not yet connected to persistence queries or the desktop.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
 
-1. Expose the observation-review workflow in the desktop and wire the eligibility gate into screening and portfolio valuation.
+1. Connect the valuation layer to persisted eligible observations and expose valuation and observation review in the desktop.
 2. Connect technical indicators to consistently sampled, corporate-action-aware, quality-qualified historical series, with currency and methodology metadata preserved.
 3. Persist dividend events with provenance and add a dividend calendar/UI connected to the calculation layer.
 4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
