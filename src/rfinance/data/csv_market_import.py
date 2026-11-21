@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -49,6 +50,17 @@ class MarketCSVParseResult:
     @property
     def row_count(self) -> int:
         return len(self.accepted) + len(self.rejected)
+
+
+def serialize_original_row(row: Mapping[str, str | None]) -> str:
+    """Serialize original CSV cells losslessly enough for auditable provenance."""
+
+    return json.dumps(
+        dict(row),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 def _decimal_value(
