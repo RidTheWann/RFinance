@@ -171,18 +171,8 @@ def test_new_instrument_with_multiple_rows_creates_one_placeholder(tmp_path) -> 
         assert result.accepted_rows == 2
         assert result.rejected_rows == 0
         with database.sessions() as session:
-            assert (
-                session.scalar(
-                    select(func.count()).select_from(InstrumentRegistryRecord)
-                )
-                == 1
-            )
-            assert (
-                session.scalar(
-                    select(func.count()).select_from(MarketObservationRecord)
-                )
-                == 2
-            )
+            assert session.scalar(select(func.count()).select_from(InstrumentRegistryRecord)) == 1
+            assert session.scalar(select(func.count()).select_from(MarketObservationRecord)) == 2
             instrument = session.get(InstrumentRegistryRecord, "IDX:BBCA")
             assert instrument is not None
             assert instrument.verification_status == "UNVERIFIED"
