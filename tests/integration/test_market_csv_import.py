@@ -22,6 +22,7 @@ from rfinance.storage.models.data_ingestion import (
     MarketObservationRecord,
     SourceRegistryRecord,
 )
+from rfinance.storage.models.instrument_registry import InstrumentRegistryRecord
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
 
 if TYPE_CHECKING:
@@ -134,6 +135,11 @@ def test_market_csv_import_persists_source_provenance_and_unverified_rows(tmp_pa
             assert batch.rejected_rows == 1
             assert observation is not None
             assert observation.quality_status == "UNVERIFIED"
+            instrument = session.get(InstrumentRegistryRecord, "IDX:BBCA")
+            assert instrument is not None
+            assert instrument.verification_status == "UNVERIFIED"
+            assert instrument.ticker is None
+            assert instrument.company_name is None
             assert observation.currency == "IDR"
             assert observation.close == "9100"
             assert observation.source_id == result.source_id
