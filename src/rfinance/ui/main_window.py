@@ -40,6 +40,7 @@ from rfinance.application.portfolio_ledger import (
 from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
+from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
@@ -47,6 +48,7 @@ if TYPE_CHECKING:
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
+from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
@@ -134,6 +136,7 @@ class MainWindow(QMainWindow):
         instrument_review: InstrumentReviewService,
         observation_review: ObservationReviewService,
         portfolio_valuation: PortfolioValuationService | None = None,
+        technical_analysis: TechnicalAnalysisService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -142,6 +145,8 @@ class MainWindow(QMainWindow):
         self.instrument_review = instrument_review
         self.portfolio_valuation = portfolio_valuation
         self.portfolio_valuation_page: PortfolioValuationPage | None = None
+        self.technical_analysis = technical_analysis
+        self.technical_analysis_page: TechnicalAnalysisPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -159,7 +164,14 @@ class MainWindow(QMainWindow):
         self.navigation.setObjectName("mainNavigation")
         self.navigation.setFixedWidth(210)
         self.navigation.addItems(
-            ["Overview", "Portfolio", "Instrument Review", "Observation Review", "Settings"]
+            [
+                "Overview",
+                "Portfolio",
+                "Instrument Review",
+                "Observation Review",
+                "Technical Analysis",
+                "Settings",
+            ]
         )
 
         self.pages = QStackedWidget(root)
@@ -168,6 +180,11 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self._instrument_review_page())
         self.observation_review_page = ObservationReviewPage(observation_review)
         self.pages.addWidget(self.observation_review_page)
+        if self.technical_analysis is None:
+            self.pages.addWidget(QLabel("Historical technical analysis is unavailable."))
+        else:
+            self.technical_analysis_page = TechnicalAnalysisPage(self.technical_analysis)
+            self.pages.addWidget(self.technical_analysis_page)
         self.pages.addWidget(self._settings_page())
 
         layout.addWidget(self.navigation)
@@ -758,6 +775,12 @@ class MainWindow(QMainWindow):
             self.portfolio_status_label.setText(
                 "A portfolio valuation refresh is still running. "
                 "Wait for it to finish before closing RFinance."
+            )
+            event.ignore()
+            return
+        if self.technical_analysis_page is not None and self.technical_analysis_page.is_busy:
+            self.technical_analysis_page.status_label.setText(
+                "Technical analysis is still running. Wait for it to finish before closing RFinance."
             )
             event.ignore()
             return
