@@ -30,7 +30,9 @@ Windows CI intermittently failed `test_observation_review_page_rejects...` with 
 
 ## Latest cross-platform CI checkpoint (after history rebuild)
 
-`main` HEAD `f005c9113510466fc5ea09da4d8d78818ad3b6a6`, tree `d15813a111829b8b7917ac8ee83d95d580297047`: [push CI run 45001539029](https://github.com/RidTheWann/RFinance/actions/runs/45001539029) — Windows and Ubuntu both **success**, Python 3.12, **206 tests passed per OS**, Ruff lint/format and Mypy passed.
+Current `main` HEAD (Qt race fix + tooling): [push CI run 45003901279](https://github.com/RidTheWann/RFinance/actions/runs/45003901279) — Windows and Ubuntu both **success**, Python 3.12, **207 tests passed per OS**, Ruff lint/format and Mypy passed.
+
+Earlier checkpoint `f005c9113510466fc5ea09da4d8d78818ad3b6a6`, tree `d15813a111829b8b7917ac8ee83d95d580297047`: [push CI run 45001539029](https://github.com/RidTheWann/RFinance/actions/runs/45001539029) — Windows and Ubuntu both **success**, 206 tests per OS.
 
 The first Windows attempt aborted inside `pytestqt/plugin.py::_process_events` (Qt runner flake) with no assertion failure. `gh run rerun --failed` passed on retry against the byte-identical tree. This is recorded as an environment flake, not a product defect; earlier PR #2 CI at `eaef966d4d542d44275c4cab91e025431b63d18d` also passed 202 tests on both OSes.
 
