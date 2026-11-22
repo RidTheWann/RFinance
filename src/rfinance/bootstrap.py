@@ -16,6 +16,10 @@ from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
+from rfinance.application.portfolio_trading import (
+    PortfolioTradingService,
+    VerifiedLotSizeService,
+)
 from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.recommendations import RecommendationService
 from rfinance.application.screening_evaluation import ScreeningEvaluationService
@@ -37,6 +41,8 @@ class ApplicationContext:
     paths: AppPaths
     database: Database
     portfolio_ledger: PortfolioLedgerService
+    portfolio_trading: PortfolioTradingService
+    verified_lot_sizes: VerifiedLotSizeService
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
     observation_review: ObservationReviewService
@@ -62,6 +68,8 @@ def create_application_context(data_directory: str | None = None) -> Application
         database.upgrade()
         ledger_repository = LedgerRepository(database.sessions)
         portfolio_ledger = PortfolioLedgerService(ledger_repository, lot_sizes={})
+        verified_lot_sizes = VerifiedLotSizeService(database.sessions)
+        portfolio_trading = PortfolioTradingService(ledger_repository, lot_sizes=verified_lot_sizes)
         portfolio_valuation = PortfolioValuationService(database.sessions, portfolio_ledger)
         technical_analysis = TechnicalAnalysisService(
             HistoricalPriceSeriesService(database.sessions)
@@ -108,6 +116,8 @@ def create_application_context(data_directory: str | None = None) -> Application
         paths=paths,
         database=database,
         portfolio_ledger=portfolio_ledger,
+        portfolio_trading=portfolio_trading,
+        verified_lot_sizes=verified_lot_sizes,
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,
         observation_review=observation_review,

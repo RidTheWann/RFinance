@@ -43,6 +43,7 @@ from rfinance.application.portfolio_ledger import (
 from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.dividend_page import DividendPage
 from rfinance.ui.observation_review_page import ObservationReviewPage
+from rfinance.ui.portfolio_trading_page import PortfolioTradingPage
 from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
 from rfinance.ui.research_page import ResearchPage
 from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
@@ -54,6 +55,10 @@ if TYPE_CHECKING:
     from rfinance.application.dividend_receipts import DividendReceiptService
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
+    from rfinance.application.portfolio_trading import (
+        PortfolioTradingService,
+        VerifiedLotSizeService,
+    )
     from rfinance.application.portfolio_valuation import PortfolioValuationService
     from rfinance.application.recommendations import RecommendationService
     from rfinance.application.screening_evaluation import ScreeningEvaluationService
@@ -144,6 +149,8 @@ class MainWindow(QMainWindow):
         market_csv_import: MarketCSVImportService,
         instrument_review: InstrumentReviewService,
         observation_review: ObservationReviewService,
+        portfolio_trading: PortfolioTradingService | None = None,
+        verified_lot_sizes: VerifiedLotSizeService | None = None,
         portfolio_valuation: PortfolioValuationService | None = None,
         technical_analysis: TechnicalAnalysisService | None = None,
         dividend_events: DividendEventService | None = None,
@@ -154,6 +161,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.paths = paths
         self.portfolio_ledger = portfolio_ledger
+        self.portfolio_trading = portfolio_trading
+        self.verified_lot_sizes = verified_lot_sizes
+        self.portfolio_trading_page: PortfolioTradingPage | None = None
         self.market_csv_import = market_csv_import
         self.instrument_review = instrument_review
         self.portfolio_valuation = portfolio_valuation
@@ -360,6 +370,14 @@ class MainWindow(QMainWindow):
                 self._portfolio_dashboard,
             )
             dashboard_layout.addWidget(self.portfolio_valuation_page)
+        if self.portfolio_trading is not None and self.verified_lot_sizes is not None:
+            self.portfolio_trading_page = PortfolioTradingPage(
+                self.portfolio_trading,
+                self.portfolio_ledger,
+                self.verified_lot_sizes,
+                self._portfolio_dashboard,
+            )
+            dashboard_layout.addWidget(self.portfolio_trading_page)
         dashboard_layout.addWidget(
             QLabel(
                 "Allocation targets only — not executed holdings: "
