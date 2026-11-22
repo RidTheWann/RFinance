@@ -1,0 +1,166 @@
+# Implementation Status
+
+Last verified against the repository: 2026-11-22
+
+## Repository state
+
+- Repository: RidTheWann/RFinance (public).
+- Remote `main` contains only the initial README commit `c3d556a34852922c147d136e49fdc05526b178e5`.
+- PR #1 (`foundation/bootstrap-core` → `main`, 172 commits of implementation work) is **closed and unmerged**. Its head ref `refs/pull/1/head` was fetched and preserved locally; the source branch has been deleted from the remote.
+- Current local working branch: `rfinance-dev`, based on the preserved PR head `d2a0dc35d5233e6a5c6bf6e5558b5543d0975d35`. No prior work was discarded.
+- Push access is unavailable in this session (HTTPS git reports no usable credentials; `gh` is not authenticated). Commits are local only until credentials are supplied. No push, PR or merge is claimed.
+- Historical CI checkpoint at `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` (Windows and Ubuntu, Python 3.12): Ruff lint/format and Mypy passed; 156 tests passed on each OS. This is a prior CI result, not a result of this session.
+- Local verification in this session (Ubuntu 26.04 aarch64, Python 3.14.4, PySide6 6.12): Ruff lint/format and Mypy pass; all non-UI tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime (the same tests previously passed in x64 CI); see [TEST_REPORT.md](TEST_REPORT.md).
+
+## Implemented in the foundation branch
+
+### Application foundation
+
+- Canonical repository-wide `AGENTS.md` and Claude Code `CLAUDE.md`.
+- Python package metadata, Ruff, Mypy, pytest, pytest-qt, Hypothesis, Bandit, pip-audit configuration, Windows scripts, and Windows/Ubuntu CI.
+- Windows per-user persistent data paths, environment override, rotating logs, SQLite, and Alembic migrations.
+- PySide6 desktop navigation includes Overview, Portfolio Simulator, Instrument Review, Observation Review, Technical Analysis, and Settings.
+- Application composition root wires SQLite persistence, portfolio ledger, CSV ingestion, instrument review, observation review, persisted-observation portfolio valuation, and historical technical-analysis services.
+
+### Deterministic financial and portfolio logic
+
+- Typed instrument and market-observation contracts with explicit currency, timestamps, quality, and OHLC validation.
+- `fundamental-metrics-v1`: 17 reproducible Decimal fundamental metrics (growth, margins, ROE/ROA/ROIC, leverage, interest coverage, cash-flow measures, P/E, P/B, EV/EBITDA) with explicit formula/input/status records, missing-data and unusable-denominator handling, and a financial-sector applicability gate that excludes industrial leverage/cash-flow metrics for banks. Unit and property tests cover the invariants.
+- Immutable portfolio ledger with explicit capital, buy, sell, cash withdrawal, and simulated-dividend events.
+- Weighted-average cost, realized P/L, cash and position invariants, unique event IDs, and strict event ordering.
+- Trade events require a provenance-bearing `VerifiedLotSize`; missing or unverified lot metadata blocks trading.
+- Append-only SQLite event storage with exact fixed-point Decimal text persistence, UTC timestamps, uniqueness constraints, and update/delete protection triggers.
+- First-run capital setup is connected to the UI and ledger. Rp5,000,000 is an editable suggested value; only explicit user action records opening cash. No assets or recurring contributions are generated automatically.
+- Portfolio UI reads balances from ledger replay; the 50/20/30 allocation is shown as a target, not actual holdings.
+
+### Data provenance, instrument identity, and local import
+
+- Source registry with access-method and policy-status fields. User-import sources are unreviewed by default; database constraints prohibit automated access or redistribution permissions for them.
+- Import-batch, source, market-observation, and row-issue persistence through Alembic migrations.
+- Strict local CSV parser for canonical instrument ID, timezone-aware observation timestamp, currency, close, and optional OHLC/volume columns.
+- Row-level validation and rejection diagnostics; duplicate source/instrument/time observations are rejected rather than overwritten.
+- User-selected CSV files are archived under local Documents/MarketImports, hashed with SHA-256, and linked to source, import batch, acquisition timestamp, raw input cells, and transformation version.
+- New identifiers discovered in imports create one instrument-master placeholder per instrument ID, initially `UNVERIFIED`. A batch flushes the instrument placeholder and import metadata before inserting observations that reference them through foreign keys.
+- Imported market observations always remain `UNVERIFIED`; successful parsing or verification of instrument identity does not certify price truth, source licensing, historical completeness, or corporate-action adjustment.
+- Instrument master fields and verification lifecycle are persisted through Alembic migration `0004_instrument_master`. Existing observation identifiers are backfilled as `UNVERIFIED` instruments, and market observations reference the master through a foreign key.
+- `InstrumentReviewService` supports explicit operator decisions (`VERIFIED` or `REJECTED`). A `VERIFIED` decision requires a complete validated `InstrumentContract` whose ID matches the reviewed instrument.
+- Every review appends an immutable audit event containing the previous state, decision, reviewer label, evidence reference, SHA-256 digest, notes, timestamp, and reviewed metadata snapshot. Database triggers prevent review-event updates/deletes.
+- The desktop now exposes an instrument-review queue with evidence-file selection, SHA-256 digest computation, reviewer/notes entry, and review-history display; long-running review work executes on a Qt worker thread.
+- Manual instrument identity verification remains separate from price-observation verification and does not promote imported market observations from `UNVERIFIED`.
+- File size and row-count limits, archive path containment checks, and a Qt worker thread keep import processing out of the UI thread.
+- Overview displays recent import history, source labels, filenames, UTC timestamps, accepted/rejected counts, and trust status. Batch ID, SHA-256, and archive path are available in row tooltips.
+- Indonesia data-access review documents why IDX scraping/crawling is not enabled and why official/licensed feed terms must be verified before an automated adapter is introduced.
+
+### Technical analysis
+
+- Decimal-only, provider-independent implementations are documented in `docs/TECHNICAL_ANALYSIS.md` with formula version `technical-decimal-v1`.
+- Implemented indicators: SMA, EMA, Wilder RSI, MACD, Bollinger Bands, True Range, Wilder ATR, rolling sample volatility, drawdown, maximum drawdown, price momentum, and relative strength versus a benchmark.
+- Warm-up alignment, missing-data resets, positivity/finite-value validation, look-ahead limitations, units, and standard-deviation conventions are documented and tested.
+- EMA preserves a constant series without accumulating Decimal rounding drift. MACD tests account for finite Decimal-context rounding with a tight Decimal tolerance.
+- `HistoricalPriceSeriesService` connects local persisted observations to technical analysis using the separate `historical-price-eligibility-v1` gate. It selects one instrument/source pair, uses the latest append-only price-review decision, rejects future observations, unverified prices, unverified/inactive instrument identities, currency mismatches, and blocked/restricted sources, but deliberately does not apply the current-quote 7-day staleness rule to historical bars.
+- A large calendar gap inserts a `None` separator before indicator calculation, restarting rolling warm-up windows. Periods count stored observations, not inferred trading days. No source blending, resampling, interpolation, frequency inference, or corporate-action adjustment is performed; adjustment remains `UNKNOWN_AS_SUPPLIED`.
+- The Technical Analysis desktop page loads the locally available instrument/source catalogue and runs indicator calculations on a Qt worker thread. Each report displays source identity, period, rejected-row diagnostics, gap count, formula version, and adjustment limitation.
+
+### Dividend analytics
+
+- Added `dividend-analytics-v1`, a Decimal-only, dependency-free calculation layer in `src/rfinance/analysis/dividend/analytics.py` documented in `docs/DIVIDEND_ANALYTICS.md`.
+- Implemented cash-dividend eligibility selection with currency filtering, quality gating, duplicate-event collapse, conflict rejection, and deterministic ordering.
+- Implemented trailing dividend per share, trailing yield, explicitly labelled forward yield, net amount under a known withholding rate, payout ratio, earnings and free-cash-flow coverage, growth, CAGR, consecutive distribution years, and consistency summaries.
+- Implemented clearly labelled simulated dividend cash projection and exact-reconciliation allocation for **confirmed** net receipts only.
+- Missing observations and unusable denominators return `None`; no missing value is converted to zero. Forward estimates, simulations, and confirmed receipts are distinct labelled states.
+
+### Deterministic screening and evidence-linked recommendations
+
+- Added `screening-deterministic-v1` as a framework-independent domain engine. `ScreeningInput` carries only explicit evidence: verified-fundamental metrics, price age/quality, dividend references, portfolio drawdown and evidence items.
+- Transparent actions (`BUY_CANDIDATE`, `HOLD`, `WATCH`, `AVOID`, `INSUFFICIENT_DATA`), machine-readable risk flags, deterministically ordered evidence IDs, invalidation conditions and a confidence fraction that measures evidence quality/completeness, never profit probability.
+- Hard blocks: missing fundamental inputs, unusable denominators, unverified or stale price evidence, and elevated/critical drawdown prevent `BUY_CANDIDATE`. Missing inputs remain `None`; no zero or fabricated value enters a score. Critical drawdown, or negative earnings with excessive leverage, produces `AVOID`.
+- Added Alembic migration `0007_recommendations` with an append-only audit table. `RecommendationService.evaluate` runs the engine and persists the result; `recent` and `get` reconstruct stored recommendations with their evidence and diagnostics.
+- Added a Research Center desktop tab that lists stored recommendations and exposes explanation, evidence, risk flags and invalidation conditions. Generating a recommendation from assembled evidence remains an application-service operation.
+
+### Dividend event persistence, calendar and analytics connection
+
+- Added `dividend-event-v1` ingestion through the frozen, extra-forbid `DividendEventContract` (Pydantic v2) with explicit source, acquisition/announcement timestamps, gross per-share amount, currency, ex/payment dates, lifecycle status, quality state, original value, unit and transformation version. Cash types require an amount; `STOCK`/`RIGHTS` cannot carry one; naive timestamps and invalid currencies/periods are rejected.
+- Added Alembic migration `0006_dividend_events` with an append-only `dividend_events` table, an append-only `dividend_review_events` audit ledger, foreign keys to the instrument master and source registry, uniqueness on `(source_id, event_key)`, indexes for instrument/ex-date and status lookups, and SQLite triggers blocking updates and deletes.
+- `DividendEventService` atomically records events with default `UNVERIFIED` quality, creates/reuses a deny-by-default `MANUAL` source (no automated access or redistribution), rejects duplicate keys and unknown instruments, and validates all review gates before appending a decision.
+- Evidence-backed review archives a user-selected document under `Documents/DividendReviewEvidence`, copies with a bounded chunk loop, computes SHA-256, and appends an immutable review. Promotion requires a raw `UNVERIFIED` event, a `VERIFIED` instrument identity, an allowed source policy, a non-estimate/non-simulated/non-cancelled status, and complete reviewer/evidence/notes. There is no automatic or AI promotion path.
+- `calendar()` returns ex-dates and payment dates with explicit `is_confirmed_cash` and `is_estimate` labels; announced or unverified items are never presented as confirmed receipts. `analytics()` maps only effectively `VERIFIED`, observed, cash events into `dividend-analytics-v1`, returning labelled trailing/forward yields, net amount only when withholding is known, annual consistency, and `None` for missing inputs.
+- Connected the Dividend Center desktop tab to these services with event, calendar, analytics and evidence-review views. All displayed values are read from local storage or calculated from verified events; long-running work runs on Qt worker threads.
+
+### Observation eligibility gates
+
+- Added `eligibility-observation-v1`, a dependency-free domain policy in `src/rfinance/domain/eligibility/observation.py` documented in `docs/DATA_ELIGIBILITY.md`.
+- `evaluate_observation` reports every failed gate (instrument identity, instrument status/activity/currency, observation quality, currency match, look-ahead, staleness, acquisition lag, close validity, and source policy) instead of silently dropping a value.
+- Instrument identity verification and observation verification are independent gates; verifying an instrument cannot promote a price.
+- `select_eligible_observations` partitions observations into usable and diagnosed rejections without mutation, giving downstream screening a single eligibility boundary.
+
+### Observation review workflow
+
+- Added migration `0005_observation_review` and an append-only `observation_review_events` ledger. Raw market observations remain immutable; effective quality is derived from the latest decision.
+- `ObservationReviewService` promotes or rejects a price only with explicit reviewer, evidence reference, SHA-256 digest, and notes. Promotion additionally requires a raw `UNVERIFIED` observation, a `VERIFIED` instrument identity, and a source policy that is neither `BLOCKED` nor `RESTRICTED`.
+- Added evidence-file archiving under the per-user data directory, review history, raw-versus-effective candidate listing, and `candidates_for_eligibility` to connect persisted reviews to the domain eligibility gate.
+- The workflow has no AI decision path and no automatic promotion; instrument identity verification still cannot certify a price.
+
+### Portfolio valuation
+
+- Added `portfolio-valuation-v1` in `src/rfinance/analysis/portfolio/valuation.py`, documented in `docs/PORTFOLIO_VALUATION.md`.
+- Values ledger positions only from verified, currency-matching, fresh quotes that passed the eligibility gate; unverified, stale, future, or wrong-currency quotes are rejected.
+- Reports unvalued positions explicitly instead of valuing them at cost or zero, with `is_complete`, per-position market value and unrealized P/L, portfolio totals, and allocation versus configurable targets.
+- `quotes_from_eligible_candidates` connects gated observation candidates to valuation quotes. No currency conversion, brokerage claim, or rebalancing is performed.
+- `PortfolioValuationService` joins persisted observations to instrument/source policy and append-only price-review decisions, then applies `eligibility-observation-v1` before selecting the newest eligible quote.
+- Conflicting latest prices from different sources are not resolved arbitrarily; the position remains unvalued with a diagnostic. Instrument type is mapped conservatively; generic equities and ETFs are not assumed to be dividend stocks or index trackers.
+- The Portfolio Simulator now has a background valuation refresh and displays price provenance, observation age, price, market value, unrealized P/L, and eligibility diagnostics. Partial totals are explicitly labeled; missing positions are not substituted at cost or zero.
+
+## Local verification (this session, 2026-11-22)
+
+Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2.1.9, Alembic 1.20.1, pytest 9.2.0, Ruff 0.17.6, Mypy 1.20.2.
+
+| Check | Result |
+|---|---|
+| Ruff lint | Passed (119 files) |
+| Ruff format check | Passed (119 files) |
+| Mypy strict | Passed (68 source files) |
+| Unit + integration pytest | **194 passed** |
+| Targeted Qt tests (main window + Dividend Center + Research Center) | 5 passed |
+| Clean-start launch (fresh data directory, offscreen Qt) | Stayed alive; SQLite, WAL/SHM, logs and all 13 tables at migration `0007_recommendations` created |
+| Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
+
+The local checkpoint includes the new dividend event slice: 7 integration tests, 12 contract unit tests, and a Dividend Center Qt rendering test.
+
+## Verified CI (historical, prior session)
+
+Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed successfully on Windows and Ubuntu using Python 3.12. See [push CI 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
+
+| Check | Windows | Ubuntu |
+|---|---:|---:|
+| Dependency installation | Passed | Passed |
+| Ruff lint | Passed | Passed |
+| Ruff format | Passed; 94 files already formatted | Passed; 94 files already formatted |
+| Mypy | Passed; 53 source files | Passed; 53 source files |
+| pytest | **141 passed** | **141 passed** |
+
+The tested head includes persisted-observation portfolio valuation, append-only price-review integration, source and instrument eligibility, explicit latest-price conflict rejection, historical-series eligibility and loading, the Technical Analysis Qt workflow, and indicator warm-up resets across large date gaps. That PR was subsequently closed without merging; its work was preserved locally and development continued from it.
+
+## Historical local developer checkpoint (previous Termux session)
+
+- Branch `foundation/bootstrap-core`; Python 3.14 editable install with `--no-deps`.
+- Ruff 0.17.6 lint and format checks: passed on `src` and `tests`.
+- Mypy: no issues in `src/rfinance/analysis/dividend/analytics.py`; the six remaining diagnostics are pre-existing PySide6-stub artifacts because PySide6 is not installable on this Termux/Android runtime.
+- pytest: 127 passed (62 pre-existing non-UI tests plus 27 dividend, 17 eligibility, 14 observation-review and 7 valuation tests). UI tests were not run locally because PySide6 is unavailable.
+
+## Not implemented yet
+
+- Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
+- Generated, resolver-verified dependency lockfile.
+- Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
+- Portfolio trade-entry UI, corporate actions, rebalancing, allocation execution, and full risk controls remain incomplete. Portfolio market valuation is now connected to persisted review-adjusted observations and the desktop, but its source values still depend on lawfully obtained and manually reviewable data.
+- Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
+- Clean-install, upgrade, offline, security, and production packaging acceptance.
+
+## Next engineering objectives
+
+1. Post confirmed net dividend receipts into the portfolio cash ledger with the documented 50/30/20 preference, duplicate-receipt protection, and a clear separation from simulated projections.
+2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
+3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
+4. Connect the screening engine to an application workflow that assembles persisted instrument state, eligible prices, fundamental metrics and dividend evidence into a guided evaluation.
+5. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.
+6. Continue risk controls, automation, reporting, backup/restore, reproducible lockfile, and Windows packaging in tested vertical slices.
