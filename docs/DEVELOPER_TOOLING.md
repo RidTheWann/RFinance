@@ -66,6 +66,15 @@ OpenCode V2 discovers `.opencode/skills/<id>/SKILL.md`. These are committed and 
 
 Claude Code sees `AGENTS.md`/`CLAUDE.md` at the repository root; both remain canonical. To use the same rules as portable Claude skills, the directories above can be mirrored under `.claude/skills/` (OpenCode already reads both locations).
 
+### External skill packs installed (2026-11-22)
+
+- **Superpowers** ([obra/superpowers](https://github.com/obra/superpowers), MIT): installed as an OpenCode V2 plugin via `plugins: ["superpowers@git+https://github.com/obra/superpowers.git"]` in `~/.config/opencode/opencode.json` (global, outside the repo). It registers 15 process skills including `brainstorming`, `writing-plans`, `test-driven-development`, `systematic-debugging`, `requesting-code-review` and `verification-before-completion`. Verified: the skills appeared in the running session after the config change.
+- **Matt Pocock skills** ([mattpocock/skills](https://github.com/mattpocock/skills), MIT): the portable `skills/engineering` and `skills/productivity` trees were copied into this repository's `.opencode/skills/` so every contributor receives them. User-invoked skills already carry `disable-model-invocation: true` upstream, so they stay out of automatic advertising.
+
+Because both packs are present, treat them as complementary: Superpowers supplies the mandatory process workflow; Matt Pocock skills supply optional domain/CRISP-style disciplines (`domain-modeling`, `codebase-design`, `to-spec`, `to-tickets`, `improve-codebase-architecture`, `diagnosing-bugs`, `research`, etc.). **`AGENTS.md` remains canonical** — any skill instruction that conflicts with a product invariant (no broker access, no silent zero, evidence-first, simulation labelling, autonomous execution when the owner opted out of questions) loses to the repository policy.
+
+Skill files added after a session starts may require `/reload` or a fresh session before the skill loader advertises them; this is a harness cache behaviour, not a missing installation.
+
 ## 3. MCP servers (OpenCode V2)
 
 Servers consume model context, so enable only what you need. Prefer the CLI; it preserves unrelated project configuration:

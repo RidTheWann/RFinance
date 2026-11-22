@@ -81,6 +81,6 @@ A feature is complete only when its domain behavior, data flow, persistence, UI/
 
 ## Agent tooling
 
-- Project skills live in `.opencode/skills/`: `rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, and `rfinance-docs`. They are digests of this policy, never overrides of it.
+- Project skills live in `.opencode/skills/`: the RFinance digests (`rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, `rfinance-docs`) plus the portable MIT-licensed Matt Pocock engineering/productivity skills. An OpenCode V2 Superpowers plugin is installed globally and supplies process skills (`brainstorming`, `writing-plans`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, code review). These digests and packs are never overrides of this policy.
 - Editor recommendations are in `.vscode/extensions.json`; MCP setup and its security boundaries are documented in `docs/DEVELOPER_TOOLING.md`.
 - No MCP or editor tool may expand the permitted action set: no broker/trading connectors, no arbitrary filesystem access, no unreviewed market-data ingestion, no automatic merge on failing checks.

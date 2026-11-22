@@ -4,6 +4,7 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Installed the MIT-licensed Superpowers process skills as an OpenCode V2 plugin and copied the MIT-licensed Matt Pocock engineering/productivity skill pack into `.opencode/skills/`; documented precedence (`AGENTS.md` canonical) and harness reload behaviour in `docs/DEVELOPER_TOOLING.md`.
 - Fixed a Qt worker-thread race in all four worker-backed pages: `is_busy` now remains true until the thread's queued `finished` cleanup clears `_thread`, so a second submit cannot be silently ignored in the gap between thread stop and cleanup. Added a regression test and raised UI wait timeouts to 30s for slower CI runners.
 - Added verified developer tooling: `.vscode/extensions.json` (official Qt Python pack, Python/Pylance, Ruff, Mypy, TOML, SQLite, Error Lens, GitLens, TODO Tree, pytest explorers, Markdown), four project skills under `.opencode/skills/` (`rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, `rfinance-docs`), an inert MCP config template, and `docs/DEVELOPER_TOOLING.md` with verified setup commands and security boundaries. Context7 MCP was installed globally and verified connected.
 - Rebuilt the commit history at the owner's request so the GPLv3 `LICENSE` and per-file SPDX headers exist from the root commit (`beb02dae1acd2dfa7c2e5f87b748ba64a7a877b4`) onward; closed the separate license PR, removed stale branches, and force-pushed `main` with `--force-with-lease`. CI on the final tree passed on Windows and Ubuntu (206 tests per OS).

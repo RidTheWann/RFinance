@@ -10,4 +10,4 @@
 8. Update implementation tracking, roadmap, test report, and changelog as work progresses.
 9. Commit coherent changes on focused branches, open reviewable PRs, verify CI, then continue with the next unfinished objective.
 10. Stop only for a genuine authorization boundary, missing indispensable access, or a critical unresolved safety/correctness issue. Record the exact blocker and continue with independent work.
-11. Load the project skills `rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, and `rfinance-docs` when their domains apply. Tooling setup and boundaries are in `docs/DEVELOPER_TOOLING.md`.
+11. Load the project skills `rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, and `rfinance-docs` when their domains apply. Superpowers process skills (`brainstorming`, `writing-plans`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`) and the Matt Pocock skill pack are also installed; apply them without overriding this policy or the owner's autonomy instruction. Tooling setup and boundaries are in `docs/DEVELOPER_TOOLING.md`.
