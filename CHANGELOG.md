@@ -4,6 +4,7 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `screening-evaluation-v1`: a guided workflow that assembles instrument identity, review-adjusted price, verified dividend evidence and operator-supplied fundamentals into the deterministic recommendation engine, with a Research Center evaluation form. Fundamental inputs are explicitly labelled as operator-supplied, not verified filings.
 - Added `dividend-receipt-v1`: a confirmed net dividend can be posted into the simulated ledger only from a verified, observed cash event, split exactly 50/30/20, recorded in an append-only audit table, and protected against duplicates in the service, replay and database. The withdrawal leg leaves the simulation so cash reconciles; no forecast or simulated amount can be posted.
 - Added `CONFIRMED_DIVIDEND` ledger event type and migration `0008_confirmed_dividend_receipts` (ledger table rebuild plus `dividend_receipts`), and a connected Dividend Center "Confirmed receipt" tab.
 - Installed the MIT-licensed Superpowers process skills as an OpenCode V2 plugin and copied the MIT-licensed Matt Pocock engineering/productivity skill pack into `.opencode/skills/`; documented precedence (`AGENTS.md` canonical) and harness reload behaviour in `docs/DEVELOPER_TOOLING.md`.

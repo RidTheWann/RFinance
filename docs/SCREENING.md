@@ -64,9 +64,26 @@ dividend assessments.
 - Technical indicators are not yet an input to the action decision; they are
   reported separately by the Technical Analysis workflow.
 
+## Guided evaluation workflow (`screening-evaluation-v1`)
+
+`ScreeningEvaluationService.evaluate(instrument_id, fundamentals, ...)` assembles
+evidence from persisted records only:
+
+- instrument identity/status/currency from the instrument master;
+- the latest review-adjusted price from the observation ledger, with age in
+  days and source policy from the source registry;
+- verified cash dividend event IDs for the instrument;
+- metrics computed from operator-supplied fundamental inputs via
+  `fundamental-metrics-v1`.
+
+Fundamental inputs are explicitly labelled as operator-supplied, not verified
+filings. No price is fetched and no metric is inferred. The assembled
+`ScreeningInput` is passed unchanged to `RecommendationService.evaluate`, so
+the same blocking rules and evidence requirements apply.
+
 ## Desktop view
 
 The Research Center tab lists stored recommendations and exposes each result's
-explanation, evidence IDs, risk flags and invalidation conditions. Generating
-a recommendation from assembled evidence is currently an application-service
-operation; a guided "evaluate from local evidence" workflow is still pending.
+explanation, evidence IDs, risk flags and invalidation conditions. Its
+"Evaluate from local evidence" form runs the assembly workflow on a Qt worker
+thread and displays the resulting action and evidence.

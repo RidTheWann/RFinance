@@ -9,11 +9,11 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed, 183 files |
-| Ruff format check | Passed, 183 files |
-| Mypy strict | Passed, 70 source files |
-| `tests/unit` + `tests/integration` | **205 passed** |
-| Targeted Qt tests (main window, Dividend Center, Research Center) | **6 passed** |
+| Ruff lint | Passed, 187 files |
+| Ruff format check | Passed, 187 files |
+| Mypy strict | Passed, 71 source files |
+| `tests/unit` + `tests/integration` | **210 passed** |
+| Targeted Qt tests (main window, Dividend Center, Research Center) | **7 passed** |
 | Full Qt UI suite | 2–3 `waitUntil` timeouts and one interpreter crash across repeated runs on this aarch64/offscreen runtime; the same tests passed in prior Windows/Ubuntu x64 CI. Treated as an environment limitation, not as verified UI correctness. |
 | Clean-start launch (`python -m rfinance`, fresh `RFINANCE_HOME`, offscreen Qt) | Passed: event loop stayed alive until the 8-second timeout; `Database/rfinance.sqlite3`, WAL/SHM files and `Logs/rfinance.log` were created; Alembic at `0007_recommendations` with all 13 tables present. This is a Linux aarch64 launch check, not a Windows installation test. |
 
@@ -31,6 +31,11 @@ Built test-first (RED → GREEN) with the Superpowers TDD workflow:
 - `tests/unit/test_portfolio_ledger.py` (3 tests): event validation, cash credit and `confirmed_dividend_income` accumulation, duplicate `(instrument, source_reference)` rejection.
 - `tests/integration/test_dividend_receipts.py` (4 tests): migration preserves legacy rows and accepts the new event type, receipt table uniqueness and append-only triggers, verified/observed gating (unverified and `ANNOUNCED` rejected), exact 50/30/20 split with the withdrawal leg booked, duplicate and invalid-amount rejection.
 - `tests/ui/test_dividend_page.py` (1 test): receipt form posts and displays the allocation, and ledger income reconciles.
+
+## Guided screening evaluation coverage (2026-11-22)
+
+- `tests/integration/test_screening_evaluation.py` (5 tests): healthy candidate with price/dividend/metric evidence, unverified instrument, stale price, missing fundamentals (INSUFFICIENT_DATA, zero confidence), unknown instrument.
+- `tests/ui/test_research_page.py` (1 test): the evaluation form triggers the service on a worker thread and displays the action and evidence.
 
 ## Qt worker race fix (2026-11-22)
 
