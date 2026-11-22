@@ -82,11 +82,24 @@ The Dividend Center desktop page connects these services. It has no static demo
 values: every row, date and figure is read from the local ledger or calculated
 from verified events on a worker thread.
 
+## Confirmed receipt posting (`dividend-receipt-v1`)
+
+A Dividend Center workflow can post a net dividend that was **actually
+received** into the simulated ledger. `DividendReceiptService.post_receipt`
+requires an event whose effective quality is `VERIFIED`, whose status is
+`CONFIRMED` or `HISTORICAL`, and whose type is cash; announcements, estimates,
+simulations and unverified events are rejected. The caller supplies the net
+amount explicitly — it is never derived from a forecast. The split uses the
+configured 50% reinvest / 30% money market / 20% withdrawal preference via
+`allocate_confirmed_dividend`, is stored in an append-only `dividend_receipts`
+table unique on `dividend_event_id`, and is shown in the desktop. A duplicate
+post is rejected by the service, the replay check and the database constraint.
+The withdrawal leg leaves the simulation as a `CASH_WITHDRAWAL`; the other two
+legs remain cash targets until a verified instrument is invested.
+
 ## Known boundaries
 
 - Amounts are gross per share as supplied by the document. Currency conversion,
   withholding-tax rules and corporate-action adjustments are not inferred.
-- Confirmed dividend **receipts** are not yet posted to the portfolio cash
-  ledger; the 50/30/20 reinvest/money-market/withdrawal preference therefore
-  remains a documented preference, not a booked transaction.
+- Simulated dividend projections are never accepted as confirmed receipts.
 - No provider adapter, scraping, or automated dividend calendar feed is enabled.

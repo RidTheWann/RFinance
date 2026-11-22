@@ -13,6 +13,7 @@ The ledger is not yet connected to a complete first-run wizard or portfolio UI. 
 - `SELL`: credits quantity × unit price less sale fees and taxes.
 - `CASH_WITHDRAWAL`: explicit cash outflow; cannot make cash negative.
 - `SIMULATED_DIVIDEND`: explicit simulated net cash receipt tied to an existing position and unique source reference. It is not a confirmed real-world receipt or an announced/forecast dividend.
+- `CONFIRMED_DIVIDEND`: net cash actually received for a verified, observed cash dividend event. Its `source_reference` is `DIVIDEND_RECEIPT:<event_id>` and is unique per instrument; replay accumulates `confirmed_dividend_income` separately from simulated dividends. The 20% withdrawal leg is booked as a separate `CASH_WITHDRAWAL` so cash reconciles.
 
 Every event has a unique event ID, strictly increasing sequence, timezone-aware event time, and one account currency. The default replay currency is IDR; foreign exchange is not inferred.
 

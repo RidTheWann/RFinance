@@ -11,7 +11,7 @@ Last verified against the repository: 2026-11-22
 - All commits are pushed. A short-lived PAT was supplied by the owner, used only locally for push/PR/merge, and removed from disk afterward; no token or personal email is present in the repository.
 - Agent/editor tooling (2026-11-22): committed `.vscode/extensions.json`, four OpenCode V2 project skills, an inert `.opencode/opencode.jsonc.example`, and `docs/DEVELOPER_TOOLING.md` with verified extension IDs and MCP setup. Context7 MCP installed globally and verified `connected`. Marketplace IDs and MCP package names were checked against official docs; the deprecated `seanwu.vscode-qt-for-python` was deliberately excluded.
 - Latest CI: push run `45003901279` — Windows and Ubuntu both **success** (Ruff lint/format, Mypy, **207 tests per OS**). An earlier Windows attempt exposed a real Qt submit race, now fixed; another attempt aborted inside `pytestqt._process_events` and passed on rerun with a byte-identical tree.
-- Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 198 unit/integration and 5 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
+- Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 205 unit/integration and 6 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
 
 ## Implemented in the foundation branch
 
@@ -70,6 +70,13 @@ Last verified against the repository: 2026-11-22
 - Implemented clearly labelled simulated dividend cash projection and exact-reconciliation allocation for **confirmed** net receipts only.
 - Missing observations and unusable denominators return `None`; no missing value is converted to zero. Forward estimates, simulations, and confirmed receipts are distinct labelled states.
 
+### Confirmed dividend receipt posting (`dividend-receipt-v1`)
+
+- Added `CONFIRMED_DIVIDEND` ledger event with an explicit net amount, required `DIVIDEND_RECEIPT:<event_id>` source reference, zero fees/taxes, and replay that accumulates `confirmed_dividend_income` while rejecting duplicate receipts.
+- Added Alembic migration `0008_confirmed_dividend_receipts`, which rebuilds the ledger table to extend its CHECK constraint, recreates indexes and append-only triggers, and adds an append-only `dividend_receipts` table unique on `dividend_event_id`. Legacy rows are preserved.
+- `DividendReceiptService` posts only from verified, observed cash dividend events, splits the confirmed net amount 50/30/20 with exact Decimal arithmetic, books the withdrawal leg as a separate `CASH_WITHDRAWAL`, and exposes the stored receipt for inspection. An explicit user-supplied net amount is required; no forecast or simulated value can be posted.
+- Connected a "Confirmed receipt" tab in the Dividend Center with worker-backed posting and visible allocation.
+
 ### Deterministic screening and evidence-linked recommendations
 
 - Added `screening-deterministic-v1` as a framework-independent domain engine. `ScreeningInput` carries only explicit evidence: verified-fundamental metrics, price age/quality, dividend references, portfolio drawdown and evidence items.
@@ -117,11 +124,11 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed (127 files) |
-| Ruff format check | Passed (127 files) |
-| Mypy strict | Passed (68 source files) |
-| Unit + integration pytest | **198 passed** |
-| Targeted Qt tests (main window + Dividend Center + Research Center) | 5 passed |
+| Ruff lint | Passed (183 files) |
+| Ruff format check | Passed (183 files) |
+| Mypy strict | Passed (70 source files) |
+| Unit + integration pytest | **205 passed** |
+| Targeted Qt tests (main window + Dividend Center + Research Center) | 6 passed |
 | Clean-start launch (fresh data directory, offscreen Qt) | Stayed alive; SQLite, WAL/SHM, logs and all 13 tables at migration `0007_recommendations` created |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
 
@@ -159,9 +166,9 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 
 ## Next engineering objectives
 
-1. Post confirmed net dividend receipts into the portfolio cash ledger with the documented 50/30/20 preference, duplicate-receipt protection, and a clear separation from simulated projections.
-2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
-3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
-4. Connect the screening engine to an application workflow that assembles persisted instrument state, eligible prices, fundamental metrics and dividend evidence into a guided evaluation.
-5. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.
+1. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
+2. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
+3. Connect the screening engine to an application workflow that assembles persisted instrument state, eligible prices, fundamental metrics and dividend evidence into a guided evaluation.
+4. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.
+5. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist, instead of leaving them as cash targets.
 6. Continue risk controls, automation, reporting, backup/restore, reproducible lockfile, and Windows packaging in tested vertical slices.

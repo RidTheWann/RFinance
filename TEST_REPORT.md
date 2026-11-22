@@ -9,11 +9,11 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed, 127 files |
-| Ruff format check | Passed, 127 files |
-| Mypy strict | Passed, 68 source files |
-| `tests/unit` + `tests/integration` | **198 passed** |
-| Targeted Qt tests (main window, Dividend Center, Research Center) | **5 passed** |
+| Ruff lint | Passed, 183 files |
+| Ruff format check | Passed, 183 files |
+| Mypy strict | Passed, 70 source files |
+| `tests/unit` + `tests/integration` | **205 passed** |
+| Targeted Qt tests (main window, Dividend Center, Research Center) | **6 passed** |
 | Full Qt UI suite | 2–3 `waitUntil` timeouts and one interpreter crash across repeated runs on this aarch64/offscreen runtime; the same tests passed in prior Windows/Ubuntu x64 CI. Treated as an environment limitation, not as verified UI correctness. |
 | Clean-start launch (`python -m rfinance`, fresh `RFINANCE_HOME`, offscreen Qt) | Passed: event loop stayed alive until the 8-second timeout; `Database/rfinance.sqlite3`, WAL/SHM files and `Logs/rfinance.log` were created; Alembic at `0007_recommendations` with all 13 tables present. This is a Linux aarch64 launch check, not a Windows installation test. |
 
@@ -23,6 +23,14 @@ New local coverage in this checkpoint:
 - `tests/integration/test_dividend_events.py` (7 tests): provenance persistence with deny-by-default MANUAL source, duplicate and unknown-instrument rejection, promotion gates, append-only raw rows and review ledger, evidence file archiving/hashing, calendar confirmation/estimate labels, and analytics using only verified observed cash events with `None` for missing inputs.
 - `tests/ui/test_dividend_page.py` (1 test): rendering of persisted events, review history, calendar interpretation labels and deterministic analytics output.
 - `tests/unit/test_fundamental_metrics.py` (10 additional tests): all 17 computed metrics with full inputs, input/formula reproducibility, missing-input and unusable-denominator statuses, financial-sector exclusions, rejection of non-finite inputs, primitive edge cases, and Hypothesis invariants for ratio, growth and margin behavior. A test caught and fixed an argument-order defect in earnings quality.
+
+## Confirmed dividend receipt coverage (2026-11-22)
+
+Built test-first (RED → GREEN) with the Superpowers TDD workflow:
+
+- `tests/unit/test_portfolio_ledger.py` (3 tests): event validation, cash credit and `confirmed_dividend_income` accumulation, duplicate `(instrument, source_reference)` rejection.
+- `tests/integration/test_dividend_receipts.py` (4 tests): migration preserves legacy rows and accepts the new event type, receipt table uniqueness and append-only triggers, verified/observed gating (unverified and `ANNOUNCED` rejected), exact 50/30/20 split with the withdrawal leg booked, duplicate and invalid-amount rejection.
+- `tests/ui/test_dividend_page.py` (1 test): receipt form posts and displays the allocation, and ledger income reconciles.
 
 ## Qt worker race fix (2026-11-22)
 

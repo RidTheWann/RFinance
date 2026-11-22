@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `dividend-receipt-v1`: a confirmed net dividend can be posted into the simulated ledger only from a verified, observed cash event, split exactly 50/30/20, recorded in an append-only audit table, and protected against duplicates in the service, replay and database. The withdrawal leg leaves the simulation so cash reconciles; no forecast or simulated amount can be posted.
+- Added `CONFIRMED_DIVIDEND` ledger event type and migration `0008_confirmed_dividend_receipts` (ledger table rebuild plus `dividend_receipts`), and a connected Dividend Center "Confirmed receipt" tab.
 - Installed the MIT-licensed Superpowers process skills as an OpenCode V2 plugin and copied the MIT-licensed Matt Pocock engineering/productivity skill pack into `.opencode/skills/`; documented precedence (`AGENTS.md` canonical) and harness reload behaviour in `docs/DEVELOPER_TOOLING.md`.
 - Fixed a Qt worker-thread race in all four worker-backed pages: `is_busy` now remains true until the thread's queued `finished` cleanup clears `_thread`, so a second submit cannot be silently ignored in the gap between thread stop and cleanup. Added a regression test and raised UI wait timeouts to 30s for slower CI runners.
 - Added verified developer tooling: `.vscode/extensions.json` (official Qt Python pack, Python/Pylance, Ruff, Mypy, TOML, SQLite, Error Lens, GitLens, TODO Tree, pytest explorers, Markdown), four project skills under `.opencode/skills/` (`rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, `rfinance-docs`), an inert MCP config template, and `docs/DEVELOPER_TOOLING.md` with verified setup commands and security boundaries. Context7 MCP was installed globally and verified connected.

@@ -9,8 +9,8 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 2 | Source registry, provenance, instrument identity, data-quality pipeline, permitted import | Local CSV ingestion, archive/hash, row diagnostics, source/batch/observation persistence, Overview history, instrument placeholders, foreign-key linkage, evidence-backed instrument review UI, append-only observation-review ledger, and evidence-backed Observation Review desktop workflow implemented. Production feed approval remains |
 | 3 | Fundamental, valuation, technical and dividend calculations | `fundamental-metrics-v1` (17 metrics with reproducibility records and financial-sector gate), `dividend-analytics-v1` connected to append-only event persistence and the Dividend Center, and the technical indicator suite implemented with a persisted historical-series workflow. Full statement persistence, explicit sampling-frequency and corporate-action metadata remain |
 | 4 | Screening and deterministic evidence-linked recommendations | `screening-deterministic-v1` engine, append-only recommendation persistence and Research Center inspection view implemented; guided evidence-assembly workflow from persisted records remains |
-| 5 | Dividend event calendar and analytics | `dividend-analytics-v1` calculations, append-only event/review persistence with migration `0006_dividend_events`, labelled calendar, and connected Dividend Center desktop page implemented; confirmed-receipt cash posting and automated provider feed remain |
-| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup, dashboard, `portfolio-valuation-v1`, persisted-observation eligibility integration, and desktop price valuation implemented; trade UI, verified instrument-to-category mapping, allocation execution and risk automation remain |
+| 5 | Dividend event calendar and analytics | `dividend-analytics-v1`, append-only event/review persistence, labelled calendar, connected Dividend Center, and `dividend-receipt-v1` confirmed-receipt posting with 50/30/20 split and duplicate protection implemented; automated provider feed remains |
+| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup, `portfolio-valuation-v1`, confirmed dividend receipts with withdrawal leg, and desktop valuation implemented; trade UI, verified instrument-to-category mapping, allocation execution and risk automation remain |
 | 7 | Optional Ollama intelligence and secure document analysis | Not started |
 | 8 | Local automation and reporting | Not started |
 | 9 | Backup/restore, offline operation, reliability and security hardening | Not started |
@@ -19,7 +19,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 ## Latest local engineering checkpoint (2026-11-22)
 
 - `main` at `f005c9113510466fc5ea09da4d8d78818ad3b6a6` after the license history rebuild; all work is pushed. PR #2 content is preserved in the rewritten history, and PR #1's 172 commits were rebuilt from its preserved head. GPL-3.0-only license and SPDX headers exist from the root commit onward.
-- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (127 files), Mypy strict passes (68 source files), 198 unit/integration tests and 5 targeted Qt tests pass.
+- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (183 files), Mypy strict passes (70 source files), 205 unit/integration tests and 6 targeted Qt tests pass.
 - Delivered: append-only dividend event and review persistence, evidence-backed review gates, labelled calendar, verified-event analytics, and a connected Dividend Center desktop tab.
 - Full Qt worker-thread suite is timing-unreliable on this aarch64/offscreen runtime; historical Windows/Ubuntu x64 CI at Python 3.12 passed 156 tests.
 
