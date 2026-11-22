@@ -282,3 +282,90 @@ def test_ledger_requires_increasing_unique_events_and_single_currency() -> None:
     )
     with pytest.raises(LedgerValidationError, match="currency mismatch"):
         replay_ledger([capital, wrong_currency], lot_sizes=LOT_SIZES)
+
+
+def test_confirmed_dividend_credits_cash_and_tracks_income() -> None:
+    events = [
+        event("capital", 1, LedgerEventType.CAPITAL_INJECTION, amount=Decimal("2000000")),
+        event(
+            "buy",
+            2,
+            LedgerEventType.BUY,
+            instrument_id="BBCA",
+            quantity=Decimal("100"),
+            unit_price=Decimal("9000"),
+        ),
+        event(
+            "receipt",
+            3,
+            LedgerEventType.CONFIRMED_DIVIDEND,
+            instrument_id="BBCA",
+            amount=Decimal("100000"),
+            source_reference="DIVIDEND_RECEIPT:event-1",
+        ),
+        event(
+            "withdrawal",
+            4,
+            LedgerEventType.CASH_WITHDRAWAL,
+            amount=Decimal("20000"),
+        ),
+    ]
+
+    result = replay_ledger(events, lot_sizes=LOT_SIZES)
+
+    assert result.cash_balance == Decimal("1180000")
+    assert result.confirmed_dividend_income == Decimal("100000")
+
+
+def test_confirmed_dividend_rejects_duplicate_source_reference() -> None:
+    events = [
+        event(
+            "receipt-1",
+            1,
+            LedgerEventType.CONFIRMED_DIVIDEND,
+            instrument_id="BBCA",
+            amount=Decimal("50000"),
+            source_reference="DIVIDEND_RECEIPT:event-1",
+        ),
+        event(
+            "receipt-2",
+            2,
+            LedgerEventType.CONFIRMED_DIVIDEND,
+            instrument_id="BBCA",
+            amount=Decimal("50000"),
+            source_reference="DIVIDEND_RECEIPT:event-1",
+        ),
+    ]
+
+    with pytest.raises(LedgerValidationError, match="duplicate confirmed dividend"):
+        replay_ledger(events, lot_sizes=LOT_SIZES)
+
+
+def test_confirmed_dividend_event_requires_net_amount_and_reference() -> None:
+    with pytest.raises(LedgerValidationError, match="source_reference"):
+        event(
+            "receipt",
+            1,
+            LedgerEventType.CONFIRMED_DIVIDEND,
+            instrument_id="BBCA",
+            amount=Decimal("1000"),
+        )
+    with pytest.raises(LedgerValidationError, match="positive"):
+        event(
+            "receipt",
+            1,
+            LedgerEventType.CONFIRMED_DIVIDEND,
+            instrument_id="BBCA",
+            amount=Decimal("0"),
+            source_reference="DIVIDEND_RECEIPT:event-1",
+        )
+    with pytest.raises(LedgerValidationError, match="trade fields"):
+        event(
+            "receipt",
+            1,
+            LedgerEventType.CONFIRMED_DIVIDEND,
+            instrument_id="BBCA",
+            amount=Decimal("1000"),
+            source_reference="DIVIDEND_RECEIPT:event-1",
+            quantity=Decimal("10"),
+        )

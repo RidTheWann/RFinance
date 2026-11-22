@@ -32,6 +32,7 @@ class LedgerEventType(StrEnum):
     SELL = "SELL"
     CASH_WITHDRAWAL = "CASH_WITHDRAWAL"
     SIMULATED_DIVIDEND = "SIMULATED_DIVIDEND"
+    CONFIRMED_DIVIDEND = "CONFIRMED_DIVIDEND"
 
 
 class LedgerValidationError(ValueError):
@@ -81,6 +82,9 @@ class LedgerEvent:
     BUY/SELL gross value is quantity * unit_price. Buy fees/taxes increase cost
     basis; sell fees/taxes reduce proceeds. SIMULATED_DIVIDEND amount is the
     explicit net cash amount to simulate as received, never a forecast.
+    CONFIRMED_DIVIDEND amount is the net cash actually received for an
+    evidence-backed dividend event; its source_reference is the event id and
+    is unique per instrument.
     """
 
     event_id: str
@@ -120,6 +124,8 @@ class LedgerEvent:
             self._validate_trade_event()
         elif self.event_type is LedgerEventType.SIMULATED_DIVIDEND:
             self._validate_dividend_event()
+        elif self.event_type is LedgerEventType.CONFIRMED_DIVIDEND:
+            self._validate_confirmed_dividend()
         else:
             raise LedgerValidationError(f"unsupported event type: {self.event_type}")
 
@@ -173,6 +179,24 @@ class LedgerEvent:
             )
 
 
+    def _validate_confirmed_dividend(self) -> None:
+        if not self.instrument_id or not self.instrument_id.strip():
+            raise LedgerValidationError("confirmed dividend requires instrument_id")
+        if self.amount is None:
+            raise LedgerValidationError("confirmed dividend requires net cash amount")
+        _decimal("amount", self.amount)
+        if self.amount <= _ZERO:
+            raise LedgerValidationError("confirmed dividend amount must be positive")
+        if not self.source_reference or not self.source_reference.strip():
+            raise LedgerValidationError("confirmed dividend requires a source_reference")
+        if self.quantity is not None or self.unit_price is not None:
+            raise LedgerValidationError("confirmed dividend cannot contain trade fields")
+        if self.fees != _ZERO or self.taxes != _ZERO:
+            raise LedgerValidationError(
+                "confirmed dividend amount must already be the net cash amount"
+            )
+
+
 @dataclass(frozen=True, slots=True)
 class PositionSnapshot:
     """Position state reconstructed from all preceding ledger events."""
@@ -197,6 +221,7 @@ class LedgerReplayResult:
     positions: Mapping[str, PositionSnapshot]
     realized_profit_loss: Decimal
     simulated_dividends: Decimal
+    confirmed_dividend_income: Decimal
     total_fees: Decimal
     total_taxes: Decimal
     applied_events: int
@@ -223,11 +248,13 @@ def replay_ledger(
     cash = _ZERO
     realized = _ZERO
     dividends = _ZERO
+    confirmed_dividends = _ZERO
     fees_total = _ZERO
     taxes_total = _ZERO
     last_sequence = 0
     seen_event_ids: set[str] = set()
     seen_dividend_refs: set[tuple[str, str]] = set()
+    seen_confirmed_refs: set[tuple[str, str]] = set()
     quantities: dict[str, Decimal] = {}
     cost_bases: dict[str, Decimal] = {}
 
@@ -327,6 +354,20 @@ def replay_ledger(
             dividends += event.amount
             continue
 
+        if event.event_type is LedgerEventType.CONFIRMED_DIVIDEND:
+            assert event.amount is not None
+            assert event.source_reference is not None
+            receipt_key = (instrument, event.source_reference)
+            if receipt_key in seen_confirmed_refs:
+                raise LedgerValidationError(
+                    f"duplicate confirmed dividend receipt: {instrument}/"
+                    f"{event.source_reference}"
+                )
+            seen_confirmed_refs.add(receipt_key)
+            cash += event.amount
+            confirmed_dividends += event.amount
+            continue
+
         raise LedgerValidationError(f"unsupported event type: {event.event_type}")
 
     positions = {
@@ -344,6 +385,7 @@ def replay_ledger(
         positions=positions,
         realized_profit_loss=realized,
         simulated_dividends=dividends,
+        confirmed_dividend_income=confirmed_dividends,
         total_fees=fees_total,
         total_taxes=taxes_total,
         applied_events=len(events),
