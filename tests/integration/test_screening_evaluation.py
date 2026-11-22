@@ -207,3 +207,76 @@ def test_unknown_instrument_is_rejected(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="instrument"):
         service_for(database).evaluate("IDX:UNKNOWN", fundamentals=HEALTHY, as_of=AS_OF)
     database.close()
+
+
+def test_persisted_verified_metrics_drive_screening(tmp_path: Path) -> None:
+    from datetime import date
+
+    from rfinance.application.financial_statements import (
+        FinancialMetricContract,
+        FinancialReviewDecision,
+        FinancialStatementService,
+    )
+    from rfinance.data.contracts import DataQualityStatus
+
+    database = Database.open(tmp_path / "screen-filings.sqlite3")
+    database.upgrade()
+    seed(database)
+    filings = FinancialStatementService(database.sessions, data_directory=tmp_path / "data")
+    for name, value in {
+        "revenue": Decimal("1000"),
+        "revenue_previous": Decimal("800"),
+        "net_income": Decimal("150"),
+        "average_equity": Decimal("750"),
+        "total_debt": Decimal("300"),
+        "total_equity": Decimal("750"),
+        "earnings_per_share": Decimal("5"),
+        "price": Decimal("50"),
+    }.items():
+        recorded = filings.record_metric(
+            FinancialMetricContract(
+                instrument_id="IDX:BBCA",
+                metric_name=name,
+                value=value,
+                unit="IDR",
+                currency="IDR",
+                period_start=date(2025, 1, 1),
+                period_end=date(2025, 12, 31),
+                reporting_basis="ANNUAL",
+                source_label="Audited annual report",
+                acquired_at=AS_OF,
+                quality_status=DataQualityStatus.UNVERIFIED,
+            ),
+            recorded_at=AS_OF,
+        )
+        filings.review_metric(
+            recorded.metric_id,
+            decision=FinancialReviewDecision.VERIFIED,
+            reviewer_label="Operator",
+            evidence_reference="Documents/annual-report.pdf",
+            evidence_sha256="b" * 64,
+            notes="Matched the audited filing",
+            reviewed_at=AS_OF,
+        )
+
+    dividends = DividendEventService(database.sessions)
+    observations = ObservationReviewService(database.sessions)
+    recommendations = RecommendationService(database.sessions)
+    service = ScreeningEvaluationService(
+        database.sessions,
+        dividend_events=dividends,
+        observation_review=observations,
+        recommendations=recommendations,
+        financial_statements=filings,
+    )
+
+    result = service.evaluate(
+        "IDX:BBCA",
+        fundamentals={},
+        as_of=AS_OF,
+        use_persisted_fundamentals=True,
+    )
+
+    assert result.action is RecommendationAction.BUY_CANDIDATE
+    assert "metric:RETURN_ON_EQUITY" in result.evidence_ids
+    database.close()

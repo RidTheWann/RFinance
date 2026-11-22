@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
+from rfinance.application.financial_statements import FinancialStatementService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
@@ -41,6 +42,7 @@ class ApplicationContext:
     observation_review: ObservationReviewService
     dividend_events: DividendEventService
     dividend_receipts: DividendReceiptService
+    financial_statements: FinancialStatementService
     recommendations: RecommendationService
     screening_evaluation: ScreeningEvaluationService
     portfolio_valuation: PortfolioValuationService
@@ -86,12 +88,16 @@ def create_application_context(data_directory: str | None = None) -> Application
             dividend_events=dividend_events,
             portfolio_ledger=portfolio_ledger,
         )
+        financial_statements = FinancialStatementService(
+            database.sessions, data_directory=paths.root
+        )
         recommendations = RecommendationService(database.sessions)
         screening_evaluation = ScreeningEvaluationService(
             database.sessions,
             dividend_events=dividend_events,
             observation_review=observation_review,
             recommendations=recommendations,
+            financial_statements=financial_statements,
         )
     except Exception:
         database.close()
@@ -107,6 +113,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         observation_review=observation_review,
         dividend_events=dividend_events,
         dividend_receipts=dividend_receipts,
+        financial_statements=financial_statements,
         recommendations=recommendations,
         screening_evaluation=screening_evaluation,
         portfolio_valuation=portfolio_valuation,
