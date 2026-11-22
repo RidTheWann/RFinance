@@ -69,6 +69,14 @@ Last verified against the repository: 2026-11-22
 - Implemented clearly labelled simulated dividend cash projection and exact-reconciliation allocation for **confirmed** net receipts only.
 - Missing observations and unusable denominators return `None`; no missing value is converted to zero. Forward estimates, simulations, and confirmed receipts are distinct labelled states.
 
+### Deterministic screening and evidence-linked recommendations
+
+- Added `screening-deterministic-v1` as a framework-independent domain engine. `ScreeningInput` carries only explicit evidence: verified-fundamental metrics, price age/quality, dividend references, portfolio drawdown and evidence items.
+- Transparent actions (`BUY_CANDIDATE`, `HOLD`, `WATCH`, `AVOID`, `INSUFFICIENT_DATA`), machine-readable risk flags, deterministically ordered evidence IDs, invalidation conditions and a confidence fraction that measures evidence quality/completeness, never profit probability.
+- Hard blocks: missing fundamental inputs, unusable denominators, unverified or stale price evidence, and elevated/critical drawdown prevent `BUY_CANDIDATE`. Missing inputs remain `None`; no zero or fabricated value enters a score. Critical drawdown, or negative earnings with excessive leverage, produces `AVOID`.
+- Added Alembic migration `0007_recommendations` with an append-only audit table. `RecommendationService.evaluate` runs the engine and persists the result; `recent` and `get` reconstruct stored recommendations with their evidence and diagnostics.
+- Added a Research Center desktop tab that lists stored recommendations and exposes explanation, evidence, risk flags and invalidation conditions. Generating a recommendation from assembled evidence remains an application-service operation.
+
 ### Dividend event persistence, calendar and analytics connection
 
 - Added `dividend-event-v1` ingestion through the frozen, extra-forbid `DividendEventContract` (Pydantic v2) with explicit source, acquisition/announcement timestamps, gross per-share amount, currency, ex/payment dates, lifecycle status, quality state, original value, unit and transformation version. Cash types require an amount; `STOCK`/`RIGHTS` cannot carry one; naive timestamps and invalid currencies/periods are rejected.
@@ -108,11 +116,11 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed (109 files) |
-| Ruff format check | Passed (109 files) |
-| Mypy strict | Passed (62 source files) |
-| Unit + integration pytest | **179 passed** |
-| Targeted Qt tests (main window + Dividend Center) | 4 passed |
+| Ruff lint | Passed (119 files) |
+| Ruff format check | Passed (119 files) |
+| Mypy strict | Passed (68 source files) |
+| Unit + integration pytest | **194 passed** |
+| Targeted Qt tests (main window + Dividend Center + Research Center) | 5 passed |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
 
 The local checkpoint includes the new dividend event slice: 7 integration tests, 12 contract unit tests, and a Dividend Center Qt rendering test.
@@ -142,7 +150,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
-- Full financial statements, broader valuation metrics, screening, and evidence-linked recommendations. The dividend calculation layer is now connected to append-only event persistence and the Dividend Center desktop, but has no automated provider feed.
+- Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
 - Portfolio trade-entry UI, corporate actions, rebalancing, allocation execution, and full risk controls remain incomplete. Portfolio market valuation is now connected to persisted review-adjusted observations and the desktop, but its source values still depend on lawfully obtained and manually reviewable data.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
@@ -152,6 +160,6 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 1. Post confirmed net dividend receipts into the portfolio cash ledger with the documented 50/30/20 preference, duplicate-receipt protection, and a clear separation from simulated projections.
 2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
 3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
-4. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.
+4. Connect the screening engine to an application workflow that assembles persisted instrument state, eligible prices, fundamental metrics and dividend evidence into a guided evaluation.
 5. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.
 6. Continue risk controls, automation, reporting, backup/restore, reproducible lockfile, and Windows packaging in tested vertical slices.

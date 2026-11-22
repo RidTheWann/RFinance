@@ -12,6 +12,7 @@ from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.application.portfolio_valuation import PortfolioValuationService
+from rfinance.application.recommendations import RecommendationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
@@ -34,6 +35,7 @@ class ApplicationContext:
     instrument_review: InstrumentReviewService
     observation_review: ObservationReviewService
     dividend_events: DividendEventService
+    recommendations: RecommendationService
     portfolio_valuation: PortfolioValuationService
     technical_analysis: TechnicalAnalysisService
     logger: logging.Logger
@@ -72,6 +74,7 @@ def create_application_context(data_directory: str | None = None) -> Application
             database.sessions,
             data_directory=paths.root,
         )
+        recommendations = RecommendationService(database.sessions)
     except Exception:
         database.close()
         logger.exception("Database initialization failed")
@@ -85,6 +88,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         instrument_review=instrument_review,
         observation_review=observation_review,
         dividend_events=dividend_events,
+        recommendations=recommendations,
         portfolio_valuation=portfolio_valuation,
         technical_analysis=technical_analysis,
         logger=logger,
