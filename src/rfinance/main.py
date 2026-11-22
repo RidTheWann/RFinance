@@ -41,6 +41,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.market_csv_import,
         context.instrument_review,
         context.observation_review,
+        context.portfolio_trading,
+        context.verified_lot_sizes,
         context.portfolio_valuation,
         context.technical_analysis,
         context.dividend_events,
