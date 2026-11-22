@@ -20,6 +20,36 @@ No automated IDX/OJK/KSEI scraper or licensed market-data adapter is enabled. Pu
 
 See IMPLEMENTATION_STATUS.md, ROADMAP.md, and TEST_REPORT.md for implementation and validation state. Import trust boundaries are in docs/MARKET_CSV_IMPORT.md; dividend event semantics are in docs/DIVIDEND_EVENTS.md; screening rules are in docs/SCREENING.md.
 
+## Progress Project
+
+Estimated progress toward a **publish-ready release**: **62%** (updated 2026-11-22).
+
+"Publish-ready" means: a tested Windows 11 x64 installer, reproducible locked
+dependencies, verified backup/restore, clean-install and upgrade evidence,
+passing Windows + Ubuntu CI, complete user documentation, and no unresolved
+critical accounting or security defect. The percentage is a weighted estimate
+from verified repository evidence, not a promise or a schedule.
+
+| # | Milestone | Weight | Complete | Contribution | Evidence / remaining gap |
+|---|---|---:|---:|---:|---|
+| 0 | Repository bootstrap, policy, CI | 5% | 100% | 5.0% | AGENTS.md, pyproject, CI green |
+| 1 | Desktop shell, config, SQLite/Alembic | 8% | 100% | 8.0% | PySide6 shell, 0001–0009 migrations, first-run setup |
+| 2 | Data provenance, import, eligibility | 10% | 78% | 7.8% | CSV import + review gates done; no licensed/official automated feed |
+| 3 | Deterministic financial engine | 14% | 82% | 11.5% | Fundamental/technical/dividend/valuation + reviewed filing metrics; broader statement coverage pending |
+| 4 | Screening and recommendations | 10% | 92% | 9.2% | Engine, append-only records, guided evaluation, verified filing inputs; no backtesting yet |
+| 5 | Dividend Center | 8% | 92% | 7.4% | Events, calendar, analytics, confirmed receipts; no automated dividend feed |
+| 6 | Portfolio simulator and risk | 14% | 68% | 9.5% | Ledger, valuation, receipts; trade UI, rebalancing and drawdown controls pending |
+| 7 | Optional local AI | 8% | 0% | 0.0% | Not started (Ollama integration, document analysis) |
+| 8 | Automation and reporting | 10% | 0% | 0.0% | Not started (scheduler, PDF/CSV exports) |
+| 9 | Security and reliability | 8% | 40% | 3.2% | Append-only ledgers, audit, triggers; backup/restore and offline acceptance unverified |
+| 10 | Windows production delivery | 5% | 12% | 0.6% | Windows CI only; no installer, lockfile, or clean-install test |
+| | **Total** | **100%** | | **62.2%** | |
+
+The next objectives are recorded in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md):
+portfolio trade entry with verified lot metadata, risk-event controls, then
+automation/reporting, backup/restore and Windows packaging. Progress is
+recomputed after each substantial slice.
+
 ## Development
 
 The initial supported development runtime is Python 3.12 on Windows 11 x64.
