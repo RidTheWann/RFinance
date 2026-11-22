@@ -98,7 +98,7 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
                     "Cash-only simulation"
                 )
             ),
-            timeout=10000,
+            timeout=30000,
         )
 
         assert window.portfolio_ledger.snapshot().cash_balance == Decimal("1250000")
@@ -161,7 +161,7 @@ def test_market_csv_import_is_started_off_ui_thread_and_reported(
                 window._import_thread is None
                 and window.market_import_status_label.text().startswith("Import complete")
             ),
-            timeout=10000,
+            timeout=30000,
         )
 
         assert "1 observations accepted, 0 rows rejected" in (

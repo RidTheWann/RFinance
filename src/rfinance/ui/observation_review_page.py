@@ -81,9 +81,15 @@ class ObservationReviewPage(QWidget):
 
     @property
     def is_busy(self) -> bool:
-        """Whether an evidence-review worker is still running."""
+        """Whether a review is active, including its pending Qt cleanup.
 
-        return self._thread is not None and self._thread.isRunning()
+        ``_thread`` is cleared from the thread's ``finished`` handler, which is
+        queued to the main event loop. Reporting busy via ``isRunning()`` alone
+        would allow a second submit to be silently ignored in the gap between
+        the thread stopping and that cleanup running.
+        """
+
+        return self._thread is not None
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)

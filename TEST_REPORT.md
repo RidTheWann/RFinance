@@ -24,6 +24,10 @@ New local coverage in this checkpoint:
 - `tests/ui/test_dividend_page.py` (1 test): rendering of persisted events, review history, calendar interpretation labels and deterministic analytics output.
 - `tests/unit/test_fundamental_metrics.py` (10 additional tests): all 17 computed metrics with full inputs, input/formula reproducibility, missing-input and unusable-denominator statuses, financial-sector exclusions, rejection of non-finite inputs, primitive edge cases, and Hypothesis invariants for ratio, growth and margin behavior. A test caught and fixed an argument-order defect in earnings quality.
 
+## Qt worker race fix (2026-11-22)
+
+Windows CI intermittently failed `test_observation_review_page_rejects...` with a 10-second `waitUntil` timeout. Root cause was a production race, not slow CI: `is_busy` reported false as soon as `QThread.isRunning()` became false, while the submit guard still saw `_thread` set until the queued `finished` handler cleared it. The second click was therefore silently ignored. Fixed in `ObservationReviewPage`, `PortfolioValuationPage`, `TechnicalAnalysisPage` and `DividendPage`; added a regression test covering the stopped-thread cleanup gap and raised UI wait timeouts to 30 seconds.
+
 ## Latest cross-platform CI checkpoint (after history rebuild)
 
 `main` HEAD `f005c9113510466fc5ea09da4d8d78818ad3b6a6`, tree `d15813a111829b8b7917ac8ee83d95d580297047`: [push CI run 45001539029](https://github.com/RidTheWann/RFinance/actions/runs/45001539029) — Windows and Ubuntu both **success**, Python 3.12, **206 tests passed per OS**, Ruff lint/format and Mypy passed.

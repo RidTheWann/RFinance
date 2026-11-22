@@ -64,9 +64,9 @@ class PortfolioValuationPage(QWidget):
 
     @property
     def is_busy(self) -> bool:
-        """Whether a valuation worker is running."""
+        """Whether a valuation is active, including its pending Qt cleanup."""
 
-        return self._thread is not None and self._thread.isRunning()
+        return self._thread is not None
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)

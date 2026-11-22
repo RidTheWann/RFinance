@@ -72,9 +72,9 @@ class TechnicalAnalysisPage(QWidget):
 
     @property
     def is_busy(self) -> bool:
-        """Whether a catalogue or analysis task is still executing."""
+        """Whether a task is active, including its pending Qt cleanup."""
 
-        return self._thread is not None and self._thread.isRunning()
+        return self._thread is not None
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)

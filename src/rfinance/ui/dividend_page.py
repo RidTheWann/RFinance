@@ -75,7 +75,9 @@ class DividendPage(QWidget):
 
     @property
     def is_busy(self) -> bool:
-        return self._thread is not None and self._thread.isRunning()
+        """Whether an operation is active, including its pending Qt cleanup."""
+
+        return self._thread is not None
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)

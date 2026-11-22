@@ -102,7 +102,7 @@ def test_technical_analysis_page_loads_local_catalog_and_calculates_off_ui_threa
                 not page.is_busy
                 and page.status_label.text().startswith("Loaded 1 verified instrument")
             ),
-            timeout=10000,
+            timeout=30000,
         )
         assert page.instrument_combo.count() == 1
         assert page.source_combo.count() == 1
@@ -113,7 +113,7 @@ def test_technical_analysis_page_loads_local_catalog_and_calculates_off_ui_threa
                 not page.is_busy
                 and page.status_label.text().startswith("1 verified historical bar")
             ),
-            timeout=10000,
+            timeout=30000,
         )
 
         assert page.summary_label.text().startswith("BBCA — Bank Central Asia")

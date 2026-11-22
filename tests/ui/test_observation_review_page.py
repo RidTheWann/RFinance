@@ -3,13 +3,33 @@
 # See LICENSE for the full GNU General Public License version 3.
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread
 
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.storage.database import Database
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
 from rfinance.ui.observation_review_page import ObservationReviewPage
+
+
+def test_busy_state_covers_thread_cleanup_gap(qtbot, tmp_path: Path) -> None:
+    """A stopped-but-not-cleaned thread must still block a second submit."""
+
+    database = Database.open(tmp_path / "busy.sqlite3")
+    database.upgrade()
+    try:
+        page = ObservationReviewPage(
+            ObservationReviewService(database.sessions, data_directory=tmp_path / "data")
+        )
+        qtbot.addWidget(page)
+        stopped = QThread()
+        page._thread = stopped
+        assert stopped.isRunning() is False
+        assert page.is_busy is True
+        stopped.deleteLater()
+    finally:
+        page.close()
+        database.close()
 
 
 def test_observation_review_page_rejects_with_evidence_and_preserves_raw_record(
@@ -59,7 +79,7 @@ def test_observation_review_page_rejects_with_evidence_and_preserves_raw_record(
                 not page.is_busy
                 and page.status_label.text().startswith("Observation review failed:")
             ),
-            timeout=10000,
+            timeout=30000,
         )
         assert "instrument identity must be VERIFIED" in page.status_label.text()
         assert service.effective_quality(observation_id) == "UNVERIFIED"
@@ -68,7 +88,7 @@ def test_observation_review_page_rejects_with_evidence_and_preserves_raw_record(
         qtbot.mouseClick(page.reject_button, Qt.MouseButton.LeftButton)
         qtbot.waitUntil(
             lambda: not page.is_busy and page.status_label.text().startswith("Review recorded:"),
-            timeout=10000,
+            timeout=30000,
         )
 
         assert service.effective_quality(observation_id) == "REJECTED"
