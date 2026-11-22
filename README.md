@@ -2,7 +2,7 @@
 
 **Local-first investment research and simulated portfolio management for Windows 11.**
 
-RFinance is designed as a native desktop application for Indonesian-market research, evidence-linked analysis, dividend monitoring, and local portfolio simulation. It does not connect to brokerage accounts or execute real-money transactions.
+RFinance is a native desktop application in active development for Indonesian-market research, evidence-linked analysis, dividend monitoring, and local portfolio simulation. It does not connect to brokerage accounts or execute real-money transactions.
 
 ## Product principles
 
@@ -10,36 +10,36 @@ RFinance is designed as a native desktop application for Indonesian-market resea
 - **Deterministic finance:** calculations and accounting are performed by tested application code; AI is optional and subordinate.
 - **Evidence and provenance:** financial observations retain source, timestamps, units, currency, quality, and verification state.
 - **Explicit simulation:** simulated positions and cash flows are never presented as actual brokerage activity.
-- **Safe acquisition:** data is obtained only through permitted APIs, downloads, licensed feeds, or user-provided documents.
+- **Safe acquisition:** data is obtained only through permitted APIs, licensed feeds, official downloads, or user-provided documents.
 
-## Development status
+## Current development slice
 
-The repository is being bootstrapped. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md), [ROADMAP.md](ROADMAP.md), and [TEST_REPORT.md](TEST_REPORT.md) for verified implementation state. Features are not considered complete merely because a UI surface exists.
+The current branch includes a functional PySide6 shell, local SQLite/Alembic storage, a Decimal-based simulated portfolio ledger, user-selected CSV market-data imports, and evidence-backed Instrument Review and Observation Review workflows. Portfolio valuation uses persisted observations only after freshness, quality, source, currency, and instrument checks; conflicting latest prices remain unvalued. The Portfolio Simulator exposes price provenance and partial-versus-complete valuation. A Technical Analysis desktop workflow now selects one instrument and one stored source, loads only eligible historical bars, and computes Decimal indicators with visible source, gap, and corporate-action-adjustment limitations. Historical prices are not rejected by the current-price freshness rule. Imported observations remain UNVERIFIED until separately reviewed. A Dividend Center records user-supplied dividend events in an append-only ledger with evidence-backed review, a labelled ex-date/payment-date calendar, and analytics that use only verified observed cash events. Announced, estimated and simulated items are never presented as cash received. A deterministic Research Center stores evidence-linked recommendations with explicit risk flags and invalidation conditions; confidence describes evidence quality, never profit probability.
+
+No automated IDX/OJK/KSEI scraper or licensed market-data adapter is enabled. Publicly viewable data is not automatically approved for automated access or redistribution.
+
+See IMPLEMENTATION_STATUS.md, ROADMAP.md, and TEST_REPORT.md for implementation and validation state. Import trust boundaries are in docs/MARKET_CSV_IMPORT.md; dividend event semantics are in docs/DIVIDEND_EVENTS.md; screening rules are in docs/SCREENING.md.
 
 ## Development
 
 The initial supported development runtime is Python 3.12 on Windows 11 x64.
 
-Once the project environment is established:
+Use PowerShell:
 
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-python -m rfinance
-```
+    py -3.12 -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install --upgrade pip
+    python -m pip install -e ".[dev]"
+    python -m rfinance
 
 Run checks with:
 
-```powershell
-python -m pytest
-ruff check .
-ruff format --check .
-mypy src
-```
+    python -m pytest
+    ruff check .
+    ruff format --check .
+    mypy src
 
-Dependency locking and the Windows package are gated on successful resolution and validation in the supported Windows environment. Do not treat an unvalidated lockfile or build as production evidence.
+Dependency locking and the Windows production package remain validation gates. Do not treat an unvalidated lockfile, test run, or build as production evidence.
 
 ## Scope boundary
 
