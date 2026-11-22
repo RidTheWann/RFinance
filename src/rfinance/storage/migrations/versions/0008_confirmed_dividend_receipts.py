@@ -13,9 +13,7 @@ down_revision = "0007_recommendations"
 branch_labels = None
 depends_on = None
 
-_OLD_EVENT_TYPES = (
-    "'CAPITAL_INJECTION', 'BUY', 'SELL', 'CASH_WITHDRAWAL', 'SIMULATED_DIVIDEND'"
-)
+_OLD_EVENT_TYPES = "'CAPITAL_INJECTION', 'BUY', 'SELL', 'CASH_WITHDRAWAL', 'SIMULATED_DIVIDEND'"
 _NEW_EVENT_TYPES = (
     "'CAPITAL_INJECTION', 'BUY', 'SELL', 'CASH_WITHDRAWAL', 'SIMULATED_DIVIDEND', "
     "'CONFIRMED_DIVIDEND'"
@@ -114,9 +112,7 @@ def _create_receipt_table() -> None:
         sa.Column("withdrawal_weight", sa.String(length=32), nullable=False),
         sa.Column("recorded_at_utc", sa.String(length=40), nullable=False),
         sa.Column("methodology_version", sa.String(length=64), nullable=False),
-        sa.UniqueConstraint(
-            "dividend_event_id", name="uq_dividend_receipt_event"
-        ),
+        sa.UniqueConstraint("dividend_event_id", name="uq_dividend_receipt_event"),
     )
     for action in ("UPDATE", "DELETE"):
         op.execute(

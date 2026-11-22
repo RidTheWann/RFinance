@@ -178,7 +178,6 @@ class LedgerEvent:
                 "simulated dividend amount must already represent its explicit net cash amount"
             )
 
-
     def _validate_confirmed_dividend(self) -> None:
         if not self.instrument_id or not self.instrument_id.strip():
             raise LedgerValidationError("confirmed dividend requires instrument_id")
@@ -360,8 +359,7 @@ def replay_ledger(
             receipt_key = (instrument, event.source_reference)
             if receipt_key in seen_confirmed_refs:
                 raise LedgerValidationError(
-                    f"duplicate confirmed dividend receipt: {instrument}/"
-                    f"{event.source_reference}"
+                    f"duplicate confirmed dividend receipt: {instrument}/{event.source_reference}"
                 )
             seen_confirmed_refs.add(receipt_key)
             cash += event.amount

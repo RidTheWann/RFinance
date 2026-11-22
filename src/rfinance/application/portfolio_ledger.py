@@ -44,6 +44,12 @@ class PortfolioLedgerService:
         self._base_currency = base_currency
 
     @property
+    def base_currency(self) -> str:
+        """Currency accepted by the ledger; used by downstream posting services."""
+
+        return self._base_currency
+
+    @property
     def next_sequence(self) -> int:
         return len(self._repository.events()) + 1
 
