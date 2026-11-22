@@ -4,6 +4,8 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+from PySide6.QtCore import Qt
+
 from rfinance.application.recommendations import RecommendationService
 from rfinance.domain.recommendations.screening import (
     EvidenceItem,
@@ -50,5 +52,74 @@ def test_research_page_shows_persisted_recommendation_and_evidence(qtbot, tmp_pa
         assert "fin-1" in page.detail_label.text()
         assert "Add verified financial statement inputs" in page.detail_label.text()
         assert page.empty_label.isHidden()
+        page.close()
+    finally:
+        database.close()
+
+
+def test_research_page_runs_guided_evaluation_and_shows_evidence(qtbot, tmp_path) -> None:
+    from datetime import UTC, datetime
+    from decimal import Decimal
+
+    from rfinance.domain.recommendations.screening import (
+        Recommendation,
+        RecommendationAction,
+    )
+    from rfinance.storage.database import Database
+    from rfinance.ui.research_page import ResearchPage
+
+    database = Database.open(tmp_path / "research-eval.sqlite3")
+    database.upgrade()
+    result = Recommendation(
+        instrument_id="IDX:BBCA",
+        action=RecommendationAction.BUY_CANDIDATE,
+        generated_at=datetime(2026, 11, 22, 12, tzinfo=UTC),
+        evidence_ids=("metric:RETURN_ON_EQUITY", "price:obs-1"),
+        risk_flags=(),
+        confidence_level=Decimal("0.5"),
+        explanation="4 of 5 fundamental signals passed.",
+        invalidation_conditions=("Evidence becomes stale.",),
+        data_freshness=None,
+        fundamental_assessment="5 usable metric(s).",
+        price_assessment="Verified price available.",
+        dividend_assessment="No verified dividend evidence.",
+    )
+
+    class StubEvaluationService:
+        def __init__(self) -> None:
+            self.calls: list[dict[str, object]] = []
+
+        def evaluate(self, instrument_id: str, **kwargs: object) -> Recommendation:
+            self.calls.append({"instrument_id": instrument_id, **kwargs})
+            return result
+
+    stub = StubEvaluationService()
+    try:
+        page = ResearchPage(
+            RecommendationService(database.sessions),
+            evaluation=stub,  # type: ignore[arg-type]
+        )
+        qtbot.addWidget(page)
+        page.show()
+
+        page.evaluate_instrument_input.setText("IDX:BBCA")
+        page.evaluate_revenue_input.setText("1000")
+        page.evaluate_previous_revenue_input.setText("800")
+        page.evaluate_net_income_input.setText("150")
+        page.evaluate_average_equity_input.setText("750")
+        page.evaluate_total_debt_input.setText("300")
+        page.evaluate_total_equity_input.setText("750")
+        page.evaluate_eps_input.setText("5")
+        page.evaluate_price_input.setText("50")
+        qtbot.mouseClick(page.evaluate_button, Qt.MouseButton.LeftButton)
+        qtbot.waitUntil(
+            lambda: "BUY_CANDIDATE" in page.evaluation_detail_label.text(),
+            timeout=30000,
+        )
+
+        assert "price:obs-1" in page.evaluation_detail_label.text()
+        assert stub.calls and stub.calls[0]["instrument_id"] == "IDX:BBCA"
+        qtbot.waitUntil(lambda: page._thread is None, timeout=10000)
+        page.close()
     finally:
         database.close()

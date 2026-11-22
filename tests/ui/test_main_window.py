@@ -16,6 +16,7 @@ from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.recommendations import RecommendationService
+from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.storage.database import Database
@@ -45,6 +46,13 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         dividend_events=dividend_events,
         portfolio_ledger=portfolio_service,
     )
+    recommendation_service = RecommendationService(database.sessions)
+    evaluation_service = ScreeningEvaluationService(
+        database.sessions,
+        dividend_events=dividend_events,
+        observation_review=ObservationReviewService(database.sessions),
+        recommendations=recommendation_service,
+    )
     observation_review_service = ObservationReviewService(
         database.sessions,
         data_directory=data_directory,
@@ -63,7 +71,8 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         TechnicalAnalysisService(HistoricalPriceSeriesService(database.sessions)),
         dividend_events,
         receipt_service,
-        RecommendationService(database.sessions),
+        recommendation_service,
+        evaluation_service,
     )
 
 

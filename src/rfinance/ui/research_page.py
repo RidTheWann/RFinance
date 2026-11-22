@@ -5,12 +5,15 @@
 
 from __future__ import annotations
 
+from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QFormLayout,
     QLabel,
+    QLineEdit,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
@@ -18,16 +21,50 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from rfinance.domain.recommendations.screening import Recommendation
+
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rfinance.application.recommendations import RecommendationService
+    from rfinance.application.screening_evaluation import ScreeningEvaluationService
+
+
+class EvaluationWorker(QObject):
+    """Run one screening evaluation outside the Qt main thread."""
+
+    completed = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, operation: Callable[[], object]) -> None:
+        super().__init__()
+        self._operation = operation
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            result = self._operation()
+        except Exception as error:
+            self.failed.emit(str(error))
+            return
+        self.completed.emit(result)
 
 
 class ResearchPage(QWidget):
-    """Read-only inspection of deterministic screening results and their evidence."""
+    """Inspect stored recommendations and run a guided evidence evaluation."""
 
-    def __init__(self, service: RecommendationService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        service: RecommendationService,
+        *,
+        evaluation: ScreeningEvaluationService | None = None,
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
         self._service = service
+        self._evaluation = evaluation
+        self._thread: QThread | None = None
+        self._worker: EvaluationWorker | None = None
         layout = QVBoxLayout(self)
         layout.setContentsMargins(32, 24, 32, 24)
         layout.setSpacing(12)
@@ -43,6 +80,38 @@ class ResearchPage(QWidget):
                 "probability of profit. A result is research, not a trade instruction."
             )
         )
+
+        form = QFormLayout()
+        self.evaluate_instrument_input = QLineEdit("IDX:BBCA")
+        self.evaluate_revenue_input = QLineEdit()
+        self.evaluate_previous_revenue_input = QLineEdit()
+        self.evaluate_net_income_input = QLineEdit()
+        self.evaluate_average_equity_input = QLineEdit()
+        self.evaluate_total_debt_input = QLineEdit()
+        self.evaluate_total_equity_input = QLineEdit()
+        self.evaluate_eps_input = QLineEdit()
+        self.evaluate_price_input = QLineEdit()
+        form.addRow("Instrument ID", self.evaluate_instrument_input)
+        form.addRow("Revenue", self.evaluate_revenue_input)
+        form.addRow("Prior revenue", self.evaluate_previous_revenue_input)
+        form.addRow("Net income", self.evaluate_net_income_input)
+        form.addRow("Average equity", self.evaluate_average_equity_input)
+        form.addRow("Total debt", self.evaluate_total_debt_input)
+        form.addRow("Total equity", self.evaluate_total_equity_input)
+        form.addRow("EPS", self.evaluate_eps_input)
+        form.addRow("Price", self.evaluate_price_input)
+        layout.addLayout(form)
+
+        self.evaluate_button = QPushButton("Evaluate from local evidence")
+        self.evaluate_button.setObjectName("evaluateScreeningButton")
+        self.evaluate_button.clicked.connect(self._run_evaluation)
+        layout.addWidget(self.evaluate_button)
+        self.evaluation_detail_label = QLabel(
+            "Fundamental inputs are operator-supplied, not verified filing values."
+        )
+        self.evaluation_detail_label.setObjectName("evaluationDetail")
+        self.evaluation_detail_label.setWordWrap(True)
+        layout.addWidget(self.evaluation_detail_label)
 
         self.refresh_button = QPushButton("Refresh recommendations")
         self.refresh_button.setObjectName("refreshRecommendationsButton")
@@ -78,6 +147,78 @@ class ResearchPage(QWidget):
         layout.addWidget(self.detail_label)
         self.table.itemSelectionChanged.connect(self._on_selection_changed)
         self.refresh()
+
+    def _run_evaluation(self) -> None:
+        if self._evaluation is None:
+            self.evaluation_detail_label.setText("Guided evaluation is unavailable.")
+            return
+        if self._thread is not None and self._thread.isRunning():
+            return
+        try:
+            fields = {
+                "revenue": self.evaluate_revenue_input.text().strip(),
+                "revenue_previous": self.evaluate_previous_revenue_input.text().strip(),
+                "net_income": self.evaluate_net_income_input.text().strip(),
+                "average_equity": self.evaluate_average_equity_input.text().strip(),
+                "total_debt": self.evaluate_total_debt_input.text().strip(),
+                "total_equity": self.evaluate_total_equity_input.text().strip(),
+                "earnings_per_share": self.evaluate_eps_input.text().strip(),
+                "price": self.evaluate_price_input.text().strip(),
+            }
+            fundamentals = {
+                name: None if not value else Decimal(value) for name, value in fields.items()
+            }
+        except (ValueError, TypeError, InvalidOperation):
+            self.evaluation_detail_label.setText("Enter valid Decimal fundamental inputs.")
+            return
+
+        evaluation = self._evaluation
+        instrument_id = self.evaluate_instrument_input.text().strip()
+
+        def operation() -> object:
+            return evaluation.evaluate(instrument_id, fundamentals=fundamentals)
+
+        def on_success(result: object) -> None:
+            self._on_evaluation_done(result)
+
+        thread = QThread(self)
+        worker = EvaluationWorker(operation)
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.completed.connect(on_success)
+        worker.failed.connect(self._on_evaluation_failed)
+        worker.completed.connect(thread.quit)
+        worker.failed.connect(thread.quit)
+        worker.completed.connect(worker.deleteLater)
+        worker.failed.connect(worker.deleteLater)
+        thread.finished.connect(lambda: self._on_thread_finished(thread))
+        thread.finished.connect(thread.deleteLater)
+        self._thread = thread
+        self._worker = worker
+        self.evaluate_button.setEnabled(False)
+        self.evaluation_detail_label.setText("Evaluating from local evidence…")
+        thread.start()
+
+    def _on_evaluation_done(self, result: object) -> None:
+        assert isinstance(result, Recommendation)
+        self.evaluate_button.setEnabled(True)
+        self.evaluation_detail_label.setText(
+            f"Action: {result.action.value}\n"
+            f"Explanation: {result.explanation}\n"
+            f"Evidence: {', '.join(result.evidence_ids) or 'none'}\n"
+            f"Risk flags: {', '.join(flag.value for flag in result.risk_flags) or 'none'}\n"
+            f"Invalidation: {'; '.join(result.invalidation_conditions)}"
+        )
+        self.refresh()
+
+    def _on_evaluation_failed(self, message: str) -> None:
+        self.evaluate_button.setEnabled(True)
+        self.evaluation_detail_label.setText(f"Evaluation failed: {message}")
+
+    def _on_thread_finished(self, thread: QThread) -> None:
+        if self._thread is thread:
+            self._thread = None
+            self._worker = None
 
     def refresh(self) -> None:
         items = self._service.recent(limit=100)
