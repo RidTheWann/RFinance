@@ -47,4 +47,6 @@ RFinance supports research, analysis, local records, and simulated portfolio ope
 
 ## License
 
-No license has been selected yet. Until a license is added, all rights are reserved by default.
+RFinance is free software licensed under the **GNU General Public License, version 3 only** (`GPL-3.0-only`). See [LICENSE](LICENSE) for the complete license text, [docs/ADR/0003-license-gpl-3.md](docs/ADR/0003-license-gpl-3.md) for the decision rationale and Qt/PySide6 compliance approach, and [docs/THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md) for dependency license notices.
+
+No contributor account, broker credential, or cloud subscription is required to run the core application. The license governs the software only; it is not investment advice.
