@@ -15,6 +15,7 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 | `tests/unit` + `tests/integration` | **194 passed** |
 | `tests/ui/test_main_window.py` + `tests/ui/test_dividend_page.py` | **4 passed** |
 | Full Qt UI suite | 2–3 `waitUntil` timeouts and one interpreter crash across repeated runs on this aarch64/offscreen runtime; the same tests passed in prior Windows/Ubuntu x64 CI. Treated as an environment limitation, not as verified UI correctness. |
+| Clean-start launch (`python -m rfinance`, fresh `RFINANCE_HOME`, offscreen Qt) | Passed: event loop stayed alive until the 8-second timeout; `Database/rfinance.sqlite3`, WAL/SHM files and `Logs/rfinance.log` were created; Alembic at `0007_recommendations` with all 13 tables present. This is a Linux aarch64 launch check, not a Windows installation test. |
 
 New local coverage in this checkpoint:
 

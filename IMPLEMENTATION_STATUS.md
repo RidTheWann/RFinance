@@ -121,6 +121,7 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 | Mypy strict | Passed (68 source files) |
 | Unit + integration pytest | **194 passed** |
 | Targeted Qt tests (main window + Dividend Center + Research Center) | 5 passed |
+| Clean-start launch (fresh data directory, offscreen Qt) | Stayed alive; SQLite, WAL/SHM, logs and all 13 tables at migration `0007_recommendations` created |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
 
 The local checkpoint includes the new dividend event slice: 7 integration tests, 12 contract unit tests, and a Dividend Center Qt rendering test.
