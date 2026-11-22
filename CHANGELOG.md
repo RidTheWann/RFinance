@@ -4,6 +4,7 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Selected `GPL-3.0-only` as the project license: added verbatim GPLv3 `LICENSE`, PEP 639 metadata (`license` + `license-files`, setuptools >= 77), SPDX headers on every source file, ADR 0003, third-party notices, and regression tests for license metadata. PySide6's `LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only` licensing is compatible with the selected GPLv3 license; Windows binary distribution obligations are recorded in the ADR.
 - Established repository engineering policy, Python package metadata, CI, and Windows development scripts.
 - Added Windows per-user persistent data paths, rotating logs, SQLite, and Alembic migrations.
 - Added a PySide6 desktop shell with Overview, Portfolio Simulator, and Settings.

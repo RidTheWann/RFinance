@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=75.8"]
+# PEP 639 SPDX license expressions and project.license-files need setuptools >= 77.
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +9,19 @@ version = "0.1.0"
 description = "Local-first investment research and simulated portfolio management"
 readme = "README.md"
 requires-python = ">=3.12,<3.16"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: X11 Applications :: Qt",
+  "Intended Audience :: Financial and Insurance Industry",
+  "Operating System :: Microsoft :: Windows :: Windows 10",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
+  "Topic :: Office/Business :: Financial :: Investment",
+]
 authors = [{ name = "RFinance Contributors" }]
 dependencies = [
   "alembic>=1.20,<1.21",

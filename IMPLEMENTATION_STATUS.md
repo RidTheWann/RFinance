@@ -4,7 +4,8 @@ Last verified against the repository: 2026-11-22
 
 ## Repository state
 
-- Repository: RidTheWann/RFinance (public).
+- Repository: RidTheWann/RFinance (public). PR #2 was merged into `main` at `422b74718827932a27082dee3a6dd35062bcf977` after all Windows/Ubuntu CI checks passed (Ruff lint/format, Mypy, 202 pytest tests per OS).
+- License: `GPL-3.0-only` (ADR 0003, verbatim `LICENSE`, PEP 639 metadata, SPDX headers, third-party notices). PySide6 6.12 Community licensing is compatible; frozen Windows builds must retain Qt notices and provide Corresponding Source per GPLv3 §6.
 - Remote `main` contains only the initial README commit `c3d556a34852922c147d136e49fdc05526b178e5`.
 - PR #1 (`foundation/bootstrap-core` → `main`, 172 commits of implementation work) is **closed and unmerged**. Its head ref `refs/pull/1/head` was fetched and preserved locally; the source branch has been deleted from the remote.
 - Current local working branch: `rfinance-dev`, based on the preserved PR head `d2a0dc35d5233e6a5c6bf6e5558b5543d0975d35`. No prior work was discarded.

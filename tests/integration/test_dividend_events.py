@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 RFinance Contributors
+# See LICENSE for the full GNU General Public License version 3.
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path

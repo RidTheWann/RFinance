@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 RFinance Contributors
+# See LICENSE for the full GNU General Public License version 3.
 """Application service for safe, provenance-preserving local market CSV imports."""
 
 from __future__ import annotations
