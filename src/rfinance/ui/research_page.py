@@ -190,6 +190,13 @@ class ResearchPage(QWidget):
         def on_success(result: object) -> None:
             self._on_evaluation_done(result)
 
+        self._start_worker(operation, on_success)
+
+    def _start_worker(
+        self,
+        operation: Callable[[], object],
+        on_success: Callable[[object], None],
+    ) -> None:
         thread = QThread(self)
         worker = EvaluationWorker(operation)
         worker.moveToThread(thread)

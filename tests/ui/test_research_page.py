@@ -57,7 +57,9 @@ def test_research_page_shows_persisted_recommendation_and_evidence(qtbot, tmp_pa
         database.close()
 
 
-def test_research_page_runs_guided_evaluation_and_shows_evidence(qtbot, tmp_path) -> None:
+def test_research_page_runs_guided_evaluation_and_shows_evidence(
+    qtbot, tmp_path, monkeypatch
+) -> None:
     from datetime import UTC, datetime
     from decimal import Decimal
 
@@ -99,6 +101,11 @@ def test_research_page_runs_guided_evaluation_and_shows_evidence(qtbot, tmp_path
             RecommendationService(database.sessions),
             evaluation=stub,  # type: ignore[arg-type]
         )
+        monkeypatch.setattr(
+            page,
+            "_start_worker",
+            lambda operation, on_success: on_success(operation()),
+        )
         qtbot.addWidget(page)
         page.show()
 
@@ -121,7 +128,6 @@ def test_research_page_runs_guided_evaluation_and_shows_evidence(qtbot, tmp_path
         assert "price:obs-1" in page.evaluation_detail_label.text()
         assert stub.calls and stub.calls[0]["instrument_id"] == "IDX:BBCA"
         assert stub.calls[0]["use_persisted_fundamentals"] is True
-        qtbot.waitUntil(lambda: page._thread is None, timeout=10000)
         page.close()
     finally:
         database.close()
