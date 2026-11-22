@@ -4,6 +4,7 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Rebuilt the commit history at the owner's request so the GPLv3 `LICENSE` and per-file SPDX headers exist from the root commit (`beb02dae1acd2dfa7c2e5f87b748ba64a7a877b4`) onward; closed the separate license PR, removed stale branches, and force-pushed `main` with `--force-with-lease`. CI on the final tree passed on Windows and Ubuntu (206 tests per OS).
 - Selected `GPL-3.0-only` as the project license: added verbatim GPLv3 `LICENSE`, PEP 639 metadata (`license` + `license-files`, setuptools >= 77), SPDX headers on every source file, ADR 0003, third-party notices, and regression tests for license metadata. PySide6's `LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only` licensing is compatible with the selected GPLv3 license; Windows binary distribution obligations are recorded in the ADR.
 - Established repository engineering policy, Python package metadata, CI, and Windows development scripts.
 - Added Windows per-user persistent data paths, rotating logs, SQLite, and Alembic migrations.
@@ -37,7 +38,7 @@ All notable changes to RFinance are documented here.
 - Added a separate `historical-price-eligibility-v1` gate so old, verified historical bars are not incorrectly rejected by current-quote staleness rules; future bars, unverified observations/instruments, currency mismatches, and blocked/restricted sources remain ineligible.
 - Connected persisted single-instrument/single-source historical bars to Decimal technical reports and the Technical Analysis desktop page, with asynchronous loading/calculation and visible provenance/rejection diagnostics.
 - Added gap sentinels so rolling indicator windows restart after configured large calendar gaps; no source blending, resampling, interpolation, frequency inference, or automatic corporate-action adjustment occurs.
-- Added 15 historical-eligibility, persisted-series, technical-analysis and Qt workflow tests. Full Windows/Ubuntu Python 3.12 CI passed at `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6`: 156 tests passed on each OS.
+- Added 15 historical-eligibility, persisted-series, technical-analysis and Qt workflow tests. Full Windows/Ubuntu Python 3.12 CI passed at `eaef966d4d542d44275c4cab91e025431b63d18d`: 156 tests passed on each OS.
 - Preserved the closed PR #1 implementation locally (172 commits) and continued development from its head without discarding prior work.
 - Added migration `0006_dividend_events` with append-only dividend events and evidence-backed review audit ledger, foreign keys, uniqueness, indexes and update/delete triggers.
 - Added the frozen `DividendEventContract` with explicit provenance, lifecycle status, currency, unit and quality validation, rejecting naive timestamps and invalid cash/non-cash amounts.

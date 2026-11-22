@@ -4,14 +4,13 @@ Last verified against the repository: 2026-11-22
 
 ## Repository state
 
-- Repository: RidTheWann/RFinance (public). PR #2 was merged into `main` at `422b74718827932a27082dee3a6dd35062bcf977` after all Windows/Ubuntu CI checks passed (Ruff lint/format, Mypy, 202 pytest tests per OS).
+- Repository: RidTheWann/RFinance (public). Current `main` HEAD: `f005c9113510466fc5ea09da4d8d78818ad3b6a6` (179 commits). Remote `main` matches local exactly.
+- **History rebuild:** at the owner's request, all 178 commits were rewritten so that the verbatim GPLv3 `LICENSE` and per-file SPDX headers exist from the root commit `beb02dae1acd2dfa7c2e5f87b748ba64a7a877b4` onward. The earlier "license" PR #3 was closed without merging and its branch deleted; the license was never absent from any commit in the final history. `main` was force-pushed with `--force-with-lease` after the stale branches were removed.
 - License: `GPL-3.0-only` (ADR 0003, verbatim `LICENSE`, PEP 639 metadata, SPDX headers, third-party notices). PySide6 6.12 Community licensing is compatible; frozen Windows builds must retain Qt notices and provide Corresponding Source per GPLv3 §6.
-- Remote `main` contains only the initial README commit `c3d556a34852922c147d136e49fdc05526b178e5`.
-- PR #1 (`foundation/bootstrap-core` → `main`, 172 commits of implementation work) is **closed and unmerged**. Its head ref `refs/pull/1/head` was fetched and preserved locally; the source branch has been deleted from the remote.
-- Current local working branch: `rfinance-dev`, based on the preserved PR head `d2a0dc35d5233e6a5c6bf6e5558b5543d0975d35`. No prior work was discarded.
-- Push access is unavailable in this session (HTTPS git reports no usable credentials; `gh` is not authenticated). Commits are local only until credentials are supplied. No push, PR or merge is claimed.
-- Historical CI checkpoint at `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` (Windows and Ubuntu, Python 3.12): Ruff lint/format and Mypy passed; 156 tests passed on each OS. This is a prior CI result, not a result of this session.
-- Local verification in this session (Ubuntu 26.04 aarch64, Python 3.14.4, PySide6 6.12): Ruff lint/format and Mypy pass; all non-UI tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime (the same tests previously passed in x64 CI); see [TEST_REPORT.md](TEST_REPORT.md).
+- PR #2 (foundation + dividend/fundamental/screening slices) was merged before the rebuild; its content is fully preserved in the rewritten history. PR #1 (`foundation/bootstrap-core`) remains closed and unmerged but its 172 commits were preserved and rebuilt.
+- All commits are pushed. A short-lived PAT was supplied by the owner, used only locally for push/PR/merge, and removed from disk afterward; no token or personal email is present in the repository.
+- CI after the rebuild: push run `45001539029` — Windows and Ubuntu both **success** (Ruff lint/format, Mypy, 206 tests per OS). The first Windows attempt aborted inside `pytestqt._process_events` (Qt runner flake); `gh run rerun --failed` passed on retry with byte-identical tree `d15813a111829b8b7917ac8ee83d95d580297047`.
+- Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 198 unit/integration and 5 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
 
 ## Implemented in the foundation branch
 
@@ -117,10 +116,10 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed (119 files) |
-| Ruff format check | Passed (119 files) |
+| Ruff lint | Passed (122 files) |
+| Ruff format check | Passed (122 files) |
 | Mypy strict | Passed (68 source files) |
-| Unit + integration pytest | **194 passed** |
+| Unit + integration pytest | **198 passed** |
 | Targeted Qt tests (main window + Dividend Center + Research Center) | 5 passed |
 | Clean-start launch (fresh data directory, offscreen Qt) | Stayed alive; SQLite, WAL/SHM, logs and all 13 tables at migration `0007_recommendations` created |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
@@ -129,7 +128,7 @@ The local checkpoint includes the new dividend event slice: 7 integration tests,
 
 ## Verified CI (historical, prior session)
 
-Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed successfully on Windows and Ubuntu using Python 3.12. See [push CI 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
+Application-code commit `b7ebce23511dcf6a48f919b22f03cd62ffd6e456` completed successfully on Windows and Ubuntu using Python 3.12. See [push CI 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
 
 | Check | Windows | Ubuntu |
 |---|---:|---:|

@@ -18,14 +18,14 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 
 ## Latest local engineering checkpoint (2026-11-22)
 
-- Local branch `rfinance-dev`, based on the preserved head of the closed, unmerged PR #1. No push access in this session; no push or merge is claimed.
-- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (119 files), Mypy strict passes (68 source files), 194 unit/integration tests and 5 targeted Qt tests pass.
+- `main` at `f005c9113510466fc5ea09da4d8d78818ad3b6a6` after the license history rebuild; all work is pushed. PR #2 content is preserved in the rewritten history, and PR #1's 172 commits were rebuilt from its preserved head. GPL-3.0-only license and SPDX headers exist from the root commit onward.
+- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (122 files), Mypy strict passes (68 source files), 198 unit/integration tests and 5 targeted Qt tests pass.
 - Delivered: append-only dividend event and review persistence, evidence-backed review gates, labelled calendar, verified-event analytics, and a connected Dividend Center desktop tab.
 - Full Qt worker-thread suite is timing-unreliable on this aarch64/offscreen runtime; historical Windows/Ubuntu x64 CI at Python 3.12 passed 156 tests.
 
 ## Historical verified engineering checkpoint
 
-- Latest application-code head validated by GitHub Actions: `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6`.
+- Latest application-code head validated by GitHub Actions: `eaef966d4d542d44275c4cab91e025431b63d18d`.
 - Windows and Ubuntu, Python 3.12: Ruff lint, Ruff format, and Mypy passed; **156 pytest tests passed on each OS**. Ruff format reports 101 files already formatted and Mypy checks 57 source files. See [push CI 44911435637](https://github.com/RidTheWann/RFinance/actions/runs/44911435637) and [PR CI 44911439980](https://github.com/RidTheWann/RFinance/actions/runs/44911439980).
 - A prior Termux/Python 3.14 developer checkpoint reported 127 non-UI tests; it is historical context only and is superseded by the current cross-platform Python 3.12 result.
 - PR #1 is closed and unmerged; its implementation was preserved locally and development continued from it.

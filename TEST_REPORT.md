@@ -9,11 +9,11 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed, 119 files |
-| Ruff format check | Passed, 119 files |
+| Ruff lint | Passed, 122 files |
+| Ruff format check | Passed, 122 files |
 | Mypy strict | Passed, 68 source files |
-| `tests/unit` + `tests/integration` | **194 passed** |
-| `tests/ui/test_main_window.py` + `tests/ui/test_dividend_page.py` | **4 passed** |
+| `tests/unit` + `tests/integration` | **198 passed** |
+| Targeted Qt tests (main window, Dividend Center, Research Center) | **5 passed** |
 | Full Qt UI suite | 2–3 `waitUntil` timeouts and one interpreter crash across repeated runs on this aarch64/offscreen runtime; the same tests passed in prior Windows/Ubuntu x64 CI. Treated as an environment limitation, not as verified UI correctness. |
 | Clean-start launch (`python -m rfinance`, fresh `RFINANCE_HOME`, offscreen Qt) | Passed: event loop stayed alive until the 8-second timeout; `Database/rfinance.sqlite3`, WAL/SHM files and `Logs/rfinance.log` were created; Alembic at `0007_recommendations` with all 13 tables present. This is a Linux aarch64 launch check, not a Windows installation test. |
 
@@ -24,9 +24,15 @@ New local coverage in this checkpoint:
 - `tests/ui/test_dividend_page.py` (1 test): rendering of persisted events, review history, calendar interpretation labels and deterministic analytics output.
 - `tests/unit/test_fundamental_metrics.py` (10 additional tests): all 17 computed metrics with full inputs, input/formula reproducibility, missing-input and unusable-denominator statuses, financial-sector exclusions, rejection of non-finite inputs, primitive edge cases, and Hypothesis invariants for ratio, growth and margin behavior. A test caught and fixed an argument-order defect in earnings quality.
 
-## Latest fully verified cross-platform CI checkpoint
+## Latest cross-platform CI checkpoint (after history rebuild)
 
-Application-code commit `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` completed successfully on Windows and Ubuntu using Python 3.12. [Push CI run 44911435637](https://github.com/RidTheWann/RFinance/actions/runs/44911435637) and [PR CI run 44911439980](https://github.com/RidTheWann/RFinance/actions/runs/44911439980).
+`main` HEAD `f005c9113510466fc5ea09da4d8d78818ad3b6a6`, tree `d15813a111829b8b7917ac8ee83d95d580297047`: [push CI run 45001539029](https://github.com/RidTheWann/RFinance/actions/runs/45001539029) — Windows and Ubuntu both **success**, Python 3.12, **206 tests passed per OS**, Ruff lint/format and Mypy passed.
+
+The first Windows attempt aborted inside `pytestqt/plugin.py::_process_events` (Qt runner flake) with no assertion failure. `gh run rerun --failed` passed on retry against the byte-identical tree. This is recorded as an environment flake, not a product defect; earlier PR #2 CI at `eaef966d4d542d44275c4cab91e025431b63d18d` also passed 202 tests on both OSes.
+
+## Historical cross-platform CI checkpoint
+
+Application-code commit `eaef966d4d542d44275c4cab91e025431b63d18d` completed successfully on Windows and Ubuntu using Python 3.12. [Push CI run 44911435637](https://github.com/RidTheWann/RFinance/actions/runs/44911435637) and [PR CI run 44911439980](https://github.com/RidTheWann/RFinance/actions/runs/44911439980).
 
 | Check | Windows | Ubuntu |
 |---|---:|---:|
