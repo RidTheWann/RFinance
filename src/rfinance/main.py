@@ -46,6 +46,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.dividend_events,
         context.dividend_receipts,
         context.recommendations,
+        context.screening_evaluation,
     )
     application.aboutToQuit.connect(context.close)
     window.show()

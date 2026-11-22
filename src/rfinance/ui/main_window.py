@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
     from rfinance.application.recommendations import RecommendationService
+    from rfinance.application.screening_evaluation import ScreeningEvaluationService
     from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
@@ -148,6 +149,7 @@ class MainWindow(QMainWindow):
         dividend_events: DividendEventService | None = None,
         dividend_receipts: DividendReceiptService | None = None,
         recommendations: RecommendationService | None = None,
+        screening_evaluation: ScreeningEvaluationService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -162,6 +164,7 @@ class MainWindow(QMainWindow):
         self.dividend_receipts = dividend_receipts
         self.dividend_page: DividendPage | None = None
         self.recommendations = recommendations
+        self.screening_evaluation = screening_evaluation
         self.research_page: ResearchPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
@@ -198,7 +201,10 @@ class MainWindow(QMainWindow):
         if self.recommendations is None:
             self.pages.addWidget(QLabel("Research Center is unavailable."))
         else:
-            self.research_page = ResearchPage(self.recommendations)
+            self.research_page = ResearchPage(
+                self.recommendations,
+                evaluation=self.screening_evaluation,
+            )
             self.pages.addWidget(self.research_page)
         self.pages.addWidget(self._instrument_review_page())
         self.observation_review_page = ObservationReviewPage(observation_review)

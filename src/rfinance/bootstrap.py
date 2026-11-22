@@ -17,6 +17,7 @@ from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.recommendations import RecommendationService
+from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
@@ -41,6 +42,7 @@ class ApplicationContext:
     dividend_events: DividendEventService
     dividend_receipts: DividendReceiptService
     recommendations: RecommendationService
+    screening_evaluation: ScreeningEvaluationService
     portfolio_valuation: PortfolioValuationService
     technical_analysis: TechnicalAnalysisService
     logger: logging.Logger
@@ -85,6 +87,12 @@ def create_application_context(data_directory: str | None = None) -> Application
             portfolio_ledger=portfolio_ledger,
         )
         recommendations = RecommendationService(database.sessions)
+        screening_evaluation = ScreeningEvaluationService(
+            database.sessions,
+            dividend_events=dividend_events,
+            observation_review=observation_review,
+            recommendations=recommendations,
+        )
     except Exception:
         database.close()
         logger.exception("Database initialization failed")
@@ -100,6 +108,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         dividend_events=dividend_events,
         dividend_receipts=dividend_receipts,
         recommendations=recommendations,
+        screening_evaluation=screening_evaluation,
         portfolio_valuation=portfolio_valuation,
         technical_analysis=technical_analysis,
         logger=logger,
