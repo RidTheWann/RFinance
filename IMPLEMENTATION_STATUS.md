@@ -25,7 +25,7 @@ Last verified against the repository: 2026-11-22
 ### Deterministic financial and portfolio logic
 
 - Typed instrument and market-observation contracts with explicit currency, timestamps, quality, and OHLC validation.
-- Decimal primitives for profit margins, ROE, and debt-to-equity.
+- `fundamental-metrics-v1`: 17 reproducible Decimal fundamental metrics (growth, margins, ROE/ROA/ROIC, leverage, interest coverage, cash-flow measures, P/E, P/B, EV/EBITDA) with explicit formula/input/status records, missing-data and unusable-denominator handling, and a financial-sector applicability gate that excludes industrial leverage/cash-flow metrics for banks. Unit and property tests cover the invariants.
 - Immutable portfolio ledger with explicit capital, buy, sell, cash withdrawal, and simulated-dividend events.
 - Weighted-average cost, realized P/L, cash and position invariants, unique event IDs, and strict event ordering.
 - Trade events require a provenance-bearing `VerifiedLotSize`; missing or unverified lot metadata blocks trading.
@@ -111,7 +111,7 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 | Ruff lint | Passed (109 files) |
 | Ruff format check | Passed (109 files) |
 | Mypy strict | Passed (62 source files) |
-| Unit + integration pytest | **169 passed** |
+| Unit + integration pytest | **179 passed** |
 | Targeted Qt tests (main window + Dividend Center) | 4 passed |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
 

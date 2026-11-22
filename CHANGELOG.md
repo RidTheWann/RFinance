@@ -43,3 +43,5 @@ All notable changes to RFinance are documented here.
 - Added `DividendEventService` with atomic ingest, deny-by-default MANUAL source creation, evidence file archiving and SHA-256, explicit promotion gates, labelled calendar, and verified-event analytics connected to `dividend-analytics-v1`.
 - Connected a Dividend Center desktop tab with Events, Calendar, Analytics and Evidence review views; all values come from local storage or deterministic calculations.
 - Verified locally on Ubuntu aarch64 / Python 3.14: Ruff lint and format, Mypy strict, 169 unit/integration tests and 4 targeted Qt tests pass.
+- Expanded `metrics.py` from three primitives to 17 reproducible fundamental metrics with `fundamental-metrics-v1`, explicit input/formula/status records, unusable-denominator handling, and a financial-sector applicability gate that excludes industrial leverage/cash-flow metrics for banks.
+- Added 10 fundamental unit/property tests; a test caught and fixed an argument-order defect in the earnings-quality computation.

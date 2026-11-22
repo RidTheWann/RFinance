@@ -9,14 +9,51 @@
 - Reported metrics, derived metrics, analyst estimates, forward estimates, AI interpretations, and simulations must be separately labelled.
 - Financial statements must be period-aligned and use a declared reporting basis (annual, quarterly, trailing twelve months, etc.).
 
-## Current deterministic primitives
+## Fundamental metrics (`fundamental-metrics-v1`)
 
-The initial implementation exposes:
-- Margin fraction = profit / revenue, only when revenue > 0.
-- ROE fraction = net income / average equity, only when average equity > 0.
-- Debt-to-equity = total debt / total equity, only when debt >= 0 and equity > 0.
+`src/rfinance/analysis/fundamental/metrics.py` provides both low-level pure
+functions and a `compute_fundamental_metrics(inputs, is_financial=False)`
+orchestrator. Each returned `ComputedMetric` carries its name, value, status,
+formula string, canonical formula version, the exact inputs used (serialized,
+with `MISSING` for absent values), and a note. This makes every derived figure
+reproducible and keeps reported values, derived values, forecasts and
+simulations distinct.
 
-The functions return a fraction (for example, 0.25 = 25%), not a percentage-point value. Presentation formatting is a separate concern. Industry context and source-data requirements are not inferred by these low-level primitives.
+| Metric | Formula | Required inputs | Unusable condition |
+|---|---|---|---|
+| `REVENUE_GROWTH` | current revenue / prior revenue - 1 | both revenues | prior revenue <= 0 |
+| `EPS_GROWTH` | current EPS / prior EPS - 1 | both EPS values | prior EPS <= 0 |
+| `GROSS_MARGIN` | gross profit / revenue | gross profit, revenue | revenue <= 0 |
+| `OPERATING_MARGIN` | operating income / revenue | operating income, revenue | revenue <= 0 |
+| `NET_MARGIN` | net income / revenue | net income, revenue | revenue <= 0 |
+| `RETURN_ON_EQUITY` | net income / average equity | net income, average equity | average equity <= 0 |
+| `RETURN_ON_ASSETS` | net income / average total assets | net income, average assets | average assets <= 0 |
+| `RETURN_ON_INVESTED_CAPITAL` | EBIT x (1 - tax rate) / (debt + equity - cash) | EBIT, tax rate, debt, equity, cash | tax rate outside [0,1], negative capital components, capital base <= 0 |
+| `DEBT_TO_EQUITY` | total debt / total equity | debt, equity | negative debt or equity <= 0 |
+| `INTEREST_COVERAGE` | EBIT / interest expense | EBIT, interest expense | interest expense <= 0 |
+| `OPERATING_CASH_FLOW` | reported value, reporting currency | operating cash flow | missing |
+| `FREE_CASH_FLOW` | operating cash flow - capital expenditure | OCF, capex | negative capex |
+| `EARNINGS_QUALITY` | operating cash flow / net income | net income, OCF | net income <= 0 |
+| `CASH_FLOW_QUALITY` | free cash flow / operating cash flow | OCF, FCF | OCF <= 0 |
+| `PRICE_TO_EARNINGS` | price / EPS | price, EPS | EPS <= 0 |
+| `PRICE_TO_BOOK` | price / book value per share | price, BVPS | BVPS <= 0 |
+| `EV_TO_EBITDA` | enterprise value / EBITDA | EV, EBITDA | negative EV or EBITDA <= 0 |
+
+All ratios are fractions, not percentages. A loss-making company has no P/E;
+no zero or missing denominator is converted into a score. `MetricStatus`
+distinguishes `OK`, `MISSING_INPUT`, `UNUSABLE_DENOMINATOR`, `NEGATIVE_INPUT`
+and `NOT_APPLICABLE`.
+
+### Financial-sector exception
+
+Banks and other financial institutions do not share industrial leverage and
+cash-flow semantics. When `is_financial=True`, the orchestrator returns
+`DEBT_TO_EQUITY`, `INTEREST_COVERAGE`, `RETURN_ON_INVESTED_CAPITAL`,
+`FREE_CASH_FLOW`, `EARNINGS_QUALITY`, `CASH_FLOW_QUALITY` and `EV_TO_EBITDA` with
+status `NOT_APPLICABLE` and a null value. ROE, ROA, margins and per-share
+valuation multiples remain available where their inputs are valid. The caller
+must supply the industry classification from verified instrument metadata; it
+is never inferred from a ticker or sector name.
 
 ## Dividend analytics (`dividend-analytics-v1`)
 

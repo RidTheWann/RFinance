@@ -12,7 +12,7 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 | Ruff lint | Passed, 109 files |
 | Ruff format check | Passed, 109 files |
 | Mypy strict | Passed, 62 source files |
-| `tests/unit` + `tests/integration` | **169 passed** |
+| `tests/unit` + `tests/integration` | **179 passed** |
 | `tests/ui/test_main_window.py` + `tests/ui/test_dividend_page.py` | **4 passed** |
 | Full Qt UI suite | 2–3 `waitUntil` timeouts and one interpreter crash across repeated runs on this aarch64/offscreen runtime; the same tests passed in prior Windows/Ubuntu x64 CI. Treated as an environment limitation, not as verified UI correctness. |
 
@@ -21,6 +21,7 @@ New local coverage in this checkpoint:
 - `tests/unit/test_dividend_contracts.py` (12 tests): frozen extra-forbid validation, default `UNVERIFIED` quality, cash/non-cash amount rules, timezone-aware acquisition, invalid currency and reporting period.
 - `tests/integration/test_dividend_events.py` (7 tests): provenance persistence with deny-by-default MANUAL source, duplicate and unknown-instrument rejection, promotion gates, append-only raw rows and review ledger, evidence file archiving/hashing, calendar confirmation/estimate labels, and analytics using only verified observed cash events with `None` for missing inputs.
 - `tests/ui/test_dividend_page.py` (1 test): rendering of persisted events, review history, calendar interpretation labels and deterministic analytics output.
+- `tests/unit/test_fundamental_metrics.py` (10 additional tests): all 17 computed metrics with full inputs, input/formula reproducibility, missing-input and unusable-denominator statuses, financial-sector exclusions, rejection of non-finite inputs, primitive edge cases, and Hypothesis invariants for ratio, growth and margin behavior. A test caught and fixed an argument-order defect in earnings quality.
 
 ## Latest fully verified cross-platform CI checkpoint
 
