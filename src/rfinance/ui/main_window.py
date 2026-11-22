@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
     from rfinance.application.dividend_events import DividendEventService
+    from rfinance.application.dividend_receipts import DividendReceiptService
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
@@ -145,6 +146,7 @@ class MainWindow(QMainWindow):
         portfolio_valuation: PortfolioValuationService | None = None,
         technical_analysis: TechnicalAnalysisService | None = None,
         dividend_events: DividendEventService | None = None,
+        dividend_receipts: DividendReceiptService | None = None,
         recommendations: RecommendationService | None = None,
     ) -> None:
         super().__init__()
@@ -157,6 +159,7 @@ class MainWindow(QMainWindow):
         self.technical_analysis = technical_analysis
         self.technical_analysis_page: TechnicalAnalysisPage | None = None
         self.dividend_events = dividend_events
+        self.dividend_receipts = dividend_receipts
         self.dividend_page: DividendPage | None = None
         self.recommendations = recommendations
         self.research_page: ResearchPage | None = None
@@ -208,7 +211,10 @@ class MainWindow(QMainWindow):
         if self.dividend_events is None:
             self.pages.addWidget(QLabel("Dividend Center is unavailable."))
         else:
-            self.dividend_page = DividendPage(self.dividend_events)
+            self.dividend_page = DividendPage(
+                self.dividend_events,
+                receipts=self.dividend_receipts,
+            )
             self.pages.addWidget(self.dividend_page)
         self.pages.addWidget(self._settings_page())
 

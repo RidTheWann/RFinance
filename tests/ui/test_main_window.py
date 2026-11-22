@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
 from rfinance.application.dividend_events import DividendEventService
+from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
@@ -38,6 +39,12 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         database.sessions,
         data_directory=data_directory,
     )
+    dividend_events = DividendEventService(database.sessions, data_directory=data_directory)
+    receipt_service = DividendReceiptService(
+        database.sessions,
+        dividend_events=dividend_events,
+        portfolio_ledger=portfolio_service,
+    )
     observation_review_service = ObservationReviewService(
         database.sessions,
         data_directory=data_directory,
@@ -54,7 +61,8 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         observation_review_service,
         portfolio_valuation_service,
         TechnicalAnalysisService(HistoricalPriceSeriesService(database.sessions)),
-        DividendEventService(database.sessions, data_directory=data_directory),
+        dividend_events,
+        receipt_service,
         RecommendationService(database.sessions),
     )
 

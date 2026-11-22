@@ -34,12 +34,15 @@ from rfinance.application.dividend_events import (
     DividendReviewDecision,
     DividendReviewResult,
 )
+from rfinance.application.dividend_receipts import DividendReceiptResult
 from rfinance.data.contracts import DividendEventContract, DividendEventStatus, DividendType
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from PySide6.QtGui import QCloseEvent
+
+    from rfinance.application.dividend_receipts import DividendReceiptService
 
 
 class DividendWorker(QObject):
@@ -65,9 +68,16 @@ class DividendWorker(QObject):
 class DividendPage(QWidget):
     """A connected view over persisted dividend events and the calculation layer."""
 
-    def __init__(self, service: DividendEventService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        service: DividendEventService,
+        *,
+        receipts: DividendReceiptService | None = None,
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
         self._service = service
+        self._receipts = receipts
         self._thread: QThread | None = None
         self._worker: DividendWorker | None = None
         self._build_ui()
@@ -107,6 +117,7 @@ class DividendPage(QWidget):
         tabs.addTab(self._events_tab(), "Events")
         tabs.addTab(self._calendar_tab(), "Calendar")
         tabs.addTab(self._analytics_tab(), "Analytics")
+        tabs.addTab(self._receipt_tab(), "Confirmed receipt")
         tabs.addTab(self._review_tab(), "Evidence review")
         layout.addWidget(tabs, 1)
 
@@ -279,6 +290,38 @@ class DividendPage(QWidget):
         layout.addStretch(1)
         return page
 
+    def _receipt_tab(self) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(8, 12, 8, 8)
+        layout.setSpacing(10)
+        layout.addWidget(
+            QLabel(
+                "Post a net dividend that was actually received. Only a VERIFIED, "
+                "observed cash event is eligible; each event can be posted once."
+            )
+        )
+
+        form = QFormLayout()
+        self.receipt_event_label = QLabel("Select a verified event in the Events tab")
+        self.receipt_amount_input = QLineEdit()
+        self.receipt_amount_input.setPlaceholderText("Confirmed net cash received (IDR)")
+        form.addRow("Selected event", self.receipt_event_label)
+        form.addRow("Net amount", self.receipt_amount_input)
+        layout.addLayout(form)
+
+        self.post_receipt_button = QPushButton("Post confirmed receipt")
+        self.post_receipt_button.setObjectName("postDividendReceiptButton")
+        self.post_receipt_button.clicked.connect(self._post_receipt)
+        layout.addWidget(self.post_receipt_button)
+
+        self.receipt_result_label = QLabel("No receipt has been posted in this session.")
+        self.receipt_result_label.setObjectName("dividendReceiptResult")
+        self.receipt_result_label.setWordWrap(True)
+        layout.addWidget(self.receipt_result_label)
+        layout.addStretch(1)
+        return page
+
     def _review_tab(self) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -398,6 +441,7 @@ class DividendPage(QWidget):
     def _on_event_selected(self) -> None:
         event_id = self._selected_event_id()
         self.selected_event_label.setText(event_id or "Select an event in the Events tab")
+        self.receipt_event_label.setText(event_id or "Select a verified event in the Events tab")
         self._refresh_history()
 
     def _refresh_history(self) -> None:
@@ -498,6 +542,7 @@ class DividendPage(QWidget):
     def _enable_controls(self) -> None:
         self.record_button.setEnabled(True)
         self.calculate_button.setEnabled(True)
+        self.post_receipt_button.setEnabled(True)
         self.verify_button.setEnabled(True)
         self.reject_button.setEnabled(True)
         self.browse_evidence_button.setEnabled(True)
@@ -621,6 +666,38 @@ class DividendPage(QWidget):
         )
         if selected:
             self.evidence_path_input.setText(selected)
+
+    def _post_receipt(self) -> None:
+        event_id = self._selected_event_id()
+        receipts = self._receipts
+        if receipts is None:
+            self.receipt_result_label.setText("Confirmed receipt posting is unavailable.")
+            return
+        if event_id is None:
+            self.receipt_result_label.setText("Select a dividend event first.")
+            return
+        try:
+            net_amount = Decimal(self.receipt_amount_input.text().strip())
+        except (ValueError, TypeError, InvalidOperation):
+            self.receipt_result_label.setText("Enter a valid net amount in IDR.")
+            return
+
+        def operation() -> object:
+            return receipts.post_receipt(event_id, net_amount=net_amount)
+
+        def on_success(result: object) -> None:
+            assert isinstance(result, DividendReceiptResult)
+            self.receipt_result_label.setText(
+                f"Receipt posted: net {result.net_amount:,.2f} IDR; "
+                f"reinvest {result.reinvestment:,.2f}; "
+                f"money market {result.money_market:,.2f}; "
+                f"withdrawal {result.withdrawal:,.2f}. "
+                f"Methodology: {result.methodology_version}."
+            )
+            self.receipt_amount_input.clear()
+
+        self.post_receipt_button.setEnabled(False)
+        self._start_worker(operation, on_success=on_success)
 
     def _review(self, decision: DividendReviewDecision) -> None:
         event_id = self._selected_event_id()
