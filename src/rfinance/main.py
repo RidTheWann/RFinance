@@ -43,6 +43,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.observation_review,
         context.portfolio_valuation,
         context.technical_analysis,
+        context.dividend_events,
     )
     application.aboutToQuit.connect(context.close)
     window.show()

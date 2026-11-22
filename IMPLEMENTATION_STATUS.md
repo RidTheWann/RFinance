@@ -1,16 +1,16 @@
 # Implementation Status
 
-Last verified against the repository: 2026-11-21
+Last verified against the repository: 2026-11-22
 
 ## Repository state
 
-- Repository: RidTheWann/RFinance
-- Default branch: main
-- Working branch: foundation/bootstrap-core
-- Active foundation PR: https://github.com/RidTheWann/RFinance/pull/1
-- Latest GitHub Actions validated application-code commit: `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` (Windows and Ubuntu, Python 3.12; Ruff lint/format and Mypy passed; 156 tests passed on each OS).
-- All work remains on the dedicated foundation branch. PR #1 is open and has not been merged into `main`.
-- This session has no mounted local checkout. Changes were committed to the feature branch through GitHub repository operations and verified with hosted Windows/Ubuntu CI; no local test or build result is claimed.
+- Repository: RidTheWann/RFinance (public).
+- Remote `main` contains only the initial README commit `c3d556a34852922c147d136e49fdc05526b178e5`.
+- PR #1 (`foundation/bootstrap-core` → `main`, 172 commits of implementation work) is **closed and unmerged**. Its head ref `refs/pull/1/head` was fetched and preserved locally; the source branch has been deleted from the remote.
+- Current local working branch: `rfinance-dev`, based on the preserved PR head `d2a0dc35d5233e6a5c6bf6e5558b5543d0975d35`. No prior work was discarded.
+- Push access is unavailable in this session (HTTPS git reports no usable credentials; `gh` is not authenticated). Commits are local only until credentials are supplied. No push, PR or merge is claimed.
+- Historical CI checkpoint at `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6` (Windows and Ubuntu, Python 3.12): Ruff lint/format and Mypy passed; 156 tests passed on each OS. This is a prior CI result, not a result of this session.
+- Local verification in this session (Ubuntu 26.04 aarch64, Python 3.14.4, PySide6 6.12): Ruff lint/format and Mypy pass; all non-UI tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime (the same tests previously passed in x64 CI); see [TEST_REPORT.md](TEST_REPORT.md).
 
 ## Implemented in the foundation branch
 
@@ -69,6 +69,15 @@ Last verified against the repository: 2026-11-21
 - Implemented clearly labelled simulated dividend cash projection and exact-reconciliation allocation for **confirmed** net receipts only.
 - Missing observations and unusable denominators return `None`; no missing value is converted to zero. Forward estimates, simulations, and confirmed receipts are distinct labelled states.
 
+### Dividend event persistence, calendar and analytics connection
+
+- Added `dividend-event-v1` ingestion through the frozen, extra-forbid `DividendEventContract` (Pydantic v2) with explicit source, acquisition/announcement timestamps, gross per-share amount, currency, ex/payment dates, lifecycle status, quality state, original value, unit and transformation version. Cash types require an amount; `STOCK`/`RIGHTS` cannot carry one; naive timestamps and invalid currencies/periods are rejected.
+- Added Alembic migration `0006_dividend_events` with an append-only `dividend_events` table, an append-only `dividend_review_events` audit ledger, foreign keys to the instrument master and source registry, uniqueness on `(source_id, event_key)`, indexes for instrument/ex-date and status lookups, and SQLite triggers blocking updates and deletes.
+- `DividendEventService` atomically records events with default `UNVERIFIED` quality, creates/reuses a deny-by-default `MANUAL` source (no automated access or redistribution), rejects duplicate keys and unknown instruments, and validates all review gates before appending a decision.
+- Evidence-backed review archives a user-selected document under `Documents/DividendReviewEvidence`, copies with a bounded chunk loop, computes SHA-256, and appends an immutable review. Promotion requires a raw `UNVERIFIED` event, a `VERIFIED` instrument identity, an allowed source policy, a non-estimate/non-simulated/non-cancelled status, and complete reviewer/evidence/notes. There is no automatic or AI promotion path.
+- `calendar()` returns ex-dates and payment dates with explicit `is_confirmed_cash` and `is_estimate` labels; announced or unverified items are never presented as confirmed receipts. `analytics()` maps only effectively `VERIFIED`, observed, cash events into `dividend-analytics-v1`, returning labelled trailing/forward yields, net amount only when withholding is known, annual consistency, and `None` for missing inputs.
+- Connected the Dividend Center desktop tab to these services with event, calendar, analytics and evidence-review views. All displayed values are read from local storage or calculated from verified events; long-running work runs on Qt worker threads.
+
 ### Observation eligibility gates
 
 - Added `eligibility-observation-v1`, a dependency-free domain policy in `src/rfinance/domain/eligibility/observation.py` documented in `docs/DATA_ELIGIBILITY.md`.
@@ -93,7 +102,22 @@ Last verified against the repository: 2026-11-21
 - Conflicting latest prices from different sources are not resolved arbitrarily; the position remains unvalued with a diagnostic. Instrument type is mapped conservatively; generic equities and ETFs are not assumed to be dividend stocks or index trackers.
 - The Portfolio Simulator now has a background valuation refresh and displays price provenance, observation age, price, market value, unrealized P/L, and eligibility diagnostics. Partial totals are explicitly labeled; missing positions are not substituted at cost or zero.
 
-## Verified CI
+## Local verification (this session, 2026-11-22)
+
+Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2.1.9, Alembic 1.20.1, pytest 9.2.0, Ruff 0.17.6, Mypy 1.20.2.
+
+| Check | Result |
+|---|---|
+| Ruff lint | Passed (109 files) |
+| Ruff format check | Passed (109 files) |
+| Mypy strict | Passed (62 source files) |
+| Unit + integration pytest | **169 passed** |
+| Targeted Qt tests (main window + Dividend Center) | 4 passed |
+| Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
+
+The local checkpoint includes the new dividend event slice: 7 integration tests, 12 contract unit tests, and a Dividend Center Qt rendering test.
+
+## Verified CI (historical, prior session)
 
 Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed successfully on Windows and Ubuntu using Python 3.12. See [push CI 44909356690](https://github.com/RidTheWann/RFinance/actions/runs/44909356690) and [PR CI 44909361649](https://github.com/RidTheWann/RFinance/actions/runs/44909361649).
 
@@ -105,7 +129,7 @@ Application-code commit `b37a15ef78afe4885c4282384923e27c5b0b5bd6` completed suc
 | Mypy | Passed; 53 source files | Passed; 53 source files |
 | pytest | **141 passed** | **141 passed** |
 
-The tested head includes persisted-observation portfolio valuation, append-only price-review integration, source and instrument eligibility, explicit latest-price conflict rejection, historical-series eligibility and loading, the Technical Analysis Qt workflow, and indicator warm-up resets across large date gaps. The PR remains open for review and has not been merged.
+The tested head includes persisted-observation portfolio valuation, append-only price-review integration, source and instrument eligibility, explicit latest-price conflict rejection, historical-series eligibility and loading, the Technical Analysis Qt workflow, and indicator warm-up resets across large date gaps. That PR was subsequently closed without merging; its work was preserved locally and development continued from it.
 
 ## Historical local developer checkpoint (previous Termux session)
 
@@ -118,16 +142,16 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
-- Full financial statements, broader valuation metrics, dividend event persistence/calendar/UI, screening, and evidence-linked recommendations. The dividend calculation layer exists but is not yet connected to persistence or the desktop.
+- Full financial statements, broader valuation metrics, screening, and evidence-linked recommendations. The dividend calculation layer is now connected to append-only event persistence and the Dividend Center desktop, but has no automated provider feed.
 - Portfolio trade-entry UI, corporate actions, rebalancing, allocation execution, and full risk controls remain incomplete. Portfolio market valuation is now connected to persisted review-adjusted observations and the desktop, but its source values still depend on lawfully obtained and manually reviewable data.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
 
-1. Persist dividend events with provenance and add a dividend calendar/UI connected to the existing Decimal calculation layer.
+1. Post confirmed net dividend receipts into the portfolio cash ledger with the documented 50/30/20 preference, duplicate-receipt protection, and a clear separation from simulated projections.
 2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
 3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
 4. Build deterministic screening and evidence-linked recommendations only after data eligibility gates exist.
 5. Add verified-instrument metadata to portfolio-trade eligibility, then implement auditable simulated trade-entry and position management without inferred lot-size rules.
-6. Continue risk controls, automation, reporting, backup/restore, and Windows packaging in tested vertical slices.
+6. Continue risk controls, automation, reporting, backup/restore, reproducible lockfile, and Windows packaging in tested vertical slices.
