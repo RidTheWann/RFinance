@@ -41,6 +41,8 @@ Run checks with:
 
 Dependency locking and the Windows production package remain validation gates. Do not treat an unvalidated lockfile, test run, or build as production evidence.
 
+Recommended editor extensions, project agent skills, and MCP setup with its security boundaries are documented in [docs/DEVELOPER_TOOLING.md](docs/DEVELOPER_TOOLING.md).
+
 ## Scope boundary
 
 RFinance supports research, analysis, local records, and simulated portfolio operations only. It must not request broker credentials, bypass provider controls, submit orders, or move money.

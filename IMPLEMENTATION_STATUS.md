@@ -9,6 +9,7 @@ Last verified against the repository: 2026-11-22
 - License: `GPL-3.0-only` (ADR 0003, verbatim `LICENSE`, PEP 639 metadata, SPDX headers, third-party notices). PySide6 6.12 Community licensing is compatible; frozen Windows builds must retain Qt notices and provide Corresponding Source per GPLv3 §6.
 - PR #2 (foundation + dividend/fundamental/screening slices) was merged before the rebuild; its content is fully preserved in the rewritten history. PR #1 (`foundation/bootstrap-core`) remains closed and unmerged but its 172 commits were preserved and rebuilt.
 - All commits are pushed. A short-lived PAT was supplied by the owner, used only locally for push/PR/merge, and removed from disk afterward; no token or personal email is present in the repository.
+- Agent/editor tooling (2026-11-22): committed `.vscode/extensions.json`, four OpenCode V2 project skills, an inert `.opencode/opencode.jsonc.example`, and `docs/DEVELOPER_TOOLING.md` with verified extension IDs and MCP setup. Context7 MCP installed globally and verified `connected`. Marketplace IDs and MCP package names were checked against official docs; the deprecated `seanwu.vscode-qt-for-python` was deliberately excluded.
 - CI after the rebuild: push run `45001539029` — Windows and Ubuntu both **success** (Ruff lint/format, Mypy, 206 tests per OS). The first Windows attempt aborted inside `pytestqt._process_events` (Qt runner flake); `gh run rerun --failed` passed on retry with byte-identical tree `d15813a111829b8b7917ac8ee83d95d580297047`.
 - Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 198 unit/integration and 5 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
 
@@ -116,8 +117,8 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed (122 files) |
-| Ruff format check | Passed (122 files) |
+| Ruff lint | Passed (127 files) |
+| Ruff format check | Passed (127 files) |
 | Mypy strict | Passed (68 source files) |
 | Unit + integration pytest | **198 passed** |
 | Targeted Qt tests (main window + Dividend Center + Research Center) | 5 passed |

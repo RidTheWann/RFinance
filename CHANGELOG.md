@@ -4,6 +4,7 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added verified developer tooling: `.vscode/extensions.json` (official Qt Python pack, Python/Pylance, Ruff, Mypy, TOML, SQLite, Error Lens, GitLens, TODO Tree, pytest explorers, Markdown), four project skills under `.opencode/skills/` (`rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, `rfinance-docs`), an inert MCP config template, and `docs/DEVELOPER_TOOLING.md` with verified setup commands and security boundaries. Context7 MCP was installed globally and verified connected.
 - Rebuilt the commit history at the owner's request so the GPLv3 `LICENSE` and per-file SPDX headers exist from the root commit (`beb02dae1acd2dfa7c2e5f87b748ba64a7a877b4`) onward; closed the separate license PR, removed stale branches, and force-pushed `main` with `--force-with-lease`. CI on the final tree passed on Windows and Ubuntu (206 tests per OS).
 - Selected `GPL-3.0-only` as the project license: added verbatim GPLv3 `LICENSE`, PEP 639 metadata (`license` + `license-files`, setuptools >= 77), SPDX headers on every source file, ADR 0003, third-party notices, and regression tests for license metadata. PySide6's `LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only` licensing is compatible with the selected GPLv3 license; Windows binary distribution obligations are recorded in the ADR.
 - Established repository engineering policy, Python package metadata, CI, and Windows development scripts.

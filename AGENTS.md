@@ -78,3 +78,9 @@ Never claim a check was run unless its output was observed. Distinguish local ch
 ## Definition of a complete feature
 
 A feature is complete only when its domain behavior, data flow, persistence, UI/application-service connection, error handling, tests, and documentation are all present and verified. An empty module, static demo value, placeholder button, or plan does not count.
+
+## Agent tooling
+
+- Project skills live in `.opencode/skills/`: `rfinance-invariants`, `rfinance-finance-qt`, `rfinance-quality`, and `rfinance-docs`. They are digests of this policy, never overrides of it.
+- Editor recommendations are in `.vscode/extensions.json`; MCP setup and its security boundaries are documented in `docs/DEVELOPER_TOOLING.md`.
+- No MCP or editor tool may expand the permitted action set: no broker/trading connectors, no arbitrary filesystem access, no unreviewed market-data ingestion, no automatic merge on failing checks.

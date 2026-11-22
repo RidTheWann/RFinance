@@ -9,8 +9,8 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed, 122 files |
-| Ruff format check | Passed, 122 files |
+| Ruff lint | Passed, 127 files |
+| Ruff format check | Passed, 127 files |
 | Mypy strict | Passed, 68 source files |
 | `tests/unit` + `tests/integration` | **198 passed** |
 | Targeted Qt tests (main window, Dividend Center, Research Center) | **5 passed** |

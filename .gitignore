@@ -20,7 +20,8 @@ data/
 logs/
 reports/
 backups/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
 .DS_Store
 Thumbs.db
