@@ -38,6 +38,7 @@ from rfinance.application.portfolio_ledger import (
     PortfolioLedgerService,
 )
 from rfinance.data.contracts import InstrumentContract, InstrumentType
+from rfinance.ui.dividend_page import DividendPage
 from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
 from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
@@ -45,6 +46,7 @@ from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
+    from rfinance.application.dividend_events import DividendEventService
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
@@ -137,6 +139,7 @@ class MainWindow(QMainWindow):
         observation_review: ObservationReviewService,
         portfolio_valuation: PortfolioValuationService | None = None,
         technical_analysis: TechnicalAnalysisService | None = None,
+        dividend_events: DividendEventService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -147,6 +150,8 @@ class MainWindow(QMainWindow):
         self.portfolio_valuation_page: PortfolioValuationPage | None = None
         self.technical_analysis = technical_analysis
         self.technical_analysis_page: TechnicalAnalysisPage | None = None
+        self.dividend_events = dividend_events
+        self.dividend_page: DividendPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -170,6 +175,7 @@ class MainWindow(QMainWindow):
                 "Instrument Review",
                 "Observation Review",
                 "Technical Analysis",
+                "Dividend Center",
                 "Settings",
             ]
         )
@@ -185,6 +191,11 @@ class MainWindow(QMainWindow):
         else:
             self.technical_analysis_page = TechnicalAnalysisPage(self.technical_analysis)
             self.pages.addWidget(self.technical_analysis_page)
+        if self.dividend_events is None:
+            self.pages.addWidget(QLabel("Dividend Center is unavailable."))
+        else:
+            self.dividend_page = DividendPage(self.dividend_events)
+            self.pages.addWidget(self.dividend_page)
         self.pages.addWidget(self._settings_page())
 
         layout.addWidget(self.navigation)
@@ -781,6 +792,13 @@ class MainWindow(QMainWindow):
         if self.technical_analysis_page is not None and self.technical_analysis_page.is_busy:
             self.technical_analysis_page.status_label.setText(
                 "Technical analysis is still running. "
+                "Wait for it to finish before closing RFinance."
+            )
+            event.ignore()
+            return
+        if self.dividend_page is not None and self.dividend_page.is_busy:
+            self.dividend_page.status_label.setText(
+                "A dividend operation is still running. "
                 "Wait for it to finish before closing RFinance."
             )
             event.ignore()

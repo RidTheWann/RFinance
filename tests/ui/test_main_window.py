@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
+from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.market_csv_import import MarketCSVImportService
@@ -49,6 +50,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         observation_review_service,
         portfolio_valuation_service,
         TechnicalAnalysisService(HistoricalPriceSeriesService(database.sessions)),
+        DividendEventService(database.sessions, data_directory=data_directory),
     )
 
 
@@ -62,16 +64,18 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         window.navigation.setCurrentRow(1)
 
         assert window.windowTitle() == "RFinance"
-        assert window.navigation.count() == 6
-        assert [window.navigation.item(row).text() for row in range(6)] == [
+        assert window.navigation.count() == 7
+        assert [window.navigation.item(row).text() for row in range(7)] == [
             "Overview",
             "Portfolio",
             "Instrument Review",
             "Observation Review",
             "Technical Analysis",
+            "Dividend Center",
             "Settings",
         ]
-        assert window.pages.count() == 6
+        assert window.pages.count() == 7
+        assert window.dividend_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()

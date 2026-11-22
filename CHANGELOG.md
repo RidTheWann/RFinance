@@ -37,3 +37,9 @@ All notable changes to RFinance are documented here.
 - Connected persisted single-instrument/single-source historical bars to Decimal technical reports and the Technical Analysis desktop page, with asynchronous loading/calculation and visible provenance/rejection diagnostics.
 - Added gap sentinels so rolling indicator windows restart after configured large calendar gaps; no source blending, resampling, interpolation, frequency inference, or automatic corporate-action adjustment occurs.
 - Added 15 historical-eligibility, persisted-series, technical-analysis and Qt workflow tests. Full Windows/Ubuntu Python 3.12 CI passed at `3a9dc774f0ad0ad5bc80501f249ce681c5fa34e6`: 156 tests passed on each OS.
+- Preserved the closed PR #1 implementation locally (172 commits) and continued development from its head without discarding prior work.
+- Added migration `0006_dividend_events` with append-only dividend events and evidence-backed review audit ledger, foreign keys, uniqueness, indexes and update/delete triggers.
+- Added the frozen `DividendEventContract` with explicit provenance, lifecycle status, currency, unit and quality validation, rejecting naive timestamps and invalid cash/non-cash amounts.
+- Added `DividendEventService` with atomic ingest, deny-by-default MANUAL source creation, evidence file archiving and SHA-256, explicit promotion gates, labelled calendar, and verified-event analytics connected to `dividend-analytics-v1`.
+- Connected a Dividend Center desktop tab with Events, Calendar, Analytics and Evidence review views; all values come from local storage or deterministic calculations.
+- Verified locally on Ubuntu aarch64 / Python 3.14: Ruff lint and format, Mypy strict, 169 unit/integration tests and 4 targeted Qt tests pass.

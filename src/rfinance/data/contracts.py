@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 
@@ -76,4 +76,95 @@ class MarketObservationContract(BaseModel):
             raise ValueError("OHLC values cannot exceed high")
         if self.low is not None and any(value < self.low for value in prices):
             raise ValueError("OHLC values cannot be below low")
+        return self
+
+
+class DividendType(StrEnum):
+    """Cash and non-cash corporate distributions."""
+
+    CASH = "CASH"
+    INTERIM = "INTERIM"
+    FINAL = "FINAL"
+    SPECIAL = "SPECIAL"
+    STOCK = "STOCK"
+    RIGHTS = "RIGHTS"
+
+
+class DividendEventStatus(StrEnum):
+    """Lifecycle state of a dividend event, distinct from its data quality."""
+
+    ANNOUNCED = "ANNOUNCED"
+    CONFIRMED = "CONFIRMED"
+    HISTORICAL = "HISTORICAL"
+    ESTIMATED = "ESTIMATED"
+    SIMULATED = "SIMULATED"
+    CANCELLED = "CANCELLED"
+
+
+CASH_DIVIDEND_TYPES = frozenset(
+    {
+        DividendType.CASH,
+        DividendType.INTERIM,
+        DividendType.FINAL,
+        DividendType.SPECIAL,
+    }
+)
+# Statuses that describe an actually observed distribution, never a forecast.
+OBSERVED_DIVIDEND_STATUSES = frozenset(
+    {DividendEventStatus.CONFIRMED, DividendEventStatus.HISTORICAL}
+)
+
+
+class DividendEventContract(BaseModel):
+    """A user-supplied dividend observation with explicit provenance.
+
+    The contract is deliberately source-agnostic and rejects unknown fields.
+    It records what the document said, when it was obtained, and the quality
+    state at ingestion. It never certifies the observation as verified cash.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    event_key: str = Field(min_length=1, max_length=128)
+    instrument_id: str = Field(min_length=1, max_length=128)
+    source_label: str = Field(min_length=1, max_length=256)
+    dividend_type: DividendType
+    event_status: DividendEventStatus
+    amount_per_share: Decimal | None = Field(default=None, gt=Decimal("0"))
+    currency: str = Field(pattern=r"^[A-Z]{3}$")
+    ex_date: date
+    cum_date: date | None = None
+    record_date: date | None = None
+    payment_date: date | None = None
+    quality_status: DataQualityStatus = DataQualityStatus.UNVERIFIED
+    acquired_at: datetime
+    announced_at: datetime | None = None
+    reporting_period_start: date | None = None
+    reporting_period_end: date | None = None
+    source_document_ref: str | None = Field(default=None, max_length=1024)
+    original_value: str | None = Field(default=None, max_length=256)
+    unit: str = Field(default="PER_SHARE", min_length=1, max_length=64)
+    notes: str | None = Field(default=None, max_length=2048)
+    transformation_version: str = Field(
+        default="dividend-event-v1", min_length=1, max_length=64
+    )
+
+    @model_validator(mode="after")
+    def validate_dividend_event(self) -> DividendEventContract:
+        if self.acquired_at.tzinfo is None or self.acquired_at.utcoffset() is None:
+            raise ValueError("acquired_at must be timezone-aware")
+        if self.announced_at is not None and (
+            self.announced_at.tzinfo is None or self.announced_at.utcoffset() is None
+        ):
+            raise ValueError("announced_at must be timezone-aware")
+        if self.dividend_type in CASH_DIVIDEND_TYPES and self.amount_per_share is None:
+            raise ValueError("cash dividend types require amount_per_share")
+        if self.dividend_type not in CASH_DIVIDEND_TYPES and self.amount_per_share is not None:
+            raise ValueError("non-cash distributions cannot carry a cash amount_per_share")
+        if (
+            self.reporting_period_start is not None
+            and self.reporting_period_end is not None
+            and self.reporting_period_start > self.reporting_period_end
+        ):
+            raise ValueError("reporting_period_start cannot follow reporting_period_end")
         return self
