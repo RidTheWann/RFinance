@@ -135,3 +135,29 @@ class DividendReviewEventRecord(Base):
     evidence_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     notes: Mapped[str] = mapped_column(Text, nullable=False)
     reviewed_metadata_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class DividendReceiptRecord(Base):
+    """An audited, append-only record of confirmed net dividend cash."""
+
+    __tablename__ = "dividend_receipts"
+    __table_args__ = (
+        UniqueConstraint("dividend_event_id", name="uq_dividend_receipt_event"),
+        CheckConstraint(
+            "length(receipt_id) > 0 AND length(dividend_event_id) > 0",
+            name="ck_dividend_receipt_identity",
+        ),
+    )
+
+    receipt_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    dividend_event_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    instrument_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    net_amount: Mapped[str] = mapped_column(Text, nullable=False)
+    reinvestment: Mapped[str] = mapped_column(Text, nullable=False)
+    money_market: Mapped[str] = mapped_column(Text, nullable=False)
+    withdrawal: Mapped[str] = mapped_column(Text, nullable=False)
+    reinvest_weight: Mapped[str] = mapped_column(String(32), nullable=False)
+    money_market_weight: Mapped[str] = mapped_column(String(32), nullable=False)
+    withdrawal_weight: Mapped[str] = mapped_column(String(32), nullable=False)
+    recorded_at_utc: Mapped[str] = mapped_column(String(40), nullable=False)
+    methodology_version: Mapped[str] = mapped_column(String(64), nullable=False)

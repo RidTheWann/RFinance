@@ -38,7 +38,8 @@ class PortfolioLedgerRecord(Base):
         CheckConstraint("length(currency) = 3", name="ck_portfolio_ledger_currency_length"),
         CheckConstraint(
             "event_type IN "
-            "('CAPITAL_INJECTION', 'BUY', 'SELL', 'CASH_WITHDRAWAL', 'SIMULATED_DIVIDEND')",
+            "('CAPITAL_INJECTION', 'BUY', 'SELL', 'CASH_WITHDRAWAL', 'SIMULATED_DIVIDEND', "
+            "'CONFIRMED_DIVIDEND')",
             name="ck_portfolio_ledger_event_type",
         ),
         Index(

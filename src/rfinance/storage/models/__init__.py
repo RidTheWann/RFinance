@@ -11,7 +11,11 @@ from rfinance.storage.models.data_ingestion import (
     MarketObservationRecord,
     SourceRegistryRecord,
 )
-from rfinance.storage.models.dividend import DividendEventRecord, DividendReviewEventRecord
+from rfinance.storage.models.dividend import (
+    DividendEventRecord,
+    DividendReceiptRecord,
+    DividendReviewEventRecord,
+)
 from rfinance.storage.models.instrument_registry import (
     InstrumentRegistryRecord,
     InstrumentReviewEventRecord,
@@ -26,6 +30,7 @@ __all__ = [
     "DataImportBatchRecord",
     "DataImportIssueRecord",
     "DividendEventRecord",
+    "DividendReceiptRecord",
     "DividendReviewEventRecord",
     "InstrumentRegistryRecord",
     "InstrumentReviewEventRecord",
