@@ -45,6 +45,7 @@ def snapshot(
         positions={} if positions is None else positions,
         realized_profit_loss=Decimal(realized),
         simulated_dividends=ZERO,
+        confirmed_dividend_income=ZERO,
         total_fees=ZERO,
         total_taxes=ZERO,
         applied_events=1,
