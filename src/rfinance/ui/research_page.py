@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QFormLayout,
     QLabel,
     QLineEdit,
@@ -91,6 +92,9 @@ class ResearchPage(QWidget):
         self.evaluate_total_equity_input = QLineEdit()
         self.evaluate_eps_input = QLineEdit()
         self.evaluate_price_input = QLineEdit()
+        self.use_filings_checkbox = QCheckBox(
+            "Use verified local filings instead of the inputs below"
+        )
         form.addRow("Instrument ID", self.evaluate_instrument_input)
         form.addRow("Revenue", self.evaluate_revenue_input)
         form.addRow("Prior revenue", self.evaluate_previous_revenue_input)
@@ -100,6 +104,7 @@ class ResearchPage(QWidget):
         form.addRow("Total equity", self.evaluate_total_equity_input)
         form.addRow("EPS", self.evaluate_eps_input)
         form.addRow("Price", self.evaluate_price_input)
+        form.addRow("", self.use_filings_checkbox)
         layout.addLayout(form)
 
         self.evaluate_button = QPushButton("Evaluate from local evidence")
@@ -176,7 +181,11 @@ class ResearchPage(QWidget):
         instrument_id = self.evaluate_instrument_input.text().strip()
 
         def operation() -> object:
-            return evaluation.evaluate(instrument_id, fundamentals=fundamentals)
+            return evaluation.evaluate(
+                instrument_id,
+                fundamentals=fundamentals,
+                use_persisted_fundamentals=self.use_filings_checkbox.isChecked(),
+            )
 
         def on_success(result: object) -> None:
             self._on_evaluation_done(result)

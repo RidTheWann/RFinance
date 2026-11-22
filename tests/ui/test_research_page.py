@@ -102,6 +102,7 @@ def test_research_page_runs_guided_evaluation_and_shows_evidence(qtbot, tmp_path
         qtbot.addWidget(page)
         page.show()
 
+        page.use_filings_checkbox.setChecked(True)
         page.evaluate_instrument_input.setText("IDX:BBCA")
         page.evaluate_revenue_input.setText("1000")
         page.evaluate_previous_revenue_input.setText("800")
@@ -119,6 +120,7 @@ def test_research_page_runs_guided_evaluation_and_shows_evidence(qtbot, tmp_path
 
         assert "price:obs-1" in page.evaluation_detail_label.text()
         assert stub.calls and stub.calls[0]["instrument_id"] == "IDX:BBCA"
+        assert stub.calls[0]["use_persisted_fundamentals"] is True
         qtbot.waitUntil(lambda: page._thread is None, timeout=10000)
         page.close()
     finally:

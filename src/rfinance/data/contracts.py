@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime  # noqa: TC003 - Pydantic resolves these at runtime
 from decimal import Decimal
 from enum import StrEnum
 
@@ -170,4 +170,43 @@ class DividendEventContract(BaseModel):
             and self.reporting_period_start > self.reporting_period_end
         ):
             raise ValueError("reporting_period_start cannot follow reporting_period_end")
+        return self
+
+
+class ReportingBasis(StrEnum):
+    ANNUAL = "ANNUAL"
+    QUARTERLY = "QUARTERLY"
+    TTM = "TTM"
+
+
+class FinancialMetricContract(BaseModel):
+    """One reported metric from a user-supplied financial document."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    instrument_id: str = Field(min_length=1, max_length=128)
+    metric_name: str = Field(min_length=1, max_length=64)
+    value: Decimal
+    unit: str = Field(min_length=1, max_length=64)
+    currency: str = Field(pattern=r"^[A-Z]{3}$")
+    period_start: date
+    period_end: date
+    reporting_basis: ReportingBasis
+    quality_status: DataQualityStatus = DataQualityStatus.UNVERIFIED
+    source_label: str = Field(min_length=1, max_length=256)
+    source_document_ref: str | None = Field(default=None, max_length=1024)
+    acquired_at: datetime
+    notes: str | None = Field(default=None, max_length=2048)
+    transformation_version: str = Field(
+        default="financial-metric-v1", min_length=1, max_length=64
+    )
+
+    @model_validator(mode="after")
+    def validate_financial_metric(self) -> FinancialMetricContract:
+        if self.acquired_at.tzinfo is None or self.acquired_at.utcoffset() is None:
+            raise ValueError("acquired_at must be timezone-aware")
+        if self.period_end < self.period_start:
+            raise ValueError("period_end cannot precede period_start")
+        if not self.value.is_finite():
+            raise ValueError("value must be finite")
         return self

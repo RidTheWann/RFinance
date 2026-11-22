@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session, sessionmaker
 
     from rfinance.application.dividend_events import DividendEventService
+    from rfinance.application.financial_statements import FinancialStatementService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.recommendations import RecommendationService
 
@@ -42,12 +43,14 @@ class ScreeningEvaluationService:
         dividend_events: DividendEventService,
         observation_review: ObservationReviewService,
         recommendations: RecommendationService,
+        financial_statements: FinancialStatementService | None = None,
         base_currency: str = "IDR",
     ) -> None:
         self._sessions = sessions
         self._dividend_events = dividend_events
         self._observation_review = observation_review
         self._recommendations = recommendations
+        self._financial_statements = financial_statements
         self._base_currency = base_currency
 
     def evaluate(
@@ -57,6 +60,7 @@ class ScreeningEvaluationService:
         fundamentals: Mapping[str, Decimal | None],
         as_of: datetime | None = None,
         portfolio_drawdown: Decimal | None = None,
+        use_persisted_fundamentals: bool = False,
     ) -> Recommendation:
         """Evaluate one instrument; all numeric inputs remain explicit."""
 
@@ -101,6 +105,12 @@ class ScreeningEvaluationService:
             else:
                 price_quality = "UNVERIFIED"
 
+        if use_persisted_fundamentals:
+            if self._financial_statements is None:
+                raise ValueError("no financial statement service is configured")
+            persisted = self._financial_statements.verified_inputs(instrument_id, as_of=moment)
+            fundamentals = {**fundamentals, **persisted}
+
         metrics: tuple[ComputedMetric, ...] = compute_fundamental_metrics(fundamentals)
         dividend_ids = tuple(
             event.event_id
@@ -117,11 +127,19 @@ class ScreeningEvaluationService:
                 EvidenceItem(
                     evidence_id=f"metric:{metric.name}",
                     kind=EvidenceKind.FUNDAMENTAL_METRIC,
-                    reference="operator-supplied-input",
-                    quality="UNVERIFIED",
+                    reference=(
+                        "verified-filing"
+                        if use_persisted_fundamentals and metric.name in fundamentals
+                        else "operator-supplied-input"
+                    ),
+                    quality="VERIFIED" if use_persisted_fundamentals else "UNVERIFIED",
                     summary=(
-                        f"{metric.formula} from explicitly supplied inputs; "
-                        "not a verified filing value"
+                        f"{metric.formula} from "
+                        + (
+                            "verified local filing values"
+                            if use_persisted_fundamentals
+                            else "explicitly supplied operator inputs"
+                        )
                     ),
                 )
             )
