@@ -18,6 +18,7 @@ from rfinance.storage.models.instrument_registry import (
 )
 from rfinance.storage.models.observation_review import ObservationReviewEventRecord
 from rfinance.storage.models.portfolio_ledger import PortfolioLedgerRecord
+from rfinance.storage.models.recommendation import RecommendationRecord
 
 __all__ = [
     "AppSetting",
@@ -31,5 +32,6 @@ __all__ = [
     "MarketObservationRecord",
     "ObservationReviewEventRecord",
     "PortfolioLedgerRecord",
+    "RecommendationRecord",
     "SourceRegistryRecord",
 ]

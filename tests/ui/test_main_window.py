@@ -14,6 +14,7 @@ from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.application.portfolio_valuation import PortfolioValuationService
+from rfinance.application.recommendations import RecommendationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.storage.database import Database
@@ -54,6 +55,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         portfolio_valuation_service,
         TechnicalAnalysisService(HistoricalPriceSeriesService(database.sessions)),
         DividendEventService(database.sessions, data_directory=data_directory),
+        RecommendationService(database.sessions),
     )
 
 
@@ -67,18 +69,20 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         window.navigation.setCurrentRow(1)
 
         assert window.windowTitle() == "RFinance"
-        assert window.navigation.count() == 7
-        assert [window.navigation.item(row).text() for row in range(7)] == [
+        assert window.navigation.count() == 8
+        assert [window.navigation.item(row).text() for row in range(8)] == [
             "Overview",
             "Portfolio",
+            "Research Center",
             "Instrument Review",
             "Observation Review",
             "Technical Analysis",
             "Dividend Center",
             "Settings",
         ]
-        assert window.pages.count() == 7
+        assert window.pages.count() == 8
         assert window.dividend_page is not None
+        assert window.research_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()

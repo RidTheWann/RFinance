@@ -9,10 +9,10 @@ local Linux/ARM checkpoint, not a Windows production or CI result.
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed, 109 files |
-| Ruff format check | Passed, 109 files |
-| Mypy strict | Passed, 62 source files |
-| `tests/unit` + `tests/integration` | **179 passed** |
+| Ruff lint | Passed, 119 files |
+| Ruff format check | Passed, 119 files |
+| Mypy strict | Passed, 68 source files |
+| `tests/unit` + `tests/integration` | **194 passed** |
 | `tests/ui/test_main_window.py` + `tests/ui/test_dividend_page.py` | **4 passed** |
 | Full Qt UI suite | 2–3 `waitUntil` timeouts and one interpreter crash across repeated runs on this aarch64/offscreen runtime; the same tests passed in prior Windows/Ubuntu x64 CI. Treated as an environment limitation, not as verified UI correctness. |
 
@@ -87,11 +87,11 @@ The persisted-observation valuation service joins ledger positions to stored pri
 - No IDX scraper or automated market-data provider is enabled.
 - Historical technical analysis is connected to local persisted observations through a single-source series service and `historical-price-eligibility-v1`; it does not fetch, blend sources, resample, interpolate, infer frequency, or adjust corporate actions. The adjustment state is `UNKNOWN_AS_SUPPLIED` until source evidence says otherwise.
 - The dividend calculation layer is connected to append-only event/review persistence, a labelled calendar and the Dividend Center desktop page. It has no automated provider feed, and confirmed dividend receipts are not yet posted to the portfolio cash ledger.
-- Screening, evidence-linked recommendations, extended financial statements, portfolio trade UI, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
+- The screening engine, append-only persistence and Research Center inspection view exist; the guided workflow that assembles all persisted evidence into an evaluation is not yet connected. Extended financial statements, portfolio trade UI, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
 
 ## Remaining validation work
 
-- Connecting the implemented eligibility gate to deterministic screening and evidence-linked recommendations.
+- Connecting persisted instrument state, eligible prices, fundamentals and dividend evidence into a guided screening evaluation from the desktop.
 - Explicit sampling-frequency and corporate-action adjustment metadata, including verified adjusted/unadjusted source semantics.
 - Confirmed dividend receipt posting to the cash ledger with duplicate protection and the 50/30/20 preference.
 - Dependency lockfile and reproducible locked installation.

@@ -45,3 +45,6 @@ All notable changes to RFinance are documented here.
 - Verified locally on Ubuntu aarch64 / Python 3.14: Ruff lint and format, Mypy strict, 169 unit/integration tests and 4 targeted Qt tests pass.
 - Expanded `metrics.py` from three primitives to 17 reproducible fundamental metrics with `fundamental-metrics-v1`, explicit input/formula/status records, unusable-denominator handling, and a financial-sector applicability gate that excludes industrial leverage/cash-flow metrics for banks.
 - Added 10 fundamental unit/property tests; a test caught and fixed an argument-order defect in the earnings-quality computation.
+- Added `screening-deterministic-v1`: evidence-linked deterministic recommendations with transparent actions, risk flags, evidence quality confidence (not profit probability), explicit invalidation conditions and hard BUY_CANDIDATE blocking for stale/unverified/incomplete evidence.
+- Added migration `0007_recommendations` with an append-only audit table; `RecommendationService` evaluates candidates and persists results with evidence and risk diagnostics.
+- Connected a Research Center desktop tab that lists stored recommendations and exposes their evidence, reasoning and invalidation conditions.

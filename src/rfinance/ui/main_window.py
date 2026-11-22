@@ -44,6 +44,7 @@ from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.dividend_page import DividendPage
 from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
+from rfinance.ui.research_page import ResearchPage
 from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
 
 if TYPE_CHECKING:
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
+    from rfinance.application.recommendations import RecommendationService
     from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
@@ -143,6 +145,7 @@ class MainWindow(QMainWindow):
         portfolio_valuation: PortfolioValuationService | None = None,
         technical_analysis: TechnicalAnalysisService | None = None,
         dividend_events: DividendEventService | None = None,
+        recommendations: RecommendationService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -155,6 +158,8 @@ class MainWindow(QMainWindow):
         self.technical_analysis_page: TechnicalAnalysisPage | None = None
         self.dividend_events = dividend_events
         self.dividend_page: DividendPage | None = None
+        self.recommendations = recommendations
+        self.research_page: ResearchPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -175,6 +180,7 @@ class MainWindow(QMainWindow):
             [
                 "Overview",
                 "Portfolio",
+                "Research Center",
                 "Instrument Review",
                 "Observation Review",
                 "Technical Analysis",
@@ -186,6 +192,11 @@ class MainWindow(QMainWindow):
         self.pages = QStackedWidget(root)
         self.pages.addWidget(self._overview_page())
         self.pages.addWidget(self._portfolio_page())
+        if self.recommendations is None:
+            self.pages.addWidget(QLabel("Research Center is unavailable."))
+        else:
+            self.research_page = ResearchPage(self.recommendations)
+            self.pages.addWidget(self.research_page)
         self.pages.addWidget(self._instrument_review_page())
         self.observation_review_page = ObservationReviewPage(observation_review)
         self.pages.addWidget(self.observation_review_page)
