@@ -11,7 +11,7 @@ Last verified against the repository: 2026-11-22
 - All commits are pushed. A short-lived PAT was supplied by the owner, used only locally for push/PR/merge, and removed from disk afterward; no token or personal email is present in the repository.
 - Agent/editor tooling (2026-11-22): committed `.vscode/extensions.json`, four OpenCode V2 project skills, an inert `.opencode/opencode.jsonc.example`, and `docs/DEVELOPER_TOOLING.md` with verified extension IDs and MCP setup. Context7 MCP installed globally and verified `connected`. Marketplace IDs and MCP package names were checked against official docs; the deprecated `seanwu.vscode-qt-for-python` was deliberately excluded.
 - Latest CI: push run `45007901317` — Windows and Ubuntu both **success** (Ruff lint/format, Mypy, **215 tests per OS**). An earlier Windows attempt exposed a real Qt submit race, now fixed; another attempt aborted inside `pytestqt._process_events` and passed on rerun with a byte-identical tree.
-- Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 215 unit/integration and 7 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
+- Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 219 unit/integration and 8 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
 
 ## Implemented in the foundation branch
 
@@ -77,6 +77,12 @@ Last verified against the repository: 2026-11-22
 - `DividendReceiptService` posts only from verified, observed cash dividend events, splits the confirmed net amount 50/30/20 with exact Decimal arithmetic, books the withdrawal leg as a separate `CASH_WITHDRAWAL`, and exposes the stored receipt for inspection. An explicit user-supplied net amount is required; no forecast or simulated value can be posted.
 - Connected a "Confirmed receipt" tab in the Dividend Center with worker-backed posting and visible allocation.
 
+### Evidence-gated simulated trade entry
+
+- `VerifiedLotSizeService` derives tradable lot sizes only from a `VERIFIED` instrument whose latest evidence-backed review supplies a lot size and evidence reference; unverified, inactive or unevidenced instruments yield no rule.
+- `PortfolioTradingService` appends `BUY`/`SELL` ledger events only when such a rule exists, the quantity is a positive multiple of it, and price/costs are valid. Replay still enforces cash and position invariants.
+- The Portfolio Simulator now hosts a connected trade-entry form showing the verified lot rule and evidence, with worker-backed submission and explicit simulated-only labelling.
+
 ### Reviewed financial statement metrics
 
 - Added migration `0009_financial_metrics`: append-only `financial_metrics` and `financial_metric_reviews` tables with provenance, periods, reporting basis, exact Decimal text, quality states and evidence-backed review audit.
@@ -136,10 +142,10 @@ Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2
 
 | Check | Result |
 |---|---|
-| Ruff lint | Passed (191 files) |
-| Ruff format check | Passed (191 files) |
-| Mypy strict | Passed (74 source files) |
-| Unit + integration pytest | **215 passed** |
+| Ruff lint | Passed (195 files) |
+| Ruff format check | Passed (195 files) |
+| Mypy strict | Passed (76 source files) |
+| Unit + integration pytest | **219 passed** |
 | Targeted Qt tests (main window + Dividend Center + Research Center) | 7 passed |
 | Clean-start launch (fresh data directory, offscreen Qt) | Stayed alive; SQLite, WAL/SHM, logs and all 13 tables at migration `0007_recommendations` created |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
@@ -178,7 +184,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 
 ## Next engineering objectives
 
-1. Add verified instrument lot/category metadata, then implement auditable simulated trade entry and position management without inferred lot-size rules.
+1. Add allocation targets and rebalancing workflow using verified instruments, without fabricating investable products.
 2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
 3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
 4. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist, instead of leaving them as cash targets.

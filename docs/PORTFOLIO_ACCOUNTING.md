@@ -17,6 +17,15 @@ The ledger is not yet connected to a complete first-run wizard or portfolio UI. 
 
 Every event has a unique event ID, strictly increasing sequence, timezone-aware event time, and one account currency. The default replay currency is IDR; foreign exchange is not inferred.
 
+## Simulated trade entry
+
+BUY/SELL events can only be appended when the instrument has a `VERIFIED`
+identity, a positive lot size, and a `VERIFIED` review carrying an evidence
+reference. The lot rule is derived from that evidence never inferred from a
+ticker. Quantity must be a positive multiple of the lot size; price and costs
+must be finite and non-negative where applicable. Cash and position invariants
+are enforced by ledger replay, and every entered trade is labelled simulated.
+
 ## Cost basis and realized P/L
 
 Weighted average cost is used.

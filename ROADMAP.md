@@ -19,7 +19,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 ## Latest local engineering checkpoint (2026-11-22)
 
 - `main` at `f005c9113510466fc5ea09da4d8d78818ad3b6a6` after the license history rebuild; all work is pushed. PR #2 content is preserved in the rewritten history, and PR #1's 172 commits were rebuilt from its preserved head. GPL-3.0-only license and SPDX headers exist from the root commit onward.
-- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (191 files), Mypy strict passes (74 source files), 215 unit/integration tests and 7 targeted Qt tests pass.
+- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (195 files), Mypy strict passes (76 source files), 219 unit/integration tests and 8 targeted Qt tests pass.
 - Delivered: append-only dividend event and review persistence, evidence-backed review gates, labelled calendar, verified-event analytics, and a connected Dividend Center desktop tab.
 - Full Qt worker-thread suite is timing-unreliable on this aarch64/offscreen runtime; historical Windows/Ubuntu x64 CI at Python 3.12 passed 156 tests.
 
