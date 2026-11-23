@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -27,6 +28,7 @@ from rfinance.domain.recommendations.screening import Recommendation
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from rfinance.application.ai_research import AIResearchService
     from rfinance.application.recommendations import RecommendationService
     from rfinance.application.risk_monitoring import RiskMonitoringService
     from rfinance.application.screening_evaluation import ScreeningEvaluationService
@@ -61,12 +63,14 @@ class ResearchPage(QWidget):
         *,
         evaluation: ScreeningEvaluationService | None = None,
         risk_monitoring: RiskMonitoringService | None = None,
+        ai_research: AIResearchService | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._service = service
         self._evaluation = evaluation
         self._risk_monitoring = risk_monitoring
+        self._ai_research = ai_research
         self._thread: QThread | None = None
         self._worker: EvaluationWorker | None = None
         layout = QVBoxLayout(self)
@@ -124,6 +128,24 @@ class ResearchPage(QWidget):
         self.evaluation_detail_label.setObjectName("evaluationDetail")
         self.evaluation_detail_label.setWordWrap(True)
         layout.addWidget(self.evaluation_detail_label)
+
+        ai_layout = QHBoxLayout()
+        self.ai_evidence_input = QLineEdit()
+        self.ai_evidence_input.setObjectName("aiEvidenceInput")
+        self.ai_evidence_input.setPlaceholderText("Stored evidence text to summarise")
+        ai_layout.addWidget(self.ai_evidence_input)
+        self.ai_summary_button = QPushButton("Summarize evidence (optional AI)")
+        self.ai_summary_button.setObjectName("aiSummaryButton")
+        self.ai_summary_button.clicked.connect(self._run_ai_summary)
+        ai_layout.addWidget(self.ai_summary_button)
+        layout.addLayout(ai_layout)
+        self.ai_summary_label = QLabel(
+            "AI output is untrusted research assistance. It cannot change calculations, "
+            "risk controls or ledger records."
+        )
+        self.ai_summary_label.setObjectName("aiSummaryLabel")
+        self.ai_summary_label.setWordWrap(True)
+        layout.addWidget(self.ai_summary_label)
 
         self.refresh_button = QPushButton("Refresh recommendations")
         self.refresh_button.setObjectName("refreshRecommendationsButton")
@@ -220,6 +242,42 @@ class ResearchPage(QWidget):
             self._on_evaluation_done(result)
 
         self._start_worker(operation, on_success)
+
+    def _run_ai_summary(self) -> None:
+        if self._ai_research is None:
+            self.ai_summary_label.setText("Optional AI assistance is unavailable.")
+            return
+        if self._thread is not None and self._thread.isRunning():
+            return
+        evidence_text = self.ai_evidence_input.text().strip()
+        if not evidence_text:
+            self.ai_summary_label.setText("Enter stored evidence text to summarise.")
+            return
+        service = self._ai_research
+
+        def operation() -> object:
+            return service.summarize(evidence_text=evidence_text)
+
+        def on_success(result: object) -> None:
+            self._on_ai_summary_done(result)
+
+        self._start_worker(operation, on_success)
+
+    def _on_ai_summary_done(self, result: object) -> None:
+        summary = getattr(result, "summary", None)
+        if not isinstance(summary, str):
+            self.ai_summary_label.setText("AI output did not contain a usable summary.")
+            return
+        facts = getattr(result, "facts", ())
+        assumptions = getattr(result, "assumptions", ())
+        questions = getattr(result, "unanswered_questions", ())
+        self.ai_summary_label.setText(
+            "UNTRUSTED AI SUMMARY (research aid only)\n"
+            f"Summary: {summary}\n"
+            f"Facts: {', '.join(facts) or 'none'}\n"
+            f"Assumptions: {', '.join(assumptions) or 'none'}\n"
+            f"Unanswered questions: {', '.join(questions) or 'none'}"
+        )
 
     def _start_worker(
         self,

@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
+from rfinance.application.ai_research import AIResearchService
 from rfinance.application.allocation_planning import AllocationPlanningService
 from rfinance.application.automation import AutomationService
 from rfinance.application.dividend_events import DividendEventService
@@ -31,6 +32,7 @@ from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.domain.automation.jobs import JobDefinition
+from rfinance.intelligence.settings import AISettings, AISettingsService
 from rfinance.security.backup import BackupService
 from rfinance.storage.database import Database
 from rfinance.storage.models.data_ingestion import MarketObservationRecord
@@ -90,6 +92,17 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         operations={automation_definition.job_id: lambda: "ok"},
     )
     automation.register_jobs()
+    ai_settings = AISettingsService(database.sessions)
+    ai_settings.save(AISettings(provider="OPENAI", model="gpt-4o-mini", enabled=False))
+    ai_research = AIResearchService(
+        ai_settings,
+        executor=lambda **_kwargs: {
+            "summary": "test",
+            "facts": [],
+            "assumptions": [],
+            "unanswered_questions": [],
+        },
+    )
     return MainWindow(
         AppPaths.resolve(data_directory),
         portfolio_service,
@@ -115,6 +128,8 @@ def create_window(database: Database, tmp_path) -> MainWindow:
             risk_monitoring=RiskMonitoringService(database.sessions),
         ),
         category_service,
+        ai_settings,
+        ai_research,
     )
 
 
@@ -148,6 +163,8 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert window.allocation_page is not None
         assert window.allocation_page.category_panel is not None
         assert window.backup_page is not None
+        assert window.ai_settings is not None
+        assert window.ai_model_input.text() == "gpt-4o-mini"
         assert window.automation_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()

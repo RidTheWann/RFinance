@@ -56,6 +56,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.automation,
         context.portfolio_reports,
         context.instrument_categories,
+        context.ai_settings,
+        context.ai_research,
     )
     application.aboutToQuit.connect(context.close)
     window.show()
