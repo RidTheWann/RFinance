@@ -13,6 +13,7 @@ from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.financial_statements import FinancialStatementService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_review import InstrumentReviewService
+from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
@@ -43,6 +44,7 @@ class ApplicationContext:
     database: Database
     portfolio_ledger: PortfolioLedgerService
     portfolio_trading: PortfolioTradingService
+    ledger_reports: LedgerReportService
     verified_lot_sizes: VerifiedLotSizeService
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
@@ -72,6 +74,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         portfolio_ledger = PortfolioLedgerService(ledger_repository, lot_sizes={})
         verified_lot_sizes = VerifiedLotSizeService(database.sessions)
         portfolio_trading = PortfolioTradingService(ledger_repository, lot_sizes=verified_lot_sizes)
+        ledger_reports = LedgerReportService(portfolio_ledger)
         portfolio_valuation = PortfolioValuationService(database.sessions, portfolio_ledger)
         technical_analysis = TechnicalAnalysisService(
             HistoricalPriceSeriesService(database.sessions)
@@ -121,6 +124,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         database=database,
         portfolio_ledger=portfolio_ledger,
         portfolio_trading=portfolio_trading,
+        ledger_reports=ledger_reports,
         verified_lot_sizes=verified_lot_sizes,
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,

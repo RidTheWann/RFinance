@@ -12,7 +12,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 5 | Dividend event calendar and analytics | `dividend-analytics-v1`, append-only event/review persistence, labelled calendar, connected Dividend Center, and `dividend-receipt-v1` confirmed-receipt posting with 50/30/20 split and duplicate protection implemented; automated provider feed remains |
 | 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, first-run cash setup, `portfolio-valuation-v1`, confirmed dividend receipts, evidence-gated simulated trades, and `risk-controls-v1` drawdown/concentration events with explicit reviews and a connected Risk Management page implemented; rebalancing execution, verified sector mapping and risk automation remain |
 | 7 | Optional Ollama intelligence and secure document analysis | Not started |
-| 8 | Local automation and reporting | Not started |
+| 8 | Local automation and reporting | `ledger-csv-v1` simulated-ledger export connected to the Portfolio Simulator and documented; automation scheduler and PDF/broader reports remain |
 | 9 | Backup/restore, offline operation, reliability and security hardening | Not started |
 | 10 | Windows installer, clean install, upgrade and data-preservation verification | Not started |
 
