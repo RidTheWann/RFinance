@@ -42,6 +42,7 @@ from rfinance.application.portfolio_ledger import (
 )
 from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.allocation_page import AllocationPage
+from rfinance.ui.backup_page import BackupPage
 from rfinance.ui.dividend_page import DividendPage
 from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_trading_page import PortfolioTradingPage
@@ -69,6 +70,7 @@ if TYPE_CHECKING:
     from rfinance.application.screening_evaluation import ScreeningEvaluationService
     from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
+    from rfinance.security.backup import BackupService
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
 
@@ -165,6 +167,7 @@ class MainWindow(QMainWindow):
         risk_monitoring: RiskMonitoringService | None = None,
         ledger_reports: LedgerReportService | None = None,
         allocation_planning: AllocationPlanningService | None = None,
+        backups: BackupService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -189,6 +192,8 @@ class MainWindow(QMainWindow):
         self.ledger_reports = ledger_reports
         self.allocation_planning = allocation_planning
         self.allocation_page: AllocationPage | None = None
+        self.backups = backups
+        self.backup_page: BackupPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -767,6 +772,11 @@ class MainWindow(QMainWindow):
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.paths.root)))
         )
         layout.addWidget(open_folder)
+        if self.backups is None:
+            layout.addWidget(QLabel("Backup and restore are unavailable."))
+        else:
+            self.backup_page = BackupPage(self.backups, page)
+            layout.addWidget(self.backup_page)
         layout.addStretch(1)
         return page
 

@@ -4,6 +4,9 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `sqlite-backup-v1`: consistent online SQLite backups with SHA-256 manifests, read-only integrity/schema verification, and non-destructive restore into a new folder. Connected worker-backed controls in Settings and documented in `docs/BACKUP_RESTORE.md`.
+- Recorded ADR 0004: for this phase the coding assistant fulfils the optional AI role; no Ollama runtime, model download or AI-owned state mutation is introduced. Deterministic engines remain authoritative.
+
 - Added `allocation-plan-v1`: deterministic target-versus-current gap planning from persisted valuations. Positive gaps remain `UNFILLED_TARGET` unless an evidence-backed verified instrument and eligible price exist; overweight categories require review; active risk events block investable lines. Connected to a worker-backed Portfolio Simulator view and documented in `docs/ALLOCATION_PLANNING.md`.
 - Stabilised the three worker-thread Qt UI tests with a short post-completion settle wait. All 16 UI tests now pass consistently under both offscreen and native Windows platforms; no assertion was weakened.
 

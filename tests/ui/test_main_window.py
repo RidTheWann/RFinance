@@ -2,6 +2,7 @@
 # Copyright (C) 2026 RFinance Contributors
 # See LICENSE for the full GNU General Public License version 3.
 from decimal import Decimal
+from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFileDialog, QInputDialog
@@ -26,6 +27,7 @@ from rfinance.application.risk_monitoring import RiskMonitoringService
 from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
+from rfinance.security.backup import BackupService
 from rfinance.storage.database import Database
 from rfinance.storage.models.data_ingestion import MarketObservationRecord
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
@@ -89,6 +91,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         RiskMonitoringService(database.sessions),
         LedgerReportService(portfolio_service),
         AllocationPlanningService(portfolio_valuation_service),
+        BackupService(Path(str(database.engine.url.database)), data_directory / "Backups"),
     )
 
 
@@ -119,6 +122,7 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert window.research_page is not None
         assert window.risk_page is not None
         assert window.allocation_page is not None
+        assert window.backup_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()

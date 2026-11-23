@@ -19,6 +19,13 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Backup and restore (this session, 2026-11-23)
+
+- Added `sqlite-backup-v1` in `src/rfinance/security/backup.py`: online SQLite backup, SHA-256 sidecar manifest with provenance, read-only `integrity_check`/schema/ledger-count verification, manifest-tamper detection, and non-destructive restore into a new folder with digest comparison. No live database is overwritten.
+- Connected worker-backed Settings controls (`BackupPage`) and documented the contract in `docs/BACKUP_RESTORE.md`.
+- Recorded the owner's decision in ADR 0004: the optional AI role is fulfilled by the coding assistant for now; no Ollama integration or model download is introduced, and deterministic engines remain authoritative.
+- Verified locally: 279 unit/integration tests and 17 UI tests pass; Ruff lint/format and Mypy strict pass.
+
 ## Allocation gap planning (this session, 2026-11-23)
 
 - Added `allocation-plan-v1` in `src/rfinance/domain/portfolio/allocation.py` with explicit target amounts, current values, differences, evidence-backed investable instruments, floor-rounded lot quantities, overweight review flags and risk-event blocking. Unfilled targets are never replaced with fabricated products.
@@ -211,7 +218,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
 - Corporate actions, allocation execution/rebalancing, verified sector mapping and risk review automation remain incomplete. Deterministic drawdown/concentration controls with append-only events and explicit reviews are implemented; they do not constitute loss limits. Portfolio market valuation depends on lawfully obtained, manually reviewable data.
-- Ollama integration, document analysis, automation scheduler, PDF and broader reporting beyond the simulated-ledger CSV export, verified backup/restore, and Windows production installer.
+- Native Ollama integration, document analysis, automation scheduler, PDF and broader reporting beyond the simulated-ledger CSV export, destructive in-place restore, and Windows production installer. Per ADR 0004, the AI role is currently fulfilled by the coding assistant.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
