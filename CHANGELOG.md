@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `portfolio-pdf-v1` reporting: `PortfolioReportService` assembles ledger, valuation, risk-control and recommendation data into an explicit report; `QPdfWriter` renders it to PDF with no new dependency. A connected Portfolio Simulator button exports the file, and the contract is documented in `docs/REPORTING.md`.
+
 - Added `automation-jobs-v1`: code-defined local job registry, append-only `automation_jobs`/`automation_runs` tables (migration `0011_automation`), deterministic run IDs, retry policy, and a connected Automation Center with manual run execution and run history. Documented in `docs/AUTOMATION.md`.
 
 - Added `sqlite-backup-v1`: consistent online SQLite backups with SHA-256 manifests, read-only integrity/schema verification, and non-destructive restore into a new folder. Connected worker-backed controls in Settings and documented in `docs/BACKUP_RESTORE.md`.

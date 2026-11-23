@@ -2,6 +2,13 @@
 
 Last updated: 2026-11-23
 
+## Simulated portfolio PDF report (2026-11-23, Windows 11 x64)
+
+- `tests/integration/test_portfolio_reports.py` (1 test): report assembly from persisted ledger/valuation/risk data carries the SIMULATED label, currency, methodology versions and Rp5,000,000 balance; `export_pdf()` produces a valid `%PDF-` file.
+- `tests/ui/test_main_window.py` (1 test): the connected PDF export button writes a valid PDF and reports the simulation boundary.
+- Local gate: **308 passed** (`pytest -q`, 63.54s); Ruff lint/format and Mypy strict pass.
+
+
 ## Local automation foundation (2026-11-23, Windows 11 x64)
 
 - `tests/unit/test_automation_jobs.py` (4 tests): definition defaults/validation, run state transitions, retry limits and run metadata validation.
