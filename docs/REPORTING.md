@@ -29,6 +29,9 @@ Rules:
   rather than silently mixed into the report.
 - CSV quoting is delegated to the standard library, so commas and quotes in
   source references are preserved.
+- User-supplied text cells beginning with a spreadsheet formula prefix
+  (`=`, `+`, `-`, `@`, tab or carriage return) are prefixed with an apostrophe
+  so a spreadsheet application treats them as text rather than a formula.
 - The export contains no recomputed totals: cash, positions and P/L must be
   reconstructed from the ledger by the deterministic replay engine.
 

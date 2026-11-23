@@ -56,8 +56,21 @@ class LedgerCsvReport:
     methodology_version: str = FORMULA_VERSION
 
 
+_DANGEROUS_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
 def _decimal_cell(value: Decimal | None) -> str:
     return "" if value is None else format(value, "f")
+
+
+def _text_cell(value: str | None) -> str:
+    """Neutralise spreadsheet formula prefixes in user-supplied text cells."""
+
+    if value is None:
+        return ""
+    if value.startswith(_DANGEROUS_FORMULA_PREFIXES):
+        return "'" + value
+    return value
 
 
 def render_ledger_report(
@@ -88,17 +101,17 @@ def render_ledger_report(
         writer.writerow(
             (
                 event.sequence,
-                event.event_id,
+                _text_cell(event.event_id),
                 event.occurred_at.astimezone(UTC).isoformat(),
                 event.event_type.value,
-                event.instrument_id or "",
+                _text_cell(event.instrument_id),
                 _decimal_cell(event.quantity),
                 _decimal_cell(event.unit_price),
                 _decimal_cell(event.amount),
                 _decimal_cell(event.fees),
                 _decimal_cell(event.taxes),
                 event.currency,
-                event.source_reference or "",
+                _text_cell(event.source_reference),
                 RECORD_STATUS,
                 FORMULA_VERSION,
                 moment,

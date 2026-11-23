@@ -83,6 +83,20 @@ def test_csv_escaping_preserves_source_reference() -> None:
     assert parsed[1][parsed[0].index("source_reference")] == reference
 
 
+def test_formula_prefix_in_source_reference_is_neutralised() -> None:
+    event = make_event(
+        1,
+        event_type=LedgerEventType.SIMULATED_DIVIDEND,
+        amount=Decimal("100000"),
+        instrument_id="IDX:BBCA",
+        source_reference="=cmd|'/c calc'!A1",
+    )
+    report = render_ledger_report([event], generated_at=GENERATED, currency="IDR")
+
+    parsed = rows(report.csv_text)
+    assert parsed[1][parsed[0].index("source_reference")] == "'=cmd|'/c calc'!A1"
+
+
 def test_events_are_ordered_by_sequence() -> None:
     first = make_event(1)
     second = make_event(2, event_type=LedgerEventType.CASH_WITHDRAWAL, amount=Decimal("1000"))
