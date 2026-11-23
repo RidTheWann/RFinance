@@ -59,6 +59,7 @@ if TYPE_CHECKING:
     from rfinance.application.automation import AutomationService
     from rfinance.application.dividend_events import DividendEventService
     from rfinance.application.dividend_receipts import DividendReceiptService
+    from rfinance.application.instrument_category import InstrumentCategoryService
     from rfinance.application.ledger_reporting import LedgerReportService
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
@@ -173,6 +174,7 @@ class MainWindow(QMainWindow):
         backups: BackupService | None = None,
         automation: AutomationService | None = None,
         portfolio_reports: PortfolioReportService | None = None,
+        instrument_categories: InstrumentCategoryService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -202,6 +204,7 @@ class MainWindow(QMainWindow):
         self.automation = automation
         self.automation_page: AutomationPage | None = None
         self.portfolio_reports = portfolio_reports
+        self.instrument_categories = instrument_categories
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -432,6 +435,7 @@ class MainWindow(QMainWindow):
         else:
             self.allocation_page = AllocationPage(
                 self.allocation_planning,
+                category_service=self.instrument_categories,
                 parent=self._portfolio_dashboard,
             )
             dashboard_layout.addWidget(self.allocation_page)

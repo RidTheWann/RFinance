@@ -19,6 +19,13 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Instrument category evidence (this session, 2026-11-23)
+
+- Added `instrument-category-v1` with append-only `instrument_category_events` (migration `0012_instrument_category`), explicit reviewer/evidence/SHA-256 gates, and `verified_investables()` projection requiring a still-active VERIFIED instrument.
+- `AllocationPlanningService` now consumes persisted category evidence automatically; a verified lot rule without an eligible price remains `UNFILLED_TARGET`.
+- Connected an evidence-file form in the Allocation plan panel; original files are never modified and archives stay under the per-user data directory. Documented in `docs/INSTRUMENT_CATEGORY.md`.
+- Verified locally: 314 tests pass; Ruff lint/format and Mypy strict pass.
+
 ## Simulated portfolio PDF report (this session, 2026-11-23)
 
 - Added `portfolio-pdf-v1`: `PortfolioReportData`/`ReportLine` contracts and a `QPdfWriter` renderer in `src/rfinance/reporting/pdf.py` (no new dependency).

@@ -13,6 +13,7 @@ from rfinance.application.automation import AutomationService
 from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
+from rfinance.application.instrument_category import InstrumentCategoryService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
@@ -82,6 +83,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         display_name="Test job",
         description="Local test job",
     )
+    category_service = InstrumentCategoryService(database.sessions, data_directory=data_directory)
     automation = AutomationService(
         database.sessions,
         definitions={automation_definition.job_id: automation_definition},
@@ -112,6 +114,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
             portfolio_valuation_service,
             risk_monitoring=RiskMonitoringService(database.sessions),
         ),
+        category_service,
     )
 
 
@@ -143,6 +146,7 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert window.research_page is not None
         assert window.risk_page is not None
         assert window.allocation_page is not None
+        assert window.allocation_page.category_panel is not None
         assert window.backup_page is not None
         assert window.automation_page is not None
         assert window.initial_capital_input.text() == "5000000"

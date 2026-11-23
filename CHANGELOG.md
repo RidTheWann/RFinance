@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `instrument-category-v1`: append-only, evidence-backed instrument category and lot-size decisions (migration `0012_instrument_category`), projected into `allocation-plan-v1` as verified investables. A connected form in the Allocation plan panel archives evidence and records VERIFIED/REJECTED decisions; documented in `docs/INSTRUMENT_CATEGORY.md`.
+
 - Added `portfolio-pdf-v1` reporting: `PortfolioReportService` assembles ledger, valuation, risk-control and recommendation data into an explicit report; `QPdfWriter` renders it to PDF with no new dependency. A connected Portfolio Simulator button exports the file, and the contract is documented in `docs/REPORTING.md`.
 
 - Added `automation-jobs-v1`: code-defined local job registry, append-only `automation_jobs`/`automation_runs` tables (migration `0011_automation`), deterministic run IDs, retry policy, and a connected Automation Center with manual run execution and run history. Documented in `docs/AUTOMATION.md`.

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import datetime
 
+    from rfinance.application.instrument_category import InstrumentCategoryService
     from rfinance.application.portfolio_valuation import PortfolioValuationService
     from rfinance.application.risk_monitoring import RiskMonitoringService
     from rfinance.domain.portfolio.allocation import (
@@ -30,10 +31,12 @@ class AllocationPlanningService:
         valuation: PortfolioValuationService,
         *,
         risk_monitoring: RiskMonitoringService | None = None,
+        instrument_categories: InstrumentCategoryService | None = None,
         tolerance: Decimal = Decimal("0.05"),
     ) -> None:
         self._valuation = valuation
         self._risk_monitoring = risk_monitoring
+        self._instrument_categories = instrument_categories
         self._tolerance = tolerance
 
     def plan(
@@ -45,6 +48,8 @@ class AllocationPlanningService:
         """Derive target gaps; ``instruments`` must carry verified evidence."""
 
         snapshot = self._valuation.value(as_of=as_of)
+        if not instruments and self._instrument_categories is not None:
+            instruments = self._instrument_categories.verified_investables()
         suspended = False
         if self._risk_monitoring is not None:
             suspended = self._risk_monitoring.screening_controls().allocation_changes_suspended
