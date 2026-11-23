@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from rfinance.application.allocation_planning import AllocationPlanningService
+from rfinance.application.automation import AutomationService
 from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.financial_statements import FinancialStatementService
@@ -29,6 +30,7 @@ from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
+from rfinance.domain.automation.jobs import JobDefinition
 from rfinance.security.backup import BackupService
 from rfinance.storage.database import Database
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
@@ -61,6 +63,7 @@ class ApplicationContext:
     technical_analysis: TechnicalAnalysisService
     risk_monitoring: RiskMonitoringService
     backups: BackupService
+    automation: AutomationService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -111,6 +114,28 @@ def create_application_context(data_directory: str | None = None) -> Application
         recommendations = RecommendationService(database.sessions)
         risk_monitoring = RiskMonitoringService(database.sessions)
         backups = BackupService(paths.database_file, paths.backups_dir)
+        job_definitions = {
+            "BACKUP_CREATE": JobDefinition(
+                job_id="BACKUP_CREATE",
+                display_name="Create verified backup",
+                description="Write a consistent local SQLite backup with a SHA-256 manifest.",
+                timeout_seconds=120,
+            ),
+            "PORTFOLIO_VALUATION": JobDefinition(
+                job_id="PORTFOLIO_VALUATION",
+                display_name="Refresh portfolio valuation",
+                description="Recompute the simulated valuation from locally stored evidence.",
+                timeout_seconds=60,
+            ),
+        }
+        job_operations = {
+            "BACKUP_CREATE": lambda: f"backup={backups.create_backup().path.name}",
+            "PORTFOLIO_VALUATION": lambda: (
+                f"price_evidence={len(portfolio_valuation.value().price_evidence)}"
+            ),
+        }
+        automation = AutomationService(database.sessions, job_definitions, job_operations)
+        automation.register_jobs()
         allocation_planning = AllocationPlanningService(
             portfolio_valuation,
             risk_monitoring=risk_monitoring,
@@ -148,5 +173,6 @@ def create_application_context(data_directory: str | None = None) -> Application
         technical_analysis=technical_analysis,
         risk_monitoring=risk_monitoring,
         backups=backups,
+        automation=automation,
         logger=logger,
     )

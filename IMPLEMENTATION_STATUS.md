@@ -19,6 +19,14 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Local automation foundation (this session, 2026-11-23)
+
+- Added `automation-jobs-v1` with an explicit run state machine, retry policy and code-owned job definitions. Migration `0011_automation` adds append-only `automation_jobs` and `automation_runs` tables protected by update/delete triggers.
+- `AutomationService` registers jobs idempotently, executes only mapped local operations, records each attempt with a deterministic ID and exception detail, and retries up to the configured limit. Two real jobs are wired: `BACKUP_CREATE` and `PORTFOLIO_VALUATION`.
+- Connected an Automation Center desktop page with manual run execution on a worker thread and an append-only run history. Documented in `docs/AUTOMATION.md`.
+- Verified locally: 306 tests pass (288 unit/integration + 18 UI); Ruff lint/format and Mypy strict pass.
+- Deferred: automatic scheduling, hard timeout/cancellation of in-flight jobs, notifications, and externally supplied job definitions.
+
 ## Backup and restore (this session, 2026-11-23)
 
 - Added `sqlite-backup-v1` in `src/rfinance/security/backup.py`: online SQLite backup, SHA-256 sidecar manifest with provenance, read-only `integrity_check`/schema/ledger-count verification, manifest-tamper detection, and non-destructive restore into a new folder with digest comparison. No live database is overwritten.

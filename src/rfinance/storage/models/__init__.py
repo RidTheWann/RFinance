@@ -4,6 +4,7 @@
 """SQLAlchemy persistence models."""
 
 from rfinance.storage.models.app_setting import AppSetting
+from rfinance.storage.models.automation import AutomationJobRecord, AutomationRunRecord
 from rfinance.storage.models.base import Base
 from rfinance.storage.models.data_ingestion import (
     DataImportBatchRecord,
@@ -30,6 +31,8 @@ from rfinance.storage.models.recommendation import RecommendationRecord
 
 __all__ = [
     "AppSetting",
+    "AutomationJobRecord",
+    "AutomationRunRecord",
     "Base",
     "DataImportBatchRecord",
     "DataImportIssueRecord",

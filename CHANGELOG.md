@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `automation-jobs-v1`: code-defined local job registry, append-only `automation_jobs`/`automation_runs` tables (migration `0011_automation`), deterministic run IDs, retry policy, and a connected Automation Center with manual run execution and run history. Documented in `docs/AUTOMATION.md`.
+
 - Added `sqlite-backup-v1`: consistent online SQLite backups with SHA-256 manifests, read-only integrity/schema verification, and non-destructive restore into a new folder. Connected worker-backed controls in Settings and documented in `docs/BACKUP_RESTORE.md`.
 - Recorded ADR 0004: for this phase the coding assistant fulfils the optional AI role; no Ollama runtime, model download or AI-owned state mutation is introduced. Deterministic engines remain authoritative.
 
