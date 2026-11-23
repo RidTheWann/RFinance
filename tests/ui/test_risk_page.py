@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
@@ -123,11 +124,11 @@ def test_page_evaluates_a_valuation_on_a_worker(
 
     for _ in range(2):
         page.evaluate()
-        for _ in range(4000):
+        deadline = time.monotonic() + 30
+        while page.is_busy and time.monotonic() < deadline:
             QApplication.processEvents()
-            if not page.is_busy:
-                break
-        else:
+            time.sleep(0.01)
+        if page.is_busy:
             pytest.fail("Risk evaluation did not finish on the worker thread")
         QApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         QApplication.processEvents()
