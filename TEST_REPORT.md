@@ -2,6 +2,13 @@
 
 Last updated: 2026-11-23
 
+## Simulated ledger CSV reporting (2026-11-23, Windows 11 x64)
+
+- `tests/unit/test_ledger_csv_report.py` (9 tests): documented header, `SIMULATED` label, empty cells for missing values, CSV escaping, formula-prefix neutralisation, sequence ordering, currency mismatch, duplicate sequences and naive timestamp rejection.
+- `tests/integration/test_ledger_reporting.py` (1 test): exported rows reconcile with a replayed capital/withdrawal ledger.
+- `tests/ui/test_main_window.py` (1 test): the connected export button writes a labelled CSV to the user-selected path.
+- Local gate after this slice: **255** unit/integration tests pass; 13 stable UI tests pass; Ruff lint/format and Mypy strict pass.
+
 ## Risk-to-screening connection (2026-11-23, Windows 11 x64)
 
 Environment: Windows 11 x64, Python 3.13.16, PySide6 6.12.0, fresh `.venv`

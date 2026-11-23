@@ -19,6 +19,11 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Simulated ledger CSV reporting (this session, 2026-11-23)
+
+- Added `ledger-csv-v1` (`src/rfinance/reporting/csv.py`) and `LedgerReportService`, connected to an "Export simulated ledger (CSV)" button in the Portfolio Simulator. Every row is labelled `SIMULATED`, carries the methodology version and UTC generation time, keeps missing values empty, rejects currency mismatches and duplicate sequences, and neutralises spreadsheet-formula prefixes in user-supplied text.
+- Documented the export contract in `docs/REPORTING.md`. Verified locally: 255 unit/integration tests and 13 stable UI tests pass; Ruff lint/format and Mypy strict pass.
+
 ## Implemented in the foundation branch
 
 ### Application foundation
@@ -199,7 +204,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
 - Corporate actions, allocation execution/rebalancing, verified sector mapping and risk review automation remain incomplete. Deterministic drawdown/concentration controls with append-only events and explicit reviews are implemented; they do not constitute loss limits. Portfolio market valuation depends on lawfully obtained, manually reviewable data.
-- Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
+- Ollama integration, document analysis, automation scheduler, PDF and broader reporting beyond the simulated-ledger CSV export, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
