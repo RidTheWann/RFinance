@@ -15,6 +15,7 @@ from uuid import uuid4
 
 from sqlalchemy import select
 
+from rfinance.domain.recommendations.screening import RiskControlEvidence
 from rfinance.domain.risk.controls import (
     FORMULA_VERSION,
     RiskAssessment,
@@ -46,6 +47,7 @@ _BUY_SUSPENDING = frozenset(
     }
 )
 _ALLOCATION_SUSPENDING = frozenset({RiskRule.CRITICAL_DRAWDOWN, RiskRule.PROHIBITED_ACTIVITY})
+ZERO = Decimal("0")
 
 
 @dataclass(frozen=True, slots=True)
@@ -238,6 +240,46 @@ class RiskMonitoringService:
         """Return only risk events without an explicit recorded review."""
 
         return tuple(item for item in self.recent_events(limit=500) if item.review is None)
+
+    def current_drawdown(self) -> Decimal | None:
+        """Peak-to-current decline from complete stored valuations, or ``None``.
+
+        Incomplete valuation points are excluded and an unknown drawdown is
+        never reported as zero. The arithmetic matches ``risk-controls-v1``.
+        """
+
+        points = sorted(
+            (item for item in self.recent_valuations(limit=500) if item.is_complete),
+            key=lambda item: item.as_of_utc,
+        )
+        if not points:
+            return None
+        peak = max(item.total_value for item in points)
+        current = points[-1].total_value
+        if peak <= ZERO:
+            return None
+        return max(ZERO, (peak - current) / peak)
+
+    def screening_controls(self) -> RiskControlEvidence:
+        """Persisted risk state that constrains new BUY_CANDIDATE promotion.
+
+        Only rules that suspend buy candidates block a recommendation. A
+        recorded but non-blocking review is still reported as context, and a
+        critical event downgrades the result to AVOID. Active event IDs are
+        retained so the recommendation can cite the exact audit records.
+        """
+
+        active = self.active_events()
+        return RiskControlEvidence(
+            review_required=bool(active),
+            buy_candidates_suspended=any(item.rule in _BUY_SUSPENDING for item in active),
+            critical=any(
+                item.severity is RiskSeverity.CRITICAL or item.rule in _ALLOCATION_SUSPENDING
+                for item in active
+            ),
+            drawdown=self.current_drawdown(),
+            active_event_ids=tuple(item.event_id for item in active),
+        )
 
     def recent_events(self, *, limit: int = 50) -> tuple[RiskEventSummary, ...]:
         """Return recent risk events with their review status, newest first."""

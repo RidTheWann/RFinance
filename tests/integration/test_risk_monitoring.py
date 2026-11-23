@@ -153,6 +153,37 @@ def test_valuation_history_derives_peak_and_current_drawdown(
     assert events[0].valuation_methodology == "portfolio-valuation-v1"
 
 
+def test_screening_controls_reflect_events_and_persisted_drawdown(
+    service: RiskMonitoringService,
+) -> None:
+    earlier = datetime(2026, 11, 1, 12, 0, tzinfo=UTC)
+    later = datetime(2026, 11, 23, 12, 0, tzinfo=UTC)
+
+    assert service.screening_controls().drawdown is None
+    service.evaluate_valuation(_valuation(Decimal("1000000"), earlier), as_of=earlier)
+    service.evaluate_valuation(_valuation(Decimal("900000"), later), as_of=later)
+
+    controls = service.screening_controls()
+    assert controls.drawdown == Decimal("0.10")
+    assert controls.review_required is True
+    assert controls.buy_candidates_suspended is True
+    assert controls.critical is False
+    assert len(controls.active_event_ids) == 1
+
+    service.record_review(
+        controls.active_event_ids[0],
+        reviewer_label="Portfolio operator",
+        notes="Reviewed the drawdown trigger.",
+        evidence_reference="Documents/RiskReview/2026-11.md",
+        reviewed_at=later,
+    )
+    cleared = service.screening_controls()
+    assert cleared.review_required is False
+    assert cleared.buy_candidates_suspended is False
+    assert cleared.active_event_ids == ()
+    assert cleared.drawdown == Decimal("0.10")
+
+
 def test_valuation_history_is_idempotent_for_the_same_as_of(
     service: RiskMonitoringService,
 ) -> None:

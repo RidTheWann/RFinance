@@ -223,6 +223,7 @@ class MainWindow(QMainWindow):
             self.research_page = ResearchPage(
                 self.recommendations,
                 evaluation=self.screening_evaluation,
+                risk_monitoring=self.risk_monitoring,
             )
             self.pages.addWidget(self.research_page)
         self.pages.addWidget(self._instrument_review_page())

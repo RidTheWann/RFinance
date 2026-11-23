@@ -57,5 +57,12 @@ drawdown = max(0, (peak_complete_total_value - current_complete_total_value)
 - Active events determine the suspension flags returned to screening and to
   the Risk Management page. No AI output, imported document or price
   observation can create or resolve an event automatically.
+- `RiskMonitoringService.screening_controls()` projects those events, plus the
+  drawdown derived from complete stored valuations, into
+  `RiskControlEvidence`. `ScreeningEvaluationService` supplies it to the
+  deterministic engine on every desktop evaluation. A buy-suspending rule
+  raises `RISK_REVIEW_REQUIRED` and cites `risk:<event_id>`; a critical event
+  produces `AVOID`. Recording an explicit review lifts the block on the next
+  evaluation while the valuation-based drawdown remains available.
 - Risk events are simulated portfolio controls, not brokerage records or
   evidence of realised loss.

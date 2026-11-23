@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Connected persisted risk controls to deterministic screening end-to-end. `RiskMonitoringService.screening_controls()` projects active risk events and the drawdown derived from complete stored valuations into `RiskControlEvidence`; `ScreeningEvaluationService` supplies it on every desktop evaluation. A buy-suspending rule raises `RISK_REVIEW_REQUIRED` and cites `risk:<event_id>`; a critical event produces `AVOID`; an explicit review lifts the block on the next evaluation. The Research Center shows the active review state. Screening methodology is now `screening-deterministic-v2`.
+- Fixed a racy Qt UI test that asserted worker cleanup before waiting for it; two worker-thread UI files still abort intermittently on this Windows/PySide6 6.12 host under both offscreen and native platforms. See TEST_REPORT.md.
 - Added a generated `requirements.lock` from the verified Windows/Python 3.13 development environment and `scripts\regenerate_lock.ps1` to reproduce it.
 
 - Added `risk-controls-v1`: deterministic drawdown, concentration, allocation-deviation, review-cadence and prohibited-activity review triggers with explicit thresholds and no coercion of missing valuations to zero.
