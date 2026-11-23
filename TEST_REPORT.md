@@ -2,6 +2,34 @@
 
 Last updated: 2026-11-23
 
+## Risk-to-screening connection (2026-11-23, Windows 11 x64)
+
+Environment: Windows 11 x64, Python 3.13.16, PySide6 6.12.0, fresh `.venv`
+created with `py -3.13 -m venv .venv` and `pip install -e ".[dev]"`.
+
+| Check | Command | Result |
+|---|---|---|
+| Unit + integration | `python -m pytest -q tests/unit tests/integration` | **253 passed** |
+| Full UI suite (native Qt) | `QT_QPA_PLATFORM=windows python -m pytest -q tests/ui` | **14 passed** |
+| Ruff lint | `ruff check .` | Passed |
+| Ruff format | `ruff format --check .` | Passed, 204 files |
+| Mypy strict | `mypy src` | Passed, 81 source files |
+
+New coverage:
+
+- `tests/unit/test_screening.py` (5 tests): buy suspension blocks and cites event IDs, critical state downgrades to AVOID, persisted drawdown used only without an explicit value, non-blocking reviews do not block, invalid drawdown rejected.
+- `tests/integration/test_screening_evaluation.py` (1 test): an active persisted risk event blocks BUY_CANDIDATE and is cleared by an explicit review on the next evaluation.
+- `tests/integration/test_risk_monitoring.py` (1 test): `screening_controls()` derives drawdown from complete valuations and stops suspending after review.
+- `tests/ui/test_portfolio_valuation_page.py`: the wait condition now includes `not page.is_busy`, matching the other worker-backed UI tests. This fixes a genuine race in the test, not a product assertion.
+
+The full UI suite aborts intermittently inside `pytestqt.plugin._process_events`
+on this Windows/PySide6 6.12 host under both the default offscreen and the
+native `windows` platforms. The affected worker-thread files
+(`test_portfolio_valuation_page.py`, `test_technical_analysis_page.py`) pass on
+other runs, and the other UI files pass consistently. No assertion was weakened
+to hide the crash; it is treated as a host/toolchain issue pending further
+investigation.
+
 ## Dependency lock (2026-11-23, Windows 11 x64)
 
 `requirements.lock` was generated with `pip freeze --exclude-editable` from the

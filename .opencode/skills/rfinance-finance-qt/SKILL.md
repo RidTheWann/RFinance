@@ -12,7 +12,7 @@ description: Applied patterns for RFinance Decimal finance code, provenance, fin
 - Define numerator, denominator, units, sign convention, missing-data behaviour and formula version for every new metric.
 - Guard zero/negative denominators explicitly. Return `None` with a reason; never substitute zero.
 
-See `docs/FINANCIAL_METHODOLOGY.md` for `fundamental-metrics-v1`, `dividend-analytics-v1`, `portfolio-valuation-v1` and `screening-deterministic-v1`.
+See `docs/FINANCIAL_METHODOLOGY.md` for `fundamental-metrics-v1`, `dividend-analytics-v1`, `portfolio-valuation-v1` and `screening-deterministic-v2`.
 
 ## Evidence and quality
 

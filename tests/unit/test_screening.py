@@ -19,6 +19,7 @@ from rfinance.domain.recommendations.screening import (
     EvidenceItem,
     EvidenceKind,
     RecommendationAction,
+    RiskControlEvidence,
     RiskFlag,
     ScreeningInput,
     ScreeningPolicy,
@@ -93,6 +94,66 @@ def test_healthy_verified_candidate_can_be_a_buy_candidate() -> None:
     assert result.evidence_ids == ("fin-1", "div-1", "price-1")
     assert result.data_freshness == AS_OF
     assert result.confidence_level > 0
+
+
+def test_active_risk_review_blocks_buy_candidate_and_cites_events() -> None:
+    controls = RiskControlEvidence(
+        review_required=True,
+        buy_candidates_suspended=True,
+        active_event_ids=("event-1", "event-2"),
+    )
+
+    result = evaluate_candidate(candidate(risk_controls=controls))
+
+    assert result.action is RecommendationAction.WATCH
+    assert RiskFlag.RISK_REVIEW_REQUIRED in result.risk_flags
+    assert "risk:event-1" in result.evidence_ids
+    assert "risk:event-2" in result.evidence_ids
+    assert any("risk-control event" in item for item in result.invalidation_conditions)
+
+
+def test_critical_risk_control_downgrades_to_avoid() -> None:
+    controls = RiskControlEvidence(
+        review_required=True,
+        buy_candidates_suspended=True,
+        critical=True,
+        active_event_ids=("event-3",),
+    )
+
+    result = evaluate_candidate(candidate(risk_controls=controls))
+
+    assert result.action is RecommendationAction.AVOID
+    assert RiskFlag.RISK_REVIEW_REQUIRED in result.risk_flags
+
+
+def test_risk_control_drawdown_is_used_only_without_explicit_drawdown() -> None:
+    controls = RiskControlEvidence(
+        drawdown=Decimal("0.12"),
+        buy_candidates_suspended=True,
+    )
+
+    derived = evaluate_candidate(candidate(risk_controls=controls))
+    assert RiskFlag.ELEVATED_DRAWDOWN in derived.risk_flags
+
+    explicit = evaluate_candidate(
+        candidate(portfolio_drawdown=Decimal("0.01"), risk_controls=controls)
+    )
+    assert RiskFlag.ELEVATED_DRAWDOWN not in explicit.risk_flags
+    assert RiskFlag.RISK_REVIEW_REQUIRED in explicit.risk_flags
+
+
+def test_non_blocking_risk_review_alone_does_not_block_buy_candidate() -> None:
+    controls = RiskControlEvidence(review_required=True, active_event_ids=("info-1",))
+
+    result = evaluate_candidate(candidate(risk_controls=controls))
+
+    assert result.action is RecommendationAction.BUY_CANDIDATE
+    assert RiskFlag.RISK_REVIEW_REQUIRED not in result.risk_flags
+
+
+def test_risk_control_rejects_invalid_drawdown() -> None:
+    with pytest.raises(ValueError, match="drawdown"):
+        RiskControlEvidence(drawdown=Decimal("-0.1"))
 
 
 def test_stale_price_blocks_buy_candidate() -> None:

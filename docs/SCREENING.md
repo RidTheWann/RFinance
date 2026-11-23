@@ -1,6 +1,6 @@
 # Deterministic Screening and Recommendations
 
-Formula version: `screening-deterministic-v1`.
+Formula version: `screening-deterministic-v2`.
 Persistence: Alembic migration `0007_recommendations` (append-only table).
 
 ## Scope and authority
@@ -25,8 +25,15 @@ new row.
 - price observation age in days and its quality, with an evidence reference;
 - optional dividend evidence references;
 - optional portfolio drawdown under the documented valuation methodology;
+- optional `RiskControlEvidence` assembled by `RiskMonitoringService` from
+  persisted active risk events and the stored valuation series;
 - an evidence list, each item carrying an ID, kind, reference, quality,
   timestamp and summary.
+
+An explicit caller-supplied `portfolio_drawdown` always takes precedence over
+`RiskControlEvidence.drawdown`. When no drawdown is available from either
+source, the engine reports no drawdown flag; an unknown decline is never
+reported as zero.
 
 The application layer is responsible for assembling these inputs from the
 eligibility gates and persisted records. The domain engine never fetches data
@@ -45,7 +52,16 @@ Price evidence must be `VERIFIED` and within the configured age limit
 Drawdown uses the configured review triggers (10% elevated, 15% critical). A
 critical drawdown, or negative earnings combined with excessive leverage,
 produces `AVOID`. Any blocking flag — stale/unverified price, missing
-fundamentals, elevated or critical drawdown — prevents a `BUY_CANDIDATE`.
+fundamentals, elevated or critical drawdown, or `RISK_REVIEW_REQUIRED` —
+prevents a `BUY_CANDIDATE`.
+
+When `RiskControlEvidence` reports a rule that suspends buy candidates, the
+engine raises `RISK_REVIEW_REQUIRED` and cites each active event as
+`risk:<event_id>`. A critical active event produces `AVOID`. A recorded review
+that does not suspend buys is reported as context but does not itself block a
+candidate. Once an explicit review resolves the event, the next evaluation no
+longer carries the flag. The invalidation conditions state that the active
+event must be reviewed before a `BUY_CANDIDATE` can be promoted.
 With all evidence in order, the action is based on how many of the five
 fundamental signals pass: at least four gives `BUY_CANDIDATE`, three gives
 `HOLD`, fewer gives `WATCH`.
@@ -74,7 +90,9 @@ evidence from persisted records only:
   days and source policy from the source registry;
 - verified cash dividend event IDs for the instrument;
 - metrics computed from operator-supplied fundamental inputs via
-  `fundamental-metrics-v1`.
+  `fundamental-metrics-v1`, or verified local filing values when selected;
+- persisted risk-control state from `RiskMonitoringService.screening_controls()`
+  when that service is configured.
 
 Fundamental inputs are explicitly labelled as operator-supplied, not verified
 filings. No price is fetched and no metric is inferred. The assembled
@@ -84,6 +102,8 @@ the same blocking rules and evidence requirements apply.
 ## Desktop view
 
 The Research Center tab lists stored recommendations and exposes each result's
-explanation, evidence IDs, risk flags and invalidation conditions. Its
-"Evaluate from local evidence" form runs the assembly workflow on a Qt worker
-thread and displays the resulting action and evidence.
+explanation, evidence IDs, risk flags and invalidation conditions. It also shows
+the current persisted risk-control state, including the number of active review
+events and whether new `BUY_CANDIDATE` promotion is suspended. Its "Evaluate
+from local evidence" form runs the assembly workflow on a Qt worker thread and
+displays the resulting action and evidence.

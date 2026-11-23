@@ -90,7 +90,7 @@ def test_evaluate_persists_and_reconstructs_evidence_linked_result(tmp_path: Pat
     assert stored.evidence_ids == ("fin-1", "price-1", "div-1")
     assert stored.risk_flags == ()
     assert stored.confidence_level == result.confidence_level
-    assert stored.methodology_version == "screening-deterministic-v1"
+    assert stored.methodology_version == "screening-deterministic-v2"
 
     reconstructed = service.get(stored.recommendation_id)
     assert reconstructed is not None

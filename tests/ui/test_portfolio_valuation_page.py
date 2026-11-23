@@ -28,7 +28,9 @@ def test_portfolio_valuation_page_refreshes_cash_only_ledger_off_ui_thread(
 
         page.refresh()
         qtbot.waitUntil(
-            lambda: page.status_label.text().startswith("Cash-only simulation"),
+            lambda: (
+                not page.is_busy and page.status_label.text().startswith("Cash-only simulation")
+            ),
             timeout=30000,
         )
 
