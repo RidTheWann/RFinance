@@ -32,7 +32,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 
 ## Next implementation sequence
 
-1. Connect persisted active risk events to screening evaluation end-to-end so a required review blocks BUY_CANDIDATE promotion from the desktop.
+1. ~~Connect persisted active risk events to screening evaluation end-to-end so a required review blocks BUY_CANDIDATE promotion from the desktop.~~ Implemented via `screening-deterministic-v2`; see IMPLEMENTATION_STATUS.md.
 2. Add allocation-target execution and rebalancing using verified instruments and instrument-to-category evidence.
 3. Add explicit sampling-frequency, sector and corporate-action adjustment evidence to the instrument/observation model before supporting additional historical providers.
 4. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.

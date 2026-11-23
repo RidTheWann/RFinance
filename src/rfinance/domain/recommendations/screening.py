@@ -3,7 +3,7 @@
 # See LICENSE for the full GNU General Public License version 3.
 """Deterministic, evidence-linked investment screening.
 
-Formula version: ``screening-deterministic-v1``.
+Formula version: ``screening-deterministic-v2``.
 
 This module is a pure policy layer. It does not fetch data, mutate records,
 produce numerical truths from AI output, or claim that an action will be
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
     from datetime import datetime
 
-FORMULA_VERSION = "screening-deterministic-v1"
+FORMULA_VERSION = "screening-deterministic-v2"
 ZERO = Decimal("0")
 ONE = Decimal("1")
 
@@ -53,6 +53,7 @@ class RiskFlag(StrEnum):
     UNVERIFIED_FUNDAMENTALS = "UNVERIFIED_FUNDAMENTALS"
     ELEVATED_DRAWDOWN = "ELEVATED_DRAWDOWN"
     CRITICAL_DRAWDOWN = "CRITICAL_DRAWDOWN"
+    RISK_REVIEW_REQUIRED = "RISK_REVIEW_REQUIRED"
     NEGATIVE_EARNINGS = "NEGATIVE_EARNINGS"
     HIGH_LEVERAGE = "HIGH_LEVERAGE"
     NO_DIVIDEND_EVIDENCE = "NO_DIVIDEND_EVIDENCE"
@@ -74,6 +75,29 @@ class EvidenceItem:
     quality: str
     observed_at: datetime | None = None
     summary: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class RiskControlEvidence:
+    """Persisted risk-control state that constrains one screening result.
+
+    This is a policy input assembled by the application layer from append-only
+    risk events and the stored valuation series. It never replaces explicit
+    portfolio drawdown supplied by the caller and never turns an unknown
+    drawdown into zero.
+    """
+
+    review_required: bool = False
+    buy_candidates_suspended: bool = False
+    critical: bool = False
+    drawdown: Decimal | None = None
+    active_event_ids: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.drawdown is not None and (
+            not self.drawdown.is_finite() or not ZERO <= self.drawdown <= ONE
+        ):
+            raise ValueError("drawdown must be a finite fraction between zero and one")
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,6 +149,7 @@ class ScreeningInput:
     price_evidence_id: str | None = None
     dividend_evidence_ids: tuple[str, ...] = ()
     portfolio_drawdown: Decimal | None = None
+    risk_controls: RiskControlEvidence | None = None
     evidence: tuple[EvidenceItem, ...] = ()
 
     def __post_init__(self) -> None:
@@ -237,13 +262,28 @@ def evaluate_candidate(
             f"limit is {applied.max_observation_age_days}."
         )
 
-    drawdown_flag = _drawdown_flag(candidate.portfolio_drawdown, applied)
+    controls = candidate.risk_controls
+    drawdown = candidate.portfolio_drawdown
+    if drawdown is None and controls is not None:
+        drawdown = controls.drawdown
+    drawdown_flag = _drawdown_flag(drawdown, applied)
     if drawdown_flag is not None:
         flags.append(drawdown_flag)
         reasons.append(
-            f"Portfolio drawdown reached {candidate.portfolio_drawdown}; "
+            f"Portfolio drawdown reached {drawdown}; "
             "new buy candidates are suspended pending review."
         )
+    if controls is not None:
+        if controls.buy_candidates_suspended or controls.critical:
+            flags.append(RiskFlag.RISK_REVIEW_REQUIRED)
+            reasons.append(
+                "An active risk-control event requires an explicit review before new "
+                "BUY_CANDIDATE recommendations can be promoted."
+            )
+        elif controls.review_required:
+            reasons.append(
+                "A risk-control review is recorded; it does not suspend new buy candidates."
+            )
 
     # Signal evaluation uses only verified, usable metric values.
     def signal(name: str, predicate: Callable[[Decimal], bool]) -> bool | None:
@@ -292,11 +332,14 @@ def evaluate_candidate(
         RiskFlag.MISSING_FUNDAMENTALS,
         RiskFlag.CRITICAL_DRAWDOWN,
         RiskFlag.ELEVATED_DRAWDOWN,
+        RiskFlag.RISK_REVIEW_REQUIRED,
     }
     has_blocking = any(flag in blocking for flag in flags)
 
-    if RiskFlag.CRITICAL_DRAWDOWN in flags or (
-        RiskFlag.NEGATIVE_EARNINGS in flags and RiskFlag.HIGH_LEVERAGE in flags
+    if (
+        RiskFlag.CRITICAL_DRAWDOWN in flags
+        or (controls is not None and controls.critical)
+        or (RiskFlag.NEGATIVE_EARNINGS in flags and RiskFlag.HIGH_LEVERAGE in flags)
     ):
         action = RecommendationAction.AVOID
     elif has_blocking:
@@ -325,11 +368,16 @@ def evaluate_candidate(
         if item.observed_at is not None and (freshness is None or item.observed_at > freshness):
             freshness = item.observed_at
 
-    invalidation = (
+    invalidation: tuple[str, ...] = (
         "A required input becomes stale, unverified or materially incomplete.",
         "Portfolio drawdown reaches the elevated or critical review threshold.",
         "Verified fundamentals materially change from the values used here.",
     )
+    if RiskFlag.RISK_REVIEW_REQUIRED in flags:
+        invalidation += (
+            "The active risk-control event must be explicitly reviewed before a "
+            "BUY_CANDIDATE can be promoted.",
+        )
     explanation_parts = [
         f"{action.value}: {positive} of {len(signals)} fundamental signals passed.",
         *reasons,
@@ -347,6 +395,8 @@ def evaluate_candidate(
     if candidate.price_evidence_id:
         evidence_ids.append(candidate.price_evidence_id)
     evidence_ids.extend(candidate.dividend_evidence_ids)
+    if controls is not None:
+        evidence_ids.extend(f"risk:{event_id}" for event_id in controls.active_event_ids)
 
     return Recommendation(
         instrument_id=candidate.instrument_id,

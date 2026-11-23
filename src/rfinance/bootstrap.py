@@ -109,6 +109,7 @@ def create_application_context(data_directory: str | None = None) -> Application
             observation_review=observation_review,
             recommendations=recommendations,
             financial_statements=financial_statements,
+            risk_monitoring=risk_monitoring,
         )
     except Exception:
         database.close()

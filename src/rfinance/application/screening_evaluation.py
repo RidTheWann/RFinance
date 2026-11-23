@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from rfinance.application.financial_statements import FinancialStatementService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.recommendations import RecommendationService
+    from rfinance.application.risk_monitoring import RiskMonitoringService
 
 
 class ScreeningEvaluationService:
@@ -44,6 +45,7 @@ class ScreeningEvaluationService:
         observation_review: ObservationReviewService,
         recommendations: RecommendationService,
         financial_statements: FinancialStatementService | None = None,
+        risk_monitoring: RiskMonitoringService | None = None,
         base_currency: str = "IDR",
     ) -> None:
         self._sessions = sessions
@@ -51,6 +53,7 @@ class ScreeningEvaluationService:
         self._observation_review = observation_review
         self._recommendations = recommendations
         self._financial_statements = financial_statements
+        self._risk_monitoring = risk_monitoring
         self._base_currency = base_currency
 
     def evaluate(
@@ -165,6 +168,11 @@ class ScreeningEvaluationService:
                 )
             )
 
+        risk_controls = (
+            self._risk_monitoring.screening_controls()
+            if self._risk_monitoring is not None
+            else None
+        )
         candidate = ScreeningInput(
             instrument_id=instrument_id,
             as_of=moment,
@@ -175,6 +183,7 @@ class ScreeningEvaluationService:
             price_evidence_id=price_evidence_id,
             dividend_evidence_ids=dividend_ids,
             portfolio_drawdown=portfolio_drawdown,
+            risk_controls=risk_controls,
             evidence=tuple(evidence),
         )
         return self._recommendations.evaluate(candidate, generated_at=moment)

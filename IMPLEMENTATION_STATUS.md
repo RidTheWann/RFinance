@@ -144,6 +144,13 @@ Last verified against the repository: 2026-11-23
 - Conflicting latest prices from different sources are not resolved arbitrarily; the position remains unvalued with a diagnostic. Instrument type is mapped conservatively; generic equities and ETFs are not assumed to be dividend stocks or index trackers.
 - The Portfolio Simulator now has a background valuation refresh and displays price provenance, observation age, price, market value, unrealized P/L, and eligibility diagnostics. Partial totals are explicitly labeled; missing positions are not substituted at cost or zero.
 
+## Risk-control to screening connection (this session, 2026-11-23)
+
+- Added `RiskControlEvidence` to the screening domain and `RISK_REVIEW_REQUIRED` as a blocking flag. An explicit caller drawdown still takes precedence; persisted drawdown is used only as a fallback, and an unknown drawdown is never zero.
+- `RiskMonitoringService.screening_controls()` derives buy-suspension, criticality, drawdown and active event IDs from append-only risk events and the complete valuation series. `ScreeningEvaluationService` consumes it when the risk service is configured; bootstrap wires it, so every desktop evaluation is gated.
+- The Research Center displays active risk-review state and evidence-linked reasons. Screening methodology bumped to `screening-deterministic-v2` because recommendation outcomes can change.
+- Verified on Windows 11 x64 / Python 3.13: 253 unit/integration tests and 14 UI tests pass; Ruff lint/format and Mypy strict pass. Full offscreen Qt suite still aborts intermittently on this host; native `windows` platform passes. See TEST_REPORT.md.
+
 ## Local verification (this session, 2026-11-23)
 
 Environment: Linux aarch64, Python 3.14, PySide6 6.12, SQLAlchemy 2.1, Alembic 1.20, pytest 9.2, Ruff, Mypy.
@@ -194,7 +201,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 ## Next engineering objectives
 
 1. Add allocation-target execution and a rebalancing workflow using verified instruments, without fabricating investable products.
-2. Connect active risk events to screening so a required review blocks BUY_CANDIDATE promotion end-to-end from the desktop (the engine already accepts drawdown flags; the service now supplies persisted suspensions).
+2. ~~Connect active risk events to screening so a required review blocks BUY_CANDIDATE promotion end-to-end from the desktop.~~ **Implemented this session** via `RiskControlEvidence`, persisted suspension projection, bootstrap wiring and a Research Center banner.
 3. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
 4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
 5. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist, instead of leaving them as cash targets.

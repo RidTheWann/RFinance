@@ -12,6 +12,7 @@ import pytest
 from rfinance.application.dividend_events import DividendEventService, DividendReviewDecision
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.recommendations import RecommendationService
+from rfinance.application.risk_monitoring import RiskMonitoringService
 from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.data.contracts import (
     DividendEventContract,
@@ -19,6 +20,7 @@ from rfinance.data.contracts import (
     DividendType,
 )
 from rfinance.domain.recommendations.screening import RecommendationAction, RiskFlag
+from rfinance.domain.risk.controls import RiskSnapshot
 from rfinance.storage.database import Database
 from rfinance.storage.models.data_ingestion import (
     DataImportBatchRecord,
@@ -161,6 +163,54 @@ def test_healthy_candidate_produces_buy_candidate_with_evidence(tmp_path: Path) 
     assert f"dividend:{recorded.event_id}" in result.evidence_ids
     assert "metric:RETURN_ON_EQUITY" in result.evidence_ids
     assert "dividend-analytics-v1" not in result.explanation
+    database.close()
+
+
+def test_active_risk_event_blocks_buy_candidate_until_reviewed(tmp_path: Path) -> None:
+    database = Database.open(tmp_path / "screen-risk.sqlite3")
+    database.upgrade()
+    seed(database)
+    risk = RiskMonitoringService(database.sessions)
+    risk.evaluate(
+        RiskSnapshot(
+            as_of=AS_OF,
+            peak_value=Decimal("1000000"),
+            current_value=Decimal("900000"),
+            valuation_methodology="portfolio-valuation-v1",
+            valuation_is_complete=True,
+            instrument_weights={},
+            sector_weights={},
+            allocation_deviations={},
+            last_reviewed_at=None,
+        ),
+        triggered_at=AS_OF,
+    )
+    event_id = risk.active_events()[0].event_id
+    service = ScreeningEvaluationService(
+        database.sessions,
+        dividend_events=DividendEventService(database.sessions),
+        observation_review=ObservationReviewService(database.sessions),
+        recommendations=RecommendationService(database.sessions),
+        risk_monitoring=risk,
+    )
+
+    blocked = service.evaluate("IDX:BBCA", fundamentals=HEALTHY, as_of=AS_OF)
+    assert blocked.action is RecommendationAction.WATCH
+    assert RiskFlag.RISK_REVIEW_REQUIRED in blocked.risk_flags
+    assert f"risk:{event_id}" in blocked.evidence_ids
+
+    risk.record_review(
+        event_id,
+        reviewer_label="Portfolio operator",
+        notes="Reviewed the elevated drawdown and allocation.",
+        evidence_reference="Documents/RiskReview/2026-11.md",
+        reviewed_at=AS_OF,
+    )
+    released = service.evaluate("IDX:BBCA", fundamentals=HEALTHY, as_of=AS_OF)
+
+    assert released.action is RecommendationAction.BUY_CANDIDATE
+    assert RiskFlag.RISK_REVIEW_REQUIRED not in released.risk_flags
+    assert f"risk:{event_id}" not in released.evidence_ids
     database.close()
 
 
