@@ -1,9 +1,10 @@
 ﻿# Generated dependency lock for RFinance.
-# Source: `pip freeze --exclude-editable` in the verified Windows 11 x64 / Python 3.13.16 development environment.
+# Source: pip freeze --exclude-editable in the active development environment.
 # Regenerate with: .\scripts\regenerate_lock.ps1
-# The rfinance package itself is installed editable from this repository and is intentionally excluded.
+# The rfinance package itself is installed editable and is intentionally excluded.
 
 alembic==1.20.1
+altgraph==0.17.5
 annotated-types==0.8.0
 bandit==1.9.4
 boolean.py==5.0
@@ -29,6 +30,7 @@ mypy_extensions==1.2.0
 packageurl-python==0.17.6
 packaging==26.3
 pathspec==1.1.1
+pefile==2024.8.26
 pip-requirements-parser==32.0.1
 pip_api==0.0.35
 pip_audit==2.10.1
@@ -38,6 +40,8 @@ py-serializable==2.2.0
 pydantic==2.14.4
 pydantic_core==2.50.5
 Pygments==2.21.0
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.10
 pyparsing==3.3.3
 PySide6==6.12.0
 PySide6_Addons==6.12.0
@@ -46,10 +50,12 @@ PySide6_Pdf==6.12.0.140
 PySide6_WebEngine==6.12.0.140
 pytest==9.2.0
 pytest-qt==4.5.0
+pywin32-ctypes==0.2.3
 PyYAML==6.0.4
 requests==2.34.2
 rich==15.0.0
 ruff==0.17.6
+setuptools==84.2.1
 shiboken6==6.12.0
 sortedcontainers==2.4.0
 SQLAlchemy==2.1.9
