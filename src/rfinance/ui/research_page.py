@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from rfinance.application.recommendations import RecommendationService
+    from rfinance.application.risk_monitoring import RiskMonitoringService
     from rfinance.application.screening_evaluation import ScreeningEvaluationService
 
 
@@ -59,11 +60,13 @@ class ResearchPage(QWidget):
         service: RecommendationService,
         *,
         evaluation: ScreeningEvaluationService | None = None,
+        risk_monitoring: RiskMonitoringService | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._service = service
         self._evaluation = evaluation
+        self._risk_monitoring = risk_monitoring
         self._thread: QThread | None = None
         self._worker: EvaluationWorker | None = None
         layout = QVBoxLayout(self)
@@ -81,6 +84,10 @@ class ResearchPage(QWidget):
                 "probability of profit. A result is research, not a trade instruction."
             )
         )
+        self.risk_control_label = QLabel("")
+        self.risk_control_label.setObjectName("researchRiskControlStatus")
+        self.risk_control_label.setWordWrap(True)
+        layout.addWidget(self.risk_control_label)
 
         form = QFormLayout()
         self.evaluate_instrument_input = QLineEdit("IDX:BBCA")
@@ -152,6 +159,28 @@ class ResearchPage(QWidget):
         layout.addWidget(self.detail_label)
         self.table.itemSelectionChanged.connect(self._on_selection_changed)
         self.refresh()
+        self.refresh_risk_controls()
+
+    def refresh_risk_controls(self) -> None:
+        """Show persisted risk-control state that gates new BUY_CANDIDATE results."""
+
+        if self._risk_monitoring is None:
+            self.risk_control_label.setText("")
+            return
+        controls = self._risk_monitoring.screening_controls()
+        if not controls.review_required:
+            self.risk_control_label.setText(
+                "Risk controls: no active review events. Evaluation uses current stored evidence."
+            )
+            return
+        if controls.buy_candidates_suspended or controls.critical:
+            state = "new BUY_CANDIDATE promotion is suspended"
+        else:
+            state = "a non-blocking review is recorded"
+        self.risk_control_label.setText(
+            f"Risk controls: {len(controls.active_event_ids)} active review event(s); {state}. "
+            "Resolve the event in Risk Management before a BUY_CANDIDATE can be promoted."
+        )
 
     def _run_evaluation(self) -> None:
         if self._evaluation is None:
@@ -226,6 +255,7 @@ class ResearchPage(QWidget):
             f"Invalidation: {'; '.join(result.invalidation_conditions)}"
         )
         self.refresh()
+        self.refresh_risk_controls()
 
     def _on_evaluation_failed(self, message: str) -> None:
         self.evaluate_button.setEnabled(True)
