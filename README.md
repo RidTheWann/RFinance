@@ -39,7 +39,7 @@ from verified repository evidence, not a promise or a schedule.
 | 4 | Screening and recommendations | 10% | 92% | 9.2% | Engine, append-only records, guided evaluation, verified filing inputs; no backtesting yet |
 | 5 | Dividend Center | 8% | 92% | 7.4% | Events, calendar, analytics, confirmed receipts; no automated dividend feed |
 | 6 | Portfolio simulator and risk | 14% | 86% | 12.0% | Ledger, valuation, receipts, evidence-gated trades and auditable drawdown/concentration controls; rebalancing execution pending |
-| 7 | Optional local AI | 8% | 0% | 0.0% | Not started (Ollama integration, document analysis) |
+| 7 | Optional AI | 8% | 0% | 0.0% | API-key research aid implemented; document analysis and more providers remain |
 | 8 | Automation and reporting | 10% | 0% | 0.0% | Not started (scheduler, PDF/CSV exports) |
 | 9 | Security and reliability | 8% | 40% | 3.2% | Append-only ledgers, audit, triggers; backup/restore and offline acceptance unverified |
 | 10 | Windows production delivery | 5% | 12% | 0.6% | Windows CI only; no installer, lockfile, or clean-install test |

@@ -2,6 +2,15 @@
 
 Last updated: 2026-11-23
 
+## API-key AI research (2026-11-23, Windows 11 x64)
+
+- `tests/unit/test_api_key_ai.py` (6 tests): allowlist rejects unknown providers, environment-only key lookup, request construction with Bearer header/JSON schema and no key in errors, strict output schema, prompt-injection text treated as untrusted data, and malformed-output rejection.
+- `tests/integration/test_ai_settings.py` (1 test): settings persist without any API key field.
+- `tests/ui/test_research_page.py` (1 test): untrusted AI summary is displayed from a stub executor.
+- `tests/ui/test_main_window.py`: asserts AI config controls and saved model.
+- **NOT VERIFIED**: no live API request was made; no key exists in this environment. All HTTP was mocked at the `urlopen` boundary.
+
+
 ## Windows build acceptance (2026-11-23, Windows 11 x64)
 
 - Build command: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_windows.ps1` with PyInstaller 6.22.3 — **build complete**, output `dist\RFinance\RFinance.exe`.

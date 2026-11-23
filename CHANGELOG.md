@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Replaced the planned Ollama integration with optional API-key AI research (ADR 0005). A single verified OpenAI Chat Completions endpoint is allowlisted; the key is read only from `RFINANCE_AI_API_KEY` and never stored or logged. Structured output is validated against an application-owned schema and displayed as untrusted research aid only. Documented in `docs/AI_RESEARCH.md`.
+
 - Added a reproducible Windows folder build: `installer/windows/rfinance.spec`, `scripts\build_windows.ps1`, pinned PyInstaller in the dev extra and regenerated `requirements.lock`. The frozen executable was smoke-tested with a fresh data directory: it stayed alive, created SQLite at Alembic `0012_instrument_category` with 22 tables, and wrote no startup errors. Documented in `docs/INSTALLATION.md`.
 
 - Added `instrument-category-v1`: append-only, evidence-backed instrument category and lot-size decisions (migration `0012_instrument_category`), projected into `allocation-plan-v1` as verified investables. A connected form in the Allocation plan panel archives evidence and records VERIFIED/REJECTED decisions; documented in `docs/INSTRUMENT_CATEGORY.md`.

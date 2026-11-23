@@ -39,6 +39,6 @@ The default Windows data root is `%LOCALAPPDATA%\\RFinance`. `RFINANCE_HOME` rel
 - Ledger-backed simulated portfolio accounting.
 - Deterministic screening and evidence-linked recommendation records.
 - Background job orchestration that never blocks the Qt event loop.
-- Ollama integration behind a local, optional interface.
+- Optional API-key AI research behind a single allowlisted Chat Completions endpoint; the API key is environment-only and model output is untrusted (ADR 0005).
 
 These are roadmap items, not current features.

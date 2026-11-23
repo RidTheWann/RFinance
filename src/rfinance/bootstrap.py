@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from rfinance.application.ai_research import AIResearchService
 from rfinance.application.allocation_planning import AllocationPlanningService
 from rfinance.application.automation import AutomationService
 from rfinance.application.dividend_events import DividendEventService
@@ -33,6 +34,7 @@ from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
 from rfinance.domain.automation.jobs import JobDefinition
+from rfinance.intelligence.settings import AISettingsService
 from rfinance.security.backup import BackupService
 from rfinance.storage.database import Database
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
@@ -68,6 +70,8 @@ class ApplicationContext:
     risk_monitoring: RiskMonitoringService
     backups: BackupService
     automation: AutomationService
+    ai_settings: AISettingsService
+    ai_research: AIResearchService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -149,6 +153,8 @@ def create_application_context(data_directory: str | None = None) -> Application
         }
         automation = AutomationService(database.sessions, job_definitions, job_operations)
         automation.register_jobs()
+        ai_settings = AISettingsService(database.sessions)
+        ai_research = AIResearchService(ai_settings)
         allocation_planning = AllocationPlanningService(
             portfolio_valuation,
             risk_monitoring=risk_monitoring,
@@ -190,5 +196,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         risk_monitoring=risk_monitoring,
         backups=backups,
         automation=automation,
+        ai_settings=ai_settings,
+        ai_research=ai_research,
         logger=logger,
     )

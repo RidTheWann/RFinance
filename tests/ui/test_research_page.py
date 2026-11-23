@@ -57,6 +57,48 @@ def test_research_page_shows_persisted_recommendation_and_evidence(qtbot, tmp_pa
         database.close()
 
 
+def test_research_page_shows_untrusted_ai_summary(qtbot, tmp_path, monkeypatch) -> None:
+    from rfinance.intelligence.schemas import ResearchSummary
+
+    class StubAIService:
+        def __init__(self) -> None:
+            self.calls: list[str] = []
+
+        def summarize(self, *, evidence_text: str, api_key: str | None = None) -> ResearchSummary:
+            self.calls.append(evidence_text)
+            return ResearchSummary(
+                summary="Stored evidence was reviewed.",
+                facts=["one fact"],
+                assumptions=["one assumption"],
+                unanswered_questions=["one question"],
+            )
+
+    stub = StubAIService()
+    database = Database.open(tmp_path / "research-ai.sqlite3")
+    database.upgrade()
+    try:
+        page = ResearchPage(
+            RecommendationService(database.sessions),
+            ai_research=stub,  # type: ignore[arg-type]
+        )
+        monkeypatch.setattr(
+            page,
+            "_start_worker",
+            lambda operation, on_success: on_success(operation()),
+        )
+        qtbot.addWidget(page)
+        page.show()
+
+        page.ai_evidence_input.setText("Verified filing value 1000")
+        qtbot.mouseClick(page.ai_summary_button, Qt.MouseButton.LeftButton)
+
+        assert "UNTRUSTED AI SUMMARY" in page.ai_summary_label.text()
+        assert "Stored evidence was reviewed." in page.ai_summary_label.text()
+        assert stub.calls == ["Verified filing value 1000"]
+    finally:
+        database.close()
+
+
 def test_research_page_runs_guided_evaluation_and_shows_evidence(
     qtbot, tmp_path, monkeypatch
 ) -> None:

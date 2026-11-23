@@ -19,6 +19,13 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## API-key AI research (this session, 2026-11-23)
+
+- Added ADR 0005 replacing ADR 0004: the owner chose an API-key model provider over Ollama. One verified OpenAI Chat Completions endpoint is allowlisted; arbitrary URLs are rejected.
+- Added `ai-research-summary-v1`: environment-only key, no secret persistence, structured JSON output validated by an application-owned Pydantic schema, untrusted evidence delimiters, no tools, temperature 0.
+- Connected Settings controls (enable/model/key status) and a Research Center summary action labelled `UNTRUSTED AI SUMMARY`. Documented in `docs/AI_RESEARCH.md`.
+- Verified locally with all network calls mocked: 324 tests pass; Ruff lint/format and Mypy strict pass. No live API call was made because no key is available in this environment.
+
 ## Windows build (this session, 2026-11-23)
 
 - Added `installer/windows/rfinance.spec` and `scripts/build_windows.ps1`; pinned `pyinstaller>=6.22,<7` in the dev extra and regenerated `requirements.lock`.
@@ -247,7 +254,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
 - Corporate actions, allocation execution/rebalancing, verified sector mapping and risk review automation remain incomplete. Deterministic drawdown/concentration controls with append-only events and explicit reviews are implemented; they do not constitute loss limits. Portfolio market valuation depends on lawfully obtained, manually reviewable data.
-- Native Ollama integration, document analysis, automation scheduler, PDF and broader reporting beyond the simulated-ledger CSV export, destructive in-place restore, and Windows production installer. Per ADR 0004, the AI role is currently fulfilled by the coding assistant.
+- Document analysis, additional AI providers (each requiring allowlist verification), automatic scheduling, broader reporting beyond CSV/PDF exports, destructive in-place restore, and separate-machine Windows install/upgrade acceptance. See ADR 0005 for the current AI provider decision.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives

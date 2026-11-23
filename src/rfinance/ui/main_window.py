@@ -41,6 +41,8 @@ from rfinance.application.portfolio_ledger import (
     PortfolioLedgerService,
 )
 from rfinance.data.contracts import InstrumentContract, InstrumentType
+from rfinance.intelligence.client import api_key_from_environment
+from rfinance.intelligence.settings import AISettings
 from rfinance.ui.allocation_page import AllocationPage
 from rfinance.ui.automation_page import AutomationPage
 from rfinance.ui.backup_page import BackupPage
@@ -55,6 +57,7 @@ from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
+    from rfinance.application.ai_research import AIResearchService
     from rfinance.application.allocation_planning import AllocationPlanningService
     from rfinance.application.automation import AutomationService
     from rfinance.application.dividend_events import DividendEventService
@@ -74,6 +77,7 @@ if TYPE_CHECKING:
     from rfinance.application.screening_evaluation import ScreeningEvaluationService
     from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
+    from rfinance.intelligence.settings import AISettingsService
     from rfinance.security.backup import BackupService
     from rfinance.storage.repositories.data_ingestion import DataImportSummary
 
@@ -175,6 +179,8 @@ class MainWindow(QMainWindow):
         automation: AutomationService | None = None,
         portfolio_reports: PortfolioReportService | None = None,
         instrument_categories: InstrumentCategoryService | None = None,
+        ai_settings: AISettingsService | None = None,
+        ai_research: AIResearchService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -205,6 +211,8 @@ class MainWindow(QMainWindow):
         self.automation_page: AutomationPage | None = None
         self.portfolio_reports = portfolio_reports
         self.instrument_categories = instrument_categories
+        self.ai_settings = ai_settings
+        self.ai_research = ai_research
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -246,6 +254,7 @@ class MainWindow(QMainWindow):
                 self.recommendations,
                 evaluation=self.screening_evaluation,
                 risk_monitoring=self.risk_monitoring,
+                ai_research=self.ai_research,
             )
             self.pages.addWidget(self.research_page)
         self.pages.addWidget(self._instrument_review_page())
@@ -799,8 +808,53 @@ class MainWindow(QMainWindow):
         else:
             self.backup_page = BackupPage(self.backups, page)
             layout.addWidget(self.backup_page)
+        if self.ai_settings is None:
+            layout.addWidget(QLabel("Optional AI configuration is unavailable."))
+        else:
+            layout.addWidget(
+                QLabel(
+                    "Optional AI research: only the allowlisted OpenAI Chat Completions "
+                    "endpoint is supported. The API key is read from RFINANCE_AI_API_KEY "
+                    "and is never stored in the database or logs."
+                )
+            )
+            current = self.ai_settings.get()
+            self.ai_enabled_checkbox = QCheckBox("Enable optional AI research summaries")
+            self.ai_enabled_checkbox.setChecked(current.enabled)
+            layout.addWidget(self.ai_enabled_checkbox)
+            self.ai_model_input = QLineEdit(current.model)
+            self.ai_model_input.setObjectName("aiModelInput")
+            layout.addWidget(self.ai_model_input)
+            self.ai_status_label = QLabel(
+                "API key configured" if api_key_from_environment() else "API key not configured"
+            )
+            self.ai_status_label.setObjectName("aiKeyStatus")
+            layout.addWidget(self.ai_status_label)
+            self.ai_save_button = QPushButton("Save AI settings")
+            self.ai_save_button.setObjectName("saveAiSettingsButton")
+            self.ai_save_button.clicked.connect(self._save_ai_settings)
+            layout.addWidget(self.ai_save_button)
         layout.addStretch(1)
         return page
+
+    def _save_ai_settings(self) -> None:
+        if self.ai_settings is None:
+            return
+        try:
+            self.ai_settings.save(
+                AISettings(
+                    provider="OPENAI",
+                    model=self.ai_model_input.text().strip(),
+                    enabled=self.ai_enabled_checkbox.isChecked(),
+                )
+            )
+        except ValueError as error:
+            self.ai_status_label.setText(f"AI settings not saved: {error}")
+            return
+        self.ai_status_label.setText(
+            "AI settings saved. API key status: "
+            + ("configured" if api_key_from_environment() else "not configured")
+        )
 
     def _select_market_csv(self) -> None:
         if self._import_thread is not None:
