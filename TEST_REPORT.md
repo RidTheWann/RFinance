@@ -2,6 +2,14 @@
 
 Last updated: 2026-11-23
 
+## Backup and restore (2026-11-23, Windows 11 x64)
+
+- `tests/integration/test_backup_restore.py` (5 tests): backed-up manifest provenance and schema/ledger counts, restore into a new folder with matching digest and replayed cash balance, refusal to overwrite an existing database, manifest-tamper detection blocking restore, and missing-file rejection.
+- `tests/ui/test_backup_page.py` (1 test): Settings backup button creates a verified backup and restores it to a selected folder on a worker thread.
+- `tests/ui/test_main_window.py`: asserts the connected backup page exists.
+- Local gate: **279** unit/integration tests pass; **17** UI tests pass; Ruff lint/format and Mypy strict pass.
+
+
 ## Allocation planning and Qt UI stabilisation (2026-11-23, Windows 11 x64)
 
 - `tests/unit/test_allocation_plan.py` (10 tests): cash-only unfilled targets, verified-lot quantities, missing-price and sub-lot gaps, overweight review, risk suspension blocking, tolerance, incomplete valuation, validation and duplicate rejection.

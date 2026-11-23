@@ -29,6 +29,7 @@ from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
 from rfinance.core.logging import configure_logging
+from rfinance.security.backup import BackupService
 from rfinance.storage.database import Database
 from rfinance.storage.repositories.data_ingestion import DataIngestionRepository
 from rfinance.storage.repositories.portfolio_ledger import LedgerRepository
@@ -59,6 +60,7 @@ class ApplicationContext:
     allocation_planning: AllocationPlanningService
     technical_analysis: TechnicalAnalysisService
     risk_monitoring: RiskMonitoringService
+    backups: BackupService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -108,6 +110,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         )
         recommendations = RecommendationService(database.sessions)
         risk_monitoring = RiskMonitoringService(database.sessions)
+        backups = BackupService(paths.database_file, paths.backups_dir)
         allocation_planning = AllocationPlanningService(
             portfolio_valuation,
             risk_monitoring=risk_monitoring,
@@ -144,5 +147,6 @@ def create_application_context(data_directory: str | None = None) -> Application
         allocation_planning=allocation_planning,
         technical_analysis=technical_analysis,
         risk_monitoring=risk_monitoring,
+        backups=backups,
         logger=logger,
     )
