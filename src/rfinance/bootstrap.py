@@ -19,6 +19,7 @@ from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
+from rfinance.application.portfolio_reports import PortfolioReportService
 from rfinance.application.portfolio_trading import (
     PortfolioTradingService,
     VerifiedLotSizeService,
@@ -49,6 +50,7 @@ class ApplicationContext:
     portfolio_ledger: PortfolioLedgerService
     portfolio_trading: PortfolioTradingService
     ledger_reports: LedgerReportService
+    portfolio_reports: PortfolioReportService
     verified_lot_sizes: VerifiedLotSizeService
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
@@ -113,6 +115,12 @@ def create_application_context(data_directory: str | None = None) -> Application
         )
         recommendations = RecommendationService(database.sessions)
         risk_monitoring = RiskMonitoringService(database.sessions)
+        portfolio_reports = PortfolioReportService(
+            portfolio_ledger,
+            portfolio_valuation,
+            risk_monitoring=risk_monitoring,
+            recommendations=recommendations,
+        )
         backups = BackupService(paths.database_file, paths.backups_dir)
         job_definitions = {
             "BACKUP_CREATE": JobDefinition(
@@ -159,6 +167,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         portfolio_ledger=portfolio_ledger,
         portfolio_trading=portfolio_trading,
         ledger_reports=ledger_reports,
+        portfolio_reports=portfolio_reports,
         verified_lot_sizes=verified_lot_sizes,
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,

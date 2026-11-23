@@ -19,6 +19,13 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Simulated portfolio PDF report (this session, 2026-11-23)
+
+- Added `portfolio-pdf-v1`: `PortfolioReportData`/`ReportLine` contracts and a `QPdfWriter` renderer in `src/rfinance/reporting/pdf.py` (no new dependency).
+- `PortfolioReportService` assembles persisted ledger balances, `portfolio-valuation-v1` positions/allocation, risk-control state and recent recommendations into explicit, labelled sections; `as_text()` exposes the same content for verification.
+- Connected a Portfolio Simulator "Export portfolio report (PDF)" button and documented the contract in `docs/REPORTING.md`.
+- Verified locally: 308 tests pass; Ruff lint/format and Mypy strict pass.
+
 ## Local automation foundation (this session, 2026-11-23)
 
 - Added `automation-jobs-v1` with an explicit run state machine, retry policy and code-owned job definitions. Migration `0011_automation` adds append-only `automation_jobs` and `automation_runs` tables protected by update/delete triggers.

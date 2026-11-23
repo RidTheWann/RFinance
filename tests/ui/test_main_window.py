@@ -18,6 +18,7 @@ from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
+from rfinance.application.portfolio_reports import PortfolioReportService
 from rfinance.application.portfolio_trading import (
     PortfolioTradingService,
     VerifiedLotSizeService,
@@ -106,6 +107,11 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         AllocationPlanningService(portfolio_valuation_service),
         BackupService(Path(str(database.engine.url.database)), data_directory / "Backups"),
         automation,
+        PortfolioReportService(
+            portfolio_service,
+            portfolio_valuation_service,
+            risk_monitoring=RiskMonitoringService(database.sessions),
+        ),
     )
 
 
@@ -192,6 +198,33 @@ def test_export_ledger_csv_writes_simulated_records(qtbot, tmp_path, monkeypatch
         assert "SIMULATED" in text
         assert "ledger-csv-v1" in text
         assert "Exported 1 simulated ledger event(s)" in window.portfolio_status_label.text()
+    finally:
+        database.close()
+
+
+def test_export_portfolio_report_writes_pdf(qtbot, tmp_path, monkeypatch) -> None:
+    database = Database.open(tmp_path / "report-export.sqlite3")
+    database.upgrade()
+    target = tmp_path / "report.pdf"
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(target), "PDF files (*.pdf)"),
+    )
+    try:
+        window = create_window(database, tmp_path)
+        qtbot.addWidget(window)
+        window.show()
+        window.navigation.setCurrentRow(1)
+        window.initial_capital_input.setText("5000000")
+        qtbot.mouseClick(window.initialize_portfolio_button, Qt.MouseButton.LeftButton)
+
+        qtbot.mouseClick(window.export_report_button, Qt.MouseButton.LeftButton)
+
+        assert target.read_bytes()[:5] == b"%PDF-"
+        assert "Simulated results are not brokerage performance" in (
+            window.portfolio_status_label.text()
+        )
     finally:
         database.close()
 

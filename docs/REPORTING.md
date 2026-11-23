@@ -37,3 +37,26 @@ Rules:
 
 The report is a record of the local simulation. It is not a tax document,
 brokerage statement or evidence of executed trades.
+
+## Simulated portfolio PDF report (`portfolio-pdf-v1`)
+
+`PortfolioReportService.build()` assembles an explicit `PortfolioReportData`
+from the persisted ledger, `portfolio-valuation-v1`, persisted risk controls and
+stored recommendations. `render_portfolio_report()` writes it to PDF with
+PySide6's `QPdfWriter`; no new dependency is introduced and the renderer adds
+no figures of its own. The Portfolio Simulator's "Export portfolio report
+(PDF)" button writes the file to a user-chosen path.
+
+The document includes:
+
+- generation time (UTC), reporting period, currency and methodology versions;
+- a `SIMULATED — not brokerage performance` status line on every report;
+- cash, eligible market value, total simulated value, realized/unrealized P/L
+  and valuation completeness;
+- per-position valuation with explicit "not valued" diagnostics;
+- category targets, current weights and deviations;
+- active risk-control state and recent evidence-linked recommendations;
+- unvalued-instrument warnings.
+
+`as_text()` provides the same content as plain text for verification and
+accessibility. Reports are point-in-time snapshots, not forecasts.

@@ -62,6 +62,7 @@ if TYPE_CHECKING:
     from rfinance.application.ledger_reporting import LedgerReportService
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
+    from rfinance.application.portfolio_reports import PortfolioReportService
     from rfinance.application.portfolio_trading import (
         PortfolioTradingService,
         VerifiedLotSizeService,
@@ -171,6 +172,7 @@ class MainWindow(QMainWindow):
         allocation_planning: AllocationPlanningService | None = None,
         backups: BackupService | None = None,
         automation: AutomationService | None = None,
+        portfolio_reports: PortfolioReportService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -199,6 +201,7 @@ class MainWindow(QMainWindow):
         self.backup_page: BackupPage | None = None
         self.automation = automation
         self.automation_page: AutomationPage | None = None
+        self.portfolio_reports = portfolio_reports
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -436,6 +439,10 @@ class MainWindow(QMainWindow):
         self.export_ledger_button.setObjectName("exportLedgerButton")
         self.export_ledger_button.clicked.connect(self._export_ledger_csv)
         dashboard_layout.addWidget(self.export_ledger_button)
+        self.export_report_button = QPushButton("Export portfolio report (PDF)")
+        self.export_report_button.setObjectName("exportPortfolioReportButton")
+        self.export_report_button.clicked.connect(self._export_portfolio_report)
+        dashboard_layout.addWidget(self.export_report_button)
         layout.addWidget(self._portfolio_dashboard)
 
         self.portfolio_status_label = QLabel()
@@ -1005,4 +1012,28 @@ class MainWindow(QMainWindow):
         self.portfolio_status_label.setText(
             f"Exported {report.event_count} simulated ledger event(s) to {target}. "
             f"Methodology: {report.methodology_version}."
+        )
+
+    def _export_portfolio_report(self) -> None:
+        """Write a PDF report assembled from local simulation records."""
+
+        if self.portfolio_reports is None:
+            self.portfolio_status_label.setText("Portfolio PDF reporting is unavailable.")
+            return
+        target, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export simulated portfolio report",
+            "rfinance-simulated-portfolio.pdf",
+            "PDF files (*.pdf)",
+        )
+        if not target:
+            return
+        try:
+            self.portfolio_reports.export_pdf(Path(target))
+        except Exception as error:
+            self.portfolio_status_label.setText(f"Portfolio report failed: {error}")
+            return
+        self.portfolio_status_label.setText(
+            f"Exported simulated portfolio report to {target}. "
+            "Simulated results are not brokerage performance."
         )
