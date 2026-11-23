@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
 from rfinance.application.allocation_planning import AllocationPlanningService
+from rfinance.application.automation import AutomationService
 from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
@@ -27,6 +28,7 @@ from rfinance.application.risk_monitoring import RiskMonitoringService
 from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
+from rfinance.domain.automation.jobs import JobDefinition
 from rfinance.security.backup import BackupService
 from rfinance.storage.database import Database
 from rfinance.storage.models.data_ingestion import MarketObservationRecord
@@ -74,6 +76,17 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         database.sessions,
         portfolio_service,
     )
+    automation_definition = JobDefinition(
+        job_id="TEST_JOB",
+        display_name="Test job",
+        description="Local test job",
+    )
+    automation = AutomationService(
+        database.sessions,
+        definitions={automation_definition.job_id: automation_definition},
+        operations={automation_definition.job_id: lambda: "ok"},
+    )
+    automation.register_jobs()
     return MainWindow(
         AppPaths.resolve(data_directory),
         portfolio_service,
@@ -92,6 +105,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         LedgerReportService(portfolio_service),
         AllocationPlanningService(portfolio_valuation_service),
         BackupService(Path(str(database.engine.url.database)), data_directory / "Backups"),
+        automation,
     )
 
 
@@ -105,8 +119,8 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         window.navigation.setCurrentRow(1)
 
         assert window.windowTitle() == "RFinance"
-        assert window.navigation.count() == 9
-        assert [window.navigation.item(row).text() for row in range(9)] == [
+        assert window.navigation.count() == 10
+        assert [window.navigation.item(row).text() for row in range(10)] == [
             "Overview",
             "Portfolio",
             "Research Center",
@@ -115,14 +129,16 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
             "Technical Analysis",
             "Dividend Center",
             "Risk Management",
+            "Automation Center",
             "Settings",
         ]
-        assert window.pages.count() == 9
+        assert window.pages.count() == 10
         assert window.dividend_page is not None
         assert window.research_page is not None
         assert window.risk_page is not None
         assert window.allocation_page is not None
         assert window.backup_page is not None
+        assert window.automation_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()

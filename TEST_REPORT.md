@@ -2,6 +2,15 @@
 
 Last updated: 2026-11-23
 
+## Local automation foundation (2026-11-23, Windows 11 x64)
+
+- `tests/unit/test_automation_jobs.py` (4 tests): definition defaults/validation, run state transitions, retry limits and run metadata validation.
+- `tests/integration/test_automation_service.py` (5 tests): idempotent job registration, successful run start/completion rows, retry to the configured limit with error detail, append-only run enforcement, and definition/operation mismatch rejection.
+- `tests/ui/test_automation_page.py` (1 test): manual job execution and run-history refresh on a worker thread.
+- `tests/ui/test_main_window.py`: navigation now has ten areas including the connected Automation Center; backup schema assertion updated to `0011_automation`.
+- Local gate: **306 passed** (`pytest -q`, 82.05s); Ruff lint/format and Mypy strict pass.
+
+
 ## Backup and restore (2026-11-23, Windows 11 x64)
 
 - `tests/integration/test_backup_restore.py` (5 tests): backed-up manifest provenance and schema/ledger counts, restore into a new folder with matching digest and replayed cash balance, refusal to overwrite an existing database, manifest-tamper detection blocking restore, and missing-file rejection.

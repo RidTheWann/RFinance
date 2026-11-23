@@ -42,6 +42,7 @@ from rfinance.application.portfolio_ledger import (
 )
 from rfinance.data.contracts import InstrumentContract, InstrumentType
 from rfinance.ui.allocation_page import AllocationPage
+from rfinance.ui.automation_page import AutomationPage
 from rfinance.ui.backup_page import BackupPage
 from rfinance.ui.dividend_page import DividendPage
 from rfinance.ui.observation_review_page import ObservationReviewPage
@@ -55,6 +56,7 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
     from rfinance.application.allocation_planning import AllocationPlanningService
+    from rfinance.application.automation import AutomationService
     from rfinance.application.dividend_events import DividendEventService
     from rfinance.application.dividend_receipts import DividendReceiptService
     from rfinance.application.ledger_reporting import LedgerReportService
@@ -168,6 +170,7 @@ class MainWindow(QMainWindow):
         ledger_reports: LedgerReportService | None = None,
         allocation_planning: AllocationPlanningService | None = None,
         backups: BackupService | None = None,
+        automation: AutomationService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -194,6 +197,8 @@ class MainWindow(QMainWindow):
         self.allocation_page: AllocationPage | None = None
         self.backups = backups
         self.backup_page: BackupPage | None = None
+        self.automation = automation
+        self.automation_page: AutomationPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -220,6 +225,7 @@ class MainWindow(QMainWindow):
                 "Technical Analysis",
                 "Dividend Center",
                 "Risk Management",
+                "Automation Center",
                 "Settings",
             ]
         )
@@ -260,6 +266,11 @@ class MainWindow(QMainWindow):
                 valuation=self.portfolio_valuation,
             )
             self.pages.addWidget(self.risk_page)
+        if self.automation is None:
+            self.pages.addWidget(QLabel("Automation Center is unavailable."))
+        else:
+            self.automation_page = AutomationPage(self.automation)
+            self.pages.addWidget(self.automation_page)
         self.pages.addWidget(self._settings_page())
 
         layout.addWidget(self.navigation)

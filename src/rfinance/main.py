@@ -53,6 +53,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         context.ledger_reports,
         context.allocation_planning,
         context.backups,
+        context.automation,
     )
     application.aboutToQuit.connect(context.close)
     window.show()
