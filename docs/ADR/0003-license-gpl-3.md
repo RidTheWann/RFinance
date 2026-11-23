@@ -38,6 +38,16 @@ Recipients must receive the GPLv3 text, keep copyright and license notices intac
 
 If RFinance is frozen with PyInstaller/Nuitka, the resulting object-code distribution must comply with GPLv3 §6 (provide Corresponding Source or a valid written offer, preserve notices, include the license). PySide6's LGPLv3/GPLv3 notices and Qt's third-party notices must be retained; see `docs/THIRD_PARTY_NOTICES.md`. Qt modules are dynamically loaded from the bundled runtime, so relinking remains possible. No GPL-only Qt module may be added without re-checking this ADR.
 
+### Frozen Windows build (2026-11-23)
+
+`scripts/build_windows.ps1` plus `installer/windows/rfinance.spec` produce a
+PyInstaller folder build. The spec bundles the verbatim `LICENSE`,
+`docs/THIRD_PARTY_NOTICES.md` and the Alembic migration directory at the top
+level of `dist\RFinance`, satisfying the notice-retention requirement above.
+The build is windowed (`console=False`) and retains the PySide6 runtime hooks.
+Redistributors must keep these files and provide Corresponding Source under
+GPLv3 §6; see `docs/INSTALLATION.md`.
+
 ### Development impact
 
 - Every new source file must carry the SPDX header; a unit test checks this invariant.

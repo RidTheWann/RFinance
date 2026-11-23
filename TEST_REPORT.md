@@ -2,6 +2,15 @@
 
 Last updated: 2026-11-23
 
+## Windows build acceptance (2026-11-23, Windows 11 x64)
+
+- Build command: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_windows.ps1` with PyInstaller 6.22.3 — **build complete**, output `dist\RFinance\RFinance.exe`.
+- Smoke test: launched the frozen `RFinance.exe` with a fresh `RFINANCE_HOME`; after 12 seconds the process was still alive; `Database/rfinance.sqlite3` (+ WAL/SHM) and `Logs/rfinance.log` were created.
+- Frozen database inspection: Alembic `0012_instrument_category`, 22 tables, log line `RFinance initialized using local data directory: …` with no error.
+- `tests/unit/test_windows_packaging.py` (2 tests): PyInstaller pinned in `pyproject.toml`/`requirements.lock`; spec bundles migrations, GPLv3 LICENSE and third-party notices.
+- **NOT VERIFIED**: clean install on a different machine, in-place upgrade, data preservation after upgrade, code signing, SmartScreen/antivirus behaviour.
+
+
 ## Instrument category evidence (2026-11-23, Windows 11 x64)
 
 - `tests/integration/test_instrument_category.py` (5 tests): evidence-backed decision persistence and investable projection, newer rejection superseding verification, unverified-instrument rejection, append-only enforcement, and allocation planning consuming persisted category evidence without inferring a price.

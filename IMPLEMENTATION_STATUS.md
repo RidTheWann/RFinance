@@ -19,6 +19,13 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Windows build (this session, 2026-11-23)
+
+- Added `installer/windows/rfinance.spec` and `scripts/build_windows.ps1`; pinned `pyinstaller>=6.22,<7` in the dev extra and regenerated `requirements.lock`.
+- Built `dist\RFinance\RFinance.exe` successfully on Windows 11 x64 / Python 3.13.16 with PyInstaller 6.22.3. Smoke test with a fresh `RFINANCE_HOME`: process stayed alive, SQLite/WAL/SHM and log were created, Alembic head `0012_instrument_category` with 22 tables, and the log recorded a clean initialization.
+- Bundled `LICENSE`, `docs/THIRD_PARTY_NOTICES.md` and migrations; documented in `docs/INSTALLATION.md` and ADR 0003. A contract test asserts these build assets.
+- Not yet verified: separate-machine clean install, in-place upgrade/data preservation, code signing.
+
 ## Instrument category evidence (this session, 2026-11-23)
 
 - Added `instrument-category-v1` with append-only `instrument_category_events` (migration `0012_instrument_category`), explicit reviewer/evidence/SHA-256 gates, and `verified_investables()` projection requiring a still-active VERIFIED instrument.

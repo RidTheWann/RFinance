@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added a reproducible Windows folder build: `installer/windows/rfinance.spec`, `scripts\build_windows.ps1`, pinned PyInstaller in the dev extra and regenerated `requirements.lock`. The frozen executable was smoke-tested with a fresh data directory: it stayed alive, created SQLite at Alembic `0012_instrument_category` with 22 tables, and wrote no startup errors. Documented in `docs/INSTALLATION.md`.
+
 - Added `instrument-category-v1`: append-only, evidence-backed instrument category and lot-size decisions (migration `0012_instrument_category`), projected into `allocation-plan-v1` as verified investables. A connected form in the Allocation plan panel archives evidence and records VERIFIED/REJECTED decisions; documented in `docs/INSTRUMENT_CATEGORY.md`.
 
 - Added `portfolio-pdf-v1` reporting: `PortfolioReportService` assembles ledger, valuation, risk-control and recommendation data into an explicit report; `QPdfWriter` renders it to PDF with no new dependency. A connected Portfolio Simulator button exports the file, and the contract is documented in `docs/REPORTING.md`.

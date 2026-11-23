@@ -14,7 +14,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 7 | Optional Ollama intelligence and secure document analysis | Deferred per ADR 0004 — the coding assistant fulfils the AI role for this phase; no runtime or model download added |
 | 8 | Local automation and reporting | `automation-jobs-v1` job registry, append-only run ledger and connected Automation Center; `ledger-csv-v1` and `portfolio-pdf-v1` exports connected to the Portfolio Simulator. Automatic scheduling and monthly/broader reports remain |
 | 9 | Backup/restore, offline operation, reliability and security hardening | `sqlite-backup-v1` verified backup with manifest and non-destructive restore connected to Settings; in-place restore, offline acceptance and deeper hardening remain |
-| 10 | Windows installer, clean install, upgrade and data-preservation verification | Not started |
+| 10 | Windows installer, clean install, upgrade and data-preservation verification | PyInstaller folder build implemented and locally smoke-tested with a fresh data directory; signed installer, separate-machine clean install, in-place upgrade and data-preservation acceptance remain |
 
 ## Latest local engineering checkpoint (2026-11-23)
 
