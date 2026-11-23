@@ -11,6 +11,7 @@ from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_review import InstrumentReviewService
+from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
 from rfinance.application.observation_review import ObservationReviewService
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
@@ -85,6 +86,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         recommendation_service,
         evaluation_service,
         RiskMonitoringService(database.sessions),
+        LedgerReportService(portfolio_service),
     )
 
 
@@ -138,6 +140,35 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert not window._portfolio_dashboard.isHidden()
         assert window._portfolio_empty_panel.isHidden()
         assert window.portfolio_cash_label.text() == "Cash balance: Rp1,250,000.00"
+    finally:
+        database.close()
+
+
+def test_export_ledger_csv_writes_simulated_records(qtbot, tmp_path, monkeypatch) -> None:
+    database = Database.open(tmp_path / "export-ledger.sqlite3")
+    database.upgrade()
+    target = tmp_path / "ledger.csv"
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(target), "CSV files (*.csv)"),
+    )
+    try:
+        window = create_window(database, tmp_path)
+        qtbot.addWidget(window)
+        window.show()
+        window.navigation.setCurrentRow(1)
+        window.initial_capital_input.setText("5000000")
+        qtbot.mouseClick(window.initialize_portfolio_button, Qt.MouseButton.LeftButton)
+
+        qtbot.mouseClick(window.export_ledger_button, Qt.MouseButton.LeftButton)
+
+        text = target.read_text(encoding="utf-8")
+        assert "event_type" in text
+        assert "CAPITAL_INJECTION" in text
+        assert "SIMULATED" in text
+        assert "ledger-csv-v1" in text
+        assert "Exported 1 simulated ledger event(s)" in window.portfolio_status_label.text()
     finally:
         database.close()
 

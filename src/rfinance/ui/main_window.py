@@ -54,6 +54,7 @@ if TYPE_CHECKING:
 
     from rfinance.application.dividend_events import DividendEventService
     from rfinance.application.dividend_receipts import DividendReceiptService
+    from rfinance.application.ledger_reporting import LedgerReportService
     from rfinance.application.market_csv_import import MarketCSVImportService
     from rfinance.application.observation_review import ObservationReviewService
     from rfinance.application.portfolio_trading import (
@@ -160,6 +161,7 @@ class MainWindow(QMainWindow):
         recommendations: RecommendationService | None = None,
         screening_evaluation: ScreeningEvaluationService | None = None,
         risk_monitoring: RiskMonitoringService | None = None,
+        ledger_reports: LedgerReportService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -181,6 +183,7 @@ class MainWindow(QMainWindow):
         self.research_page: ResearchPage | None = None
         self.risk_monitoring = risk_monitoring
         self.risk_page: RiskPage | None = None
+        self.ledger_reports = ledger_reports
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -399,6 +402,10 @@ class MainWindow(QMainWindow):
                 "Unfilled targets remain uninvested."
             )
         )
+        self.export_ledger_button = QPushButton("Export simulated ledger (CSV)")
+        self.export_ledger_button.setObjectName("exportLedgerButton")
+        self.export_ledger_button.clicked.connect(self._export_ledger_csv)
+        dashboard_layout.addWidget(self.export_ledger_button)
         layout.addWidget(self._portfolio_dashboard)
 
         self.portfolio_status_label = QLabel()
@@ -939,3 +946,28 @@ class MainWindow(QMainWindow):
             "Simulated portfolio initialized. The opening capital is recorded locally."
         )
         self.refresh_portfolio()
+
+    def _export_ledger_csv(self) -> None:
+        """Write the authoritative simulated ledger to a user-chosen CSV file."""
+
+        if self.ledger_reports is None:
+            self.portfolio_status_label.setText("Ledger CSV export is unavailable.")
+            return
+        target, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export simulated ledger",
+            "rfinance-simulated-ledger.csv",
+            "CSV files (*.csv)",
+        )
+        if not target:
+            return
+        try:
+            report = self.ledger_reports.ledger_csv()
+            Path(target).write_text(report.csv_text, encoding="utf-8")
+        except OSError as error:
+            self.portfolio_status_label.setText(f"Ledger export failed: {error}")
+            return
+        self.portfolio_status_label.setText(
+            f"Exported {report.event_count} simulated ledger event(s) to {target}. "
+            f"Methodology: {report.methodology_version}."
+        )
