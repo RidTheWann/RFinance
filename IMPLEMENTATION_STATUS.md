@@ -14,6 +14,11 @@ Last verified against the repository: 2026-11-23
 - Latest CI: push run `45007901317` — Windows and Ubuntu both **success** (Ruff lint/format, Mypy, **215 tests per OS**). An earlier Windows attempt exposed a real Qt submit race, now fixed; another attempt aborted inside `pytestqt._process_events` and passed on rerun with a byte-identical tree.
 - Local verification (Ubuntu 26.04 aarch64, Python 3.14.4): Ruff lint/format and Mypy pass; 219 unit/integration and 8 targeted Qt tests pass. Qt worker-thread UI tests are timing-unreliable on this aarch64/offscreen runtime; see [TEST_REPORT.md](TEST_REPORT.md).
 
+## Dependency lock (this session, 2026-11-23)
+
+- Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
+- Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
+
 ## Implemented in the foundation branch
 
 ### Application foundation
@@ -185,7 +190,6 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 ## Not implemented yet
 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
-- Generated, resolver-verified dependency lockfile.
 - Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
 - Corporate actions, allocation execution/rebalancing, verified sector mapping and risk review automation remain incomplete. Deterministic drawdown/concentration controls with append-only events and explicit reviews are implemented; they do not constitute loss limits. Portfolio market valuation depends on lawfully obtained, manually reviewable data.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.

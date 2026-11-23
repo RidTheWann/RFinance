@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added a generated `requirements.lock` from the verified Windows/Python 3.13 development environment and `scripts\regenerate_lock.ps1` to reproduce it.
+
 - Added `risk-controls-v1`: deterministic drawdown, concentration, allocation-deviation, review-cadence and prohibited-activity review triggers with explicit thresholds and no coercion of missing valuations to zero.
 - Added append-only `risk_events`, explicit one-per-event `risk_reviews` and `portfolio_valuation_history` (migration `0010_risk_events`), with deterministic event IDs, idempotent same-day evaluation and explicit review required to lift a suspension.
 - Connected a Risk Management desktop page to valuation and risk services; nine navigation areas now. README weighted progress updated to 65%.

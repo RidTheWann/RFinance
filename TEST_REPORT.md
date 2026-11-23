@@ -2,6 +2,14 @@
 
 Last updated: 2026-11-23
 
+## Dependency lock (2026-11-23, Windows 11 x64)
+
+`requirements.lock` was generated with `pip freeze --exclude-editable` from the
+verified `.venv` (Python 3.13.16) used for the 253 unit/integration and 14 UI
+tests. It is a real pinned environment snapshot, not a hand-written list;
+`scripts/regenerate_lock.ps1` reproduces it. This is one tested environment,
+not a claim that a single lock covers every supported Python version.
+
 ## Risk-control slice (2026-11-23)
 
 Built test-first (RED → GREEN):
