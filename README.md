@@ -22,7 +22,7 @@ See IMPLEMENTATION_STATUS.md, ROADMAP.md, and TEST_REPORT.md for implementation 
 
 ## Progress Project
 
-Estimated progress toward a **publish-ready release**: **64%** (updated 2026-11-22).
+Estimated progress toward a **publish-ready release**: **65%** (updated 2026-11-23).
 
 "Publish-ready" means: a tested Windows 11 x64 installer, reproducible locked
 dependencies, verified backup/restore, clean-install and upgrade evidence,
@@ -38,17 +38,18 @@ from verified repository evidence, not a promise or a schedule.
 | 3 | Deterministic financial engine | 14% | 82% | 11.5% | Fundamental/technical/dividend/valuation + reviewed filing metrics; broader statement coverage pending |
 | 4 | Screening and recommendations | 10% | 92% | 9.2% | Engine, append-only records, guided evaluation, verified filing inputs; no backtesting yet |
 | 5 | Dividend Center | 8% | 92% | 7.4% | Events, calendar, analytics, confirmed receipts; no automated dividend feed |
-| 6 | Portfolio simulator and risk | 14% | 78% | 10.9% | Ledger, valuation, receipts and evidence-gated simulated trades; rebalancing and drawdown controls pending |
+| 6 | Portfolio simulator and risk | 14% | 86% | 12.0% | Ledger, valuation, receipts, evidence-gated trades and auditable drawdown/concentration controls; rebalancing execution pending |
 | 7 | Optional local AI | 8% | 0% | 0.0% | Not started (Ollama integration, document analysis) |
 | 8 | Automation and reporting | 10% | 0% | 0.0% | Not started (scheduler, PDF/CSV exports) |
 | 9 | Security and reliability | 8% | 40% | 3.2% | Append-only ledgers, audit, triggers; backup/restore and offline acceptance unverified |
 | 10 | Windows production delivery | 5% | 12% | 0.6% | Windows CI only; no installer, lockfile, or clean-install test |
-| | **Total** | **100%** | | **63.6%** | |
+| | **Total** | **100%** | | **64.7%** | |
 
 The next objectives are recorded in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md):
-portfolio trade entry with verified lot metadata, risk-event controls, then
-automation/reporting, backup/restore and Windows packaging. Progress is
-recomputed after each substantial slice.
+allocation-target execution and rebalancing, then automation/reporting,
+backup/restore and Windows packaging. Risk review semantics are documented in
+[docs/RISK_POLICY.md](docs/RISK_POLICY.md). Progress is recomputed after each
+substantial slice.
 
 ## Development
 

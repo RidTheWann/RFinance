@@ -22,6 +22,7 @@ from rfinance.application.portfolio_trading import (
 )
 from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.recommendations import RecommendationService
+from rfinance.application.risk_monitoring import RiskMonitoringService
 from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
@@ -53,6 +54,7 @@ class ApplicationContext:
     screening_evaluation: ScreeningEvaluationService
     portfolio_valuation: PortfolioValuationService
     technical_analysis: TechnicalAnalysisService
+    risk_monitoring: RiskMonitoringService
     logger: logging.Logger
 
     def close(self) -> None:
@@ -100,6 +102,7 @@ def create_application_context(data_directory: str | None = None) -> Application
             database.sessions, data_directory=paths.root
         )
         recommendations = RecommendationService(database.sessions)
+        risk_monitoring = RiskMonitoringService(database.sessions)
         screening_evaluation = ScreeningEvaluationService(
             database.sessions,
             dividend_events=dividend_events,
@@ -128,5 +131,6 @@ def create_application_context(data_directory: str | None = None) -> Application
         screening_evaluation=screening_evaluation,
         portfolio_valuation=portfolio_valuation,
         technical_analysis=technical_analysis,
+        risk_monitoring=risk_monitoring,
         logger=logger,
     )

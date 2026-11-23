@@ -10,18 +10,18 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 3 | Fundamental, valuation, technical and dividend calculations | `fundamental-metrics-v1`, `dividend-analytics-v1`, technical indicator suite, and append-only reviewed financial statement metrics connected to screening implemented. Broader statement coverage, sampling-frequency and corporate-action metadata remain |
 | 4 | Screening and deterministic evidence-linked recommendations | `screening-deterministic-v1`, append-only persistence, Research Center inspection and a guided evidence-assembly workflow implemented; verified financial-statement inputs remain |
 | 5 | Dividend event calendar and analytics | `dividend-analytics-v1`, append-only event/review persistence, labelled calendar, connected Dividend Center, and `dividend-receipt-v1` confirmed-receipt posting with 50/30/20 split and duplicate protection implemented; automated provider feed remains |
-| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, SQLite persistence, first-run cash setup, `portfolio-valuation-v1`, confirmed dividend receipts with withdrawal leg, and desktop valuation implemented; trade UI, verified instrument-to-category mapping, allocation execution and risk automation remain |
+| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, first-run cash setup, `portfolio-valuation-v1`, confirmed dividend receipts, evidence-gated simulated trades, and `risk-controls-v1` drawdown/concentration events with explicit reviews and a connected Risk Management page implemented; rebalancing execution, verified sector mapping and risk automation remain |
 | 7 | Optional Ollama intelligence and secure document analysis | Not started |
 | 8 | Local automation and reporting | Not started |
 | 9 | Backup/restore, offline operation, reliability and security hardening | Not started |
 | 10 | Windows installer, clean install, upgrade and data-preservation verification | Not started |
 
-## Latest local engineering checkpoint (2026-11-22)
+## Latest local engineering checkpoint (2026-11-23)
 
-- `main` at `f005c9113510466fc5ea09da4d8d78818ad3b6a6` after the license history rebuild; all work is pushed. PR #2 content is preserved in the rewritten history, and PR #1's 172 commits were rebuilt from its preserved head. GPL-3.0-only license and SPDX headers exist from the root commit onward.
-- Ubuntu 26.04 aarch64 / Python 3.14.4: Ruff lint and format pass (195 files), Mypy strict passes (76 source files), 219 unit/integration tests and 8 targeted Qt tests pass.
-- Delivered: append-only dividend event and review persistence, evidence-backed review gates, labelled calendar, verified-event analytics, and a connected Dividend Center desktop tab.
-- Full Qt worker-thread suite is timing-unreliable on this aarch64/offscreen runtime; historical Windows/Ubuntu x64 CI at Python 3.12 passed 156 tests.
+- Verified remote/local `main`: `753308bb87b58c076fc9cf9d189c7e2a9a14d053` (203 commits), merge of PR #6. Earlier notes claiming `f005c911...` / 179 commits were an outdated checkpoint. `gh` is unauthenticated here, so this session's commits are local and no push/PR/merge is claimed.
+- Linux aarch64 / Python 3.14: Ruff lint and format pass, Mypy strict passes on 82 source files, 246 unit/integration tests pass, 13 UI tests pass with one pre-existing aarch64/offscreen worker-timing failure reproduced on clean HEAD.
+- Delivered in this session: `risk-controls-v1`, append-only risk events/reviews and valuation history, and a connected Risk Management page.
+- Full Qt worker-thread suite remains timing-unreliable on this aarch64/offscreen runtime; historical Windows/Ubuntu x64 CI at Python 3.12 passed 215 tests.
 
 ## Historical verified engineering checkpoint
 
@@ -32,10 +32,9 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 
 ## Next implementation sequence
 
-1. Post confirmed net dividend receipts to the ledger with duplicate protection and the documented 50/30/20 distribution preference.
-2. Add explicit sampling-frequency and corporate-action adjustment evidence to the instrument/observation model before supporting additional historical providers.
-3. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.
-4. Connect the screening engine to persisted instrument state, eligible prices, fundamentals and dividend evidence in a guided evaluation workflow.
-5. Add verified instrument lot-size and category evidence, then complete simulated trade-entry and position-management workflows.
-6. Implement drawdown/allocation controls, risk-event audit, and portfolio review workflows.
-7. Add optional local AI, automation, reporting, backup/restore, lockfile, and production Windows delivery.
+1. Connect persisted active risk events to screening evaluation end-to-end so a required review blocks BUY_CANDIDATE promotion from the desktop.
+2. Add allocation-target execution and rebalancing using verified instruments and instrument-to-category evidence.
+3. Add explicit sampling-frequency, sector and corporate-action adjustment evidence to the instrument/observation model before supporting additional historical providers.
+4. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.
+5. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist.
+6. Add optional local AI, automation, reporting, backup/restore, lockfile, and production Windows delivery.

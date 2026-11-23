@@ -1,6 +1,17 @@
 # Test Report
 
-Last updated: 2026-11-22
+Last updated: 2026-11-23
+
+## Risk-control slice (2026-11-23)
+
+Built test-first (RED → GREEN):
+
+- `tests/unit/test_risk_controls.py` (19 tests): drawdown boundaries including exact 10%/15% triggers, new-high and zero-peak handling, incomplete-valuation diagnostics, custom thresholds, instrument/sector concentration, allocation deviation, six-calendar-month review cadence, prohibited activity, deterministic finding order and validation of frames/thresholds.
+- `tests/integration/test_risk_monitoring.py` (8 tests): append-only event persistence, event-ID idempotency, explicit review resolution lifting suspensions, duplicate/incomplete review rejection, valuation-history peak/current derivation, incomplete valuations excluded from the peak series, and SQLite append-only trigger enforcement.
+- `tests/ui/test_risk_page.py` (2 tests): unresolved events rendered with severity/observed/threshold, review form clearing an event, and worker-backed valuation evaluation updating the page.
+- `tests/ui/test_main_window.py` updated for the ninth navigation area and the connected Risk Management page.
+
+Local gates on 2026-11-23: Ruff lint and format pass; Mypy strict passes on 82 source files; **246 unit/integration tests pass**. Targeted UI verification: `tests/ui/test_risk_page.py` and `tests/ui/test_main_window.py` **5 passed**. A full-suite run completed once with 13 UI tests passing and one failing; later full UI runs aborted inside `pytestqt.plugin::_process_events` (segfault/bus error) around `tests/ui/test_portfolio_valuation_page.py`, the same crash reproduced on a clean worktree at `753308b`. The failing test asserts `not page.is_busy` immediately after the status label updates, a pre-existing aarch64/offscreen Qt ordering limitation. It was not masked or "fixed" by weakening an assertion, and the crash is not claimed as a product defect.
 
 ## Local verification checkpoint (2026-11-22)
 
