@@ -22,10 +22,21 @@ New coverage:
 - `tests/integration/test_risk_monitoring.py` (1 test): `screening_controls()` derives drawdown from complete valuations and stops suspending after review.
 - `tests/ui/test_portfolio_valuation_page.py`: the wait condition now includes `not page.is_busy`, matching the other worker-backed UI tests. This fixes a genuine race in the test, not a product assertion.
 
-The full UI suite under the default offscreen platform still aborts intermittently
-inside `pytestqt.plugin._process_events` on this Windows/PySide6 6.12 host. The
-native `windows` platform runs the same 14 tests cleanly. No assertion was
-weakened to hide the offscreen crash; it is treated as a host/platform issue.
+The full UI suite aborts intermittently inside `pytestqt.plugin._process_events`
+on this Windows/PySide6 6.12 host under both the default offscreen and the
+native `windows` platforms. The affected worker-thread files
+(`test_portfolio_valuation_page.py`, `test_technical_analysis_page.py`) pass on
+other runs, and the other UI files pass consistently. No assertion was weakened
+to hide the crash; it is treated as a host/toolchain issue pending further
+investigation.
+
+## Dependency lock (2026-11-23, Windows 11 x64)
+
+`requirements.lock` was generated with `pip freeze --exclude-editable` from the
+verified `.venv` (Python 3.13.16) used for the 253 unit/integration and 14 UI
+tests. It is a real pinned environment snapshot, not a hand-written list;
+`scripts/regenerate_lock.ps1` reproduces it. This is one tested environment,
+not a claim that a single lock covers every supported Python version.
 
 ## Risk-control slice (2026-11-23)
 
