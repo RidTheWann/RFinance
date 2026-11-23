@@ -4,6 +4,9 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `risk-controls-v1`: deterministic drawdown, concentration, allocation-deviation, review-cadence and prohibited-activity review triggers with explicit thresholds and no coercion of missing valuations to zero.
+- Added append-only `risk_events`, explicit one-per-event `risk_reviews` and `portfolio_valuation_history` (migration `0010_risk_events`), with deterministic event IDs, idempotent same-day evaluation and explicit review required to lift a suspension.
+- Connected a Risk Management desktop page to valuation and risk services; nine navigation areas now. README weighted progress updated to 65%.
 - Added evidence-gated simulated trade entry: verified lot sizes are derived from instrument review evidence, and BUY/SELL ledger events are appended only when lot, cash and position invariants hold. A connected Portfolio Simulator form shows the verified rule and labels every trade as simulated. README progress updated to 64%.
 - Added reviewed financial statement persistence (`0009_financial_metrics`) with append-only metrics and evidence-backed review ledger. Screening can now use verified local filing values instead of operator-supplied inputs, with an explicit Research Center selector. Added a weighted, evidence-based "Progress Project" table to the README.
 - Added `screening-evaluation-v1`: a guided workflow that assembles instrument identity, review-adjusted price, verified dividend evidence and operator-supplied fundamentals into the deterministic recommendation engine, with a Research Center evaluation form. Fundamental inputs are explicitly labelled as operator-supplied, not verified filings.

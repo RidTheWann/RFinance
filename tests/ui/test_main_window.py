@@ -20,6 +20,7 @@ from rfinance.application.portfolio_trading import (
 )
 from rfinance.application.portfolio_valuation import PortfolioValuationService
 from rfinance.application.recommendations import RecommendationService
+from rfinance.application.risk_monitoring import RiskMonitoringService
 from rfinance.application.screening_evaluation import ScreeningEvaluationService
 from rfinance.application.technical_analysis import TechnicalAnalysisService
 from rfinance.core.config import AppPaths
@@ -83,6 +84,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         receipt_service,
         recommendation_service,
         evaluation_service,
+        RiskMonitoringService(database.sessions),
     )
 
 
@@ -96,8 +98,8 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         window.navigation.setCurrentRow(1)
 
         assert window.windowTitle() == "RFinance"
-        assert window.navigation.count() == 8
-        assert [window.navigation.item(row).text() for row in range(8)] == [
+        assert window.navigation.count() == 9
+        assert [window.navigation.item(row).text() for row in range(9)] == [
             "Overview",
             "Portfolio",
             "Research Center",
@@ -105,11 +107,13 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
             "Observation Review",
             "Technical Analysis",
             "Dividend Center",
+            "Risk Management",
             "Settings",
         ]
-        assert window.pages.count() == 8
+        assert window.pages.count() == 9
         assert window.dividend_page is not None
         assert window.research_page is not None
+        assert window.risk_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()

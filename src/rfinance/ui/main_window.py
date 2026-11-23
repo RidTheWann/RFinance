@@ -46,6 +46,7 @@ from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_trading_page import PortfolioTradingPage
 from rfinance.ui.portfolio_valuation_page import PortfolioValuationPage
 from rfinance.ui.research_page import ResearchPage
+from rfinance.ui.risk_page import RiskPage
 from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
 
 if TYPE_CHECKING:
@@ -61,6 +62,7 @@ if TYPE_CHECKING:
     )
     from rfinance.application.portfolio_valuation import PortfolioValuationService
     from rfinance.application.recommendations import RecommendationService
+    from rfinance.application.risk_monitoring import RiskMonitoringService
     from rfinance.application.screening_evaluation import ScreeningEvaluationService
     from rfinance.application.technical_analysis import TechnicalAnalysisService
     from rfinance.core.config import AppPaths
@@ -157,6 +159,7 @@ class MainWindow(QMainWindow):
         dividend_receipts: DividendReceiptService | None = None,
         recommendations: RecommendationService | None = None,
         screening_evaluation: ScreeningEvaluationService | None = None,
+        risk_monitoring: RiskMonitoringService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -176,6 +179,8 @@ class MainWindow(QMainWindow):
         self.recommendations = recommendations
         self.screening_evaluation = screening_evaluation
         self.research_page: ResearchPage | None = None
+        self.risk_monitoring = risk_monitoring
+        self.risk_page: RiskPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -201,6 +206,7 @@ class MainWindow(QMainWindow):
                 "Observation Review",
                 "Technical Analysis",
                 "Dividend Center",
+                "Risk Management",
                 "Settings",
             ]
         )
@@ -232,6 +238,14 @@ class MainWindow(QMainWindow):
                 receipts=self.dividend_receipts,
             )
             self.pages.addWidget(self.dividend_page)
+        if self.risk_monitoring is None:
+            self.pages.addWidget(QLabel("Risk Management is unavailable."))
+        else:
+            self.risk_page = RiskPage(
+                self.risk_monitoring,
+                valuation=self.portfolio_valuation,
+            )
+            self.pages.addWidget(self.risk_page)
         self.pages.addWidget(self._settings_page())
 
         layout.addWidget(self.navigation)
@@ -844,6 +858,12 @@ class MainWindow(QMainWindow):
             self.dividend_page.status_label.setText(
                 "A dividend operation is still running. "
                 "Wait for it to finish before closing RFinance."
+            )
+            event.ignore()
+            return
+        if self.risk_page is not None and self.risk_page.is_busy:
+            self.risk_page.status_label.setText(
+                "A risk evaluation is still running. Wait for it to finish before closing RFinance."
             )
             event.ignore()
             return

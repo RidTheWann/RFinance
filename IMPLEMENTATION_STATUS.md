@@ -1,10 +1,11 @@
 # Implementation Status
 
-Last verified against the repository: 2026-11-22
+Last verified against the repository: 2026-11-23
 
 ## Repository state
 
-- Repository: RidTheWann/RFinance (public). Current `main` HEAD: `f005c9113510466fc5ea09da4d8d78818ad3b6a6` (179 commits). Remote `main` matches local exactly.
+- Repository: RidTheWann/RFinance (public). Verified local and `origin/main` HEAD on 2026-11-23: `753308bb87b58c076fc9cf9d189c7e2a9a14d053` (**203 commits**), the merge of PR #6 (`feature/verified-trade-entry`). The working tree was clean before this session's work; `git fetch --all --prune` deleted only the stale `origin/pr-1` ref. **Correction:** the earlier claim in this file that `main` was at `f005c911...` with 179 commits did not match the remote on 2026-11-23 and is treated as an outdated checkpoint, not the current state.
+- `gh` is not authenticated and Git has no credential helper, so no push, PR or merge can be verified here. The risk slice commit is `c9b81d4` on local branch `feature/risk-controls`; `git push -u origin feature/risk-controls` failed with `could not read Username for 'https://github.com'` (exit 128). No remote state change is claimed. After the owner supplies credentials, push the branch and verify the GitHub response before opening a PR.
 - **History rebuild:** at the owner's request, all 178 commits were rewritten so that the verbatim GPLv3 `LICENSE` and per-file SPDX headers exist from the root commit `beb02dae1acd2dfa7c2e5f87b748ba64a7a877b4` onward. The earlier "license" PR #3 was closed without merging and its branch deleted; the license was never absent from any commit in the final history. `main` was force-pushed with `--force-with-lease` after the stale branches were removed.
 - License: `GPL-3.0-only` (ADR 0003, verbatim `LICENSE`, PEP 639 metadata, SPDX headers, third-party notices). PySide6 6.12 Community licensing is compatible; frozen Windows builds must retain Qt notices and provide Corresponding Source per GPLv3 §6.
 - PR #2 (foundation + dividend/fundamental/screening slices) was merged before the rebuild; its content is fully preserved in the rewritten history. PR #1 (`foundation/bootstrap-core`) remains closed and unmerged but its 172 commits were preserved and rebuilt.
@@ -95,6 +96,13 @@ Last verified against the repository: 2026-11-22
 - The assembled input is delegated unchanged to `RecommendationService.evaluate`, preserving all blocking rules. Unverified instruments, stale prices and missing fundamentals are covered by integration tests.
 - The Research Center gained an "Evaluate from local evidence" form running on a Qt worker thread, with visible action, evidence IDs, risk flags and invalidation conditions.
 
+### Deterministic risk controls (`risk-controls-v1`)
+
+- Added a framework-independent engine in `src/rfinance/domain/risk/controls.py`: configurable review thresholds (10% individual stock, 20% sector, 6-month review, 5-point allocation deviation, 10% elevated drawdown, 15% critical drawdown), explicit snapshots, deterministic findings and Decimal `risk-controls-v1` drawdown arithmetic. Incomplete valuation yields `VALUATION_INCOMPLETE` and **no** drawdown number; no missing value is coerced to zero.
+- Added `RiskMonitoringService` with append-only `risk_events`, explicit one-per-event `risk_reviews`, and `portfolio_valuation_history` (`0010_risk_events`). Event IDs are deterministic SHA-256 digests (rule, severity, UTC date, methodology, evidence reference), so repeated evaluation on one UTC date is idempotent; a worsened severity creates a new event. Only an explicit reviewer, notes and evidence reference resolve an event and lift its suspension.
+- Drawdown uses only complete `portfolio-valuation-v1` points; instrument weights come from valued positions, sector weights remain empty until verified sector evidence exists, and allocation deviations come from the valuation result. Critical drawdown or prohibited activity suspends simulated allocation changes; elevated drawdown or concentration suspends new BUY_CANDIDATE promotion. Active persisted events also drive suspension after a restart.
+- Connected a Risk Management desktop page that evaluates the current ledger valuation off the UI thread, lists unresolved events with observed value, threshold and severity, and records explicit reviews. Wired through bootstrap, `main.py` and the main-window navigation (nine areas).
+
 ### Deterministic screening and evidence-linked recommendations
 
 - Added `screening-deterministic-v1` as a framework-independent domain engine. `ScreeningInput` carries only explicit evidence: verified-fundamental metrics, price age/quality, dividend references, portfolio drawdown and evidence items.
@@ -136,17 +144,18 @@ Last verified against the repository: 2026-11-22
 - Conflicting latest prices from different sources are not resolved arbitrarily; the position remains unvalued with a diagnostic. Instrument type is mapped conservatively; generic equities and ETFs are not assumed to be dividend stocks or index trackers.
 - The Portfolio Simulator now has a background valuation refresh and displays price provenance, observation age, price, market value, unrealized P/L, and eligibility diagnostics. Partial totals are explicitly labeled; missing positions are not substituted at cost or zero.
 
-## Local verification (this session, 2026-11-22)
+## Local verification (this session, 2026-11-23)
 
-Environment: Ubuntu 26.04.1 aarch64, Python 3.14.4, PySide6 6.12.0, SQLAlchemy 2.1.9, Alembic 1.20.1, pytest 9.2.0, Ruff 0.17.6, Mypy 1.20.2.
+Environment: Linux aarch64, Python 3.14, PySide6 6.12, SQLAlchemy 2.1, Alembic 1.20, pytest 9.2, Ruff, Mypy.
 
 | Check | Result |
 |---|---|
 | Ruff lint | Passed (195 files) |
 | Ruff format check | Passed (195 files) |
 | Mypy strict | Passed (76 source files) |
-| Unit + integration pytest | **219 passed** |
-| Targeted Qt tests (main window + Dividend Center + Research Center) | 7 passed |
+| Unit + integration pytest | **246 passed** (219 baseline + 19 risk engine + 8 risk service) |
+| Targeted UI pytest (`test_risk_page.py` + `test_main_window.py`) | **5 passed** |
+| Full UI suite | Environment-unreliable on aarch64/offscreen: one run had 13 passed / 1 pre-existing failure; later runs crashed inside `pytestqt.plugin::_process_events`. Crash reproduced on a clean worktree at `753308b`, so it is not a regression from the risk slice. No assertion was weakened to hide it. |
 | Clean-start launch (fresh data directory, offscreen Qt) | Stayed alive; SQLite, WAL/SHM, logs and all 13 tables at migration `0007_recommendations` created |
 | Full Qt suite | Timing-unreliable on this aarch64/offscreen runtime; see TEST_REPORT.md |
 
@@ -178,14 +187,15 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 - Official/licensed historical market-data entitlement, automated Indonesian market-data adapters, and source-policy approvals for any production feed.
 - Generated, resolver-verified dependency lockfile.
 - Full financial statement persistence, broader valuation metrics, and the UI workflow that assembles all local evidence into a screening evaluation. The deterministic engine, persistence and inspection view exist, but evaluation is currently an application-service operation. The dividend calculation layer has no automated provider feed.
-- Portfolio trade-entry UI, corporate actions, rebalancing, allocation execution, and full risk controls remain incomplete. Portfolio market valuation is now connected to persisted review-adjusted observations and the desktop, but its source values still depend on lawfully obtained and manually reviewable data.
+- Corporate actions, allocation execution/rebalancing, verified sector mapping and risk review automation remain incomplete. Deterministic drawdown/concentration controls with append-only events and explicit reviews are implemented; they do not constitute loss limits. Portfolio market valuation depends on lawfully obtained, manually reviewable data.
 - Ollama integration, document analysis, automation scheduler, reporting, verified backup/restore, and Windows production installer.
 - Clean-install, upgrade, offline, security, and production packaging acceptance.
 
 ## Next engineering objectives
 
-1. Add allocation targets and rebalancing workflow using verified instruments, without fabricating investable products.
-2. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
-3. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
-4. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist, instead of leaving them as cash targets.
-5. Continue risk controls, automation, reporting, backup/restore, reproducible lockfile, and Windows packaging in tested vertical slices.
+1. Add allocation-target execution and a rebalancing workflow using verified instruments, without fabricating investable products.
+2. Connect active risk events to screening so a required review blocks BUY_CANDIDATE promotion end-to-end from the desktop (the engine already accepts drawdown flags; the service now supplies persisted suspensions).
+3. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
+4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.
+5. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist, instead of leaving them as cash targets.
+6. Continue automation, reporting, backup/restore, reproducible lockfile, and Windows packaging in tested vertical slices.
