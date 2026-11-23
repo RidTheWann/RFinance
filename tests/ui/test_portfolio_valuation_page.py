@@ -34,6 +34,7 @@ def test_portfolio_valuation_page_refreshes_cash_only_ledger_off_ui_thread(
             timeout=30000,
         )
 
+        qtbot.wait(200)
         assert not page.is_busy
         assert page.market_value_label.text() == "Eligible market value: Rp0.00"
         assert page.portfolio_value_label.text() == "Portfolio value: Rp5,000,000.00"

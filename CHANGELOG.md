@@ -4,6 +4,9 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added `allocation-plan-v1`: deterministic target-versus-current gap planning from persisted valuations. Positive gaps remain `UNFILLED_TARGET` unless an evidence-backed verified instrument and eligible price exist; overweight categories require review; active risk events block investable lines. Connected to a worker-backed Portfolio Simulator view and documented in `docs/ALLOCATION_PLANNING.md`.
+- Stabilised the three worker-thread Qt UI tests with a short post-completion settle wait. All 16 UI tests now pass consistently under both offscreen and native Windows platforms; no assertion was weakened.
+
 - Added `ledger-csv-v1` reporting: a connected Portfolio Simulator button exports the authoritative simulated ledger to CSV with `SIMULATED` labels, explicit methodology version, empty cells for missing values, currency/sequence validation and spreadsheet-formula neutralisation for user-supplied text. Documented in `docs/REPORTING.md`.
 
 - Connected persisted risk controls to deterministic screening end-to-end. `RiskMonitoringService.screening_controls()` projects active risk events and the drawdown derived from complete stored valuations into `RiskControlEvidence`; `ScreeningEvaluationService` supplies it on every desktop evaluation. A buy-suspending rule raises `RISK_REVIEW_REQUIRED` and cites `risk:<event_id>`; a critical event produces `AVOID`; an explicit review lifts the block on the next evaluation. The Research Center shows the active review state. Screening methodology is now `screening-deterministic-v2`.
