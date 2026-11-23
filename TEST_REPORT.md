@@ -11,6 +11,8 @@ Built test-first (RED → GREEN):
 - `tests/ui/test_risk_page.py` (2 tests): unresolved events rendered with severity/observed/threshold, review form clearing an event, and worker-backed valuation evaluation updating the page.
 - `tests/ui/test_main_window.py` updated for the ninth navigation area and the connected Risk Management page.
 
+Verified GitHub CI for PR #7 (commit `987b46f`, Python 3.12): Windows and Ubuntu jobs both **success**, including Ruff lint/format, Mypy and the full pytest suite. PR #7 was merged into `main` at `94a8c87`. The first CI attempt failed on Windows only because the new worker test used a busy-loop that could finish before queued Qt signals were delivered; the real-time 30-second wait fixed it.
+
 Local gates on 2026-11-23: Ruff lint and format pass; Mypy strict passes on 82 source files; **246 unit/integration tests pass**. Targeted UI verification: `tests/ui/test_risk_page.py` and `tests/ui/test_main_window.py` **5 passed**. A full-suite run completed once with 13 UI tests passing and one failing; later full UI runs aborted inside `pytestqt.plugin::_process_events` (segfault/bus error) around `tests/ui/test_portfolio_valuation_page.py`, the same crash reproduced on a clean worktree at `753308b`. The failing test asserts `not page.is_busy` immediately after the status label updates, a pre-existing aarch64/offscreen Qt ordering limitation. It was not masked or "fixed" by weakening an assertion, and the crash is not claimed as a product defect.
 
 ## Local verification checkpoint (2026-11-22)
