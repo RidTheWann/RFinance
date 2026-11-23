@@ -34,7 +34,7 @@ def test_backup_is_verified_with_provenance(tmp_path: Path) -> None:
 
         assert backup.is_ok is True
         assert backup.integrity_check == "ok"
-        assert backup.alembic_version == "0011_automation"
+        assert backup.alembic_version == "0012_instrument_category"
         assert backup.ledger_event_count == 1
         assert backup.manifest_matches is True
         assert len(backup.sha256) == 64

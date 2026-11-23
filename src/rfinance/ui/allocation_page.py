@@ -19,11 +19,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from rfinance.ui.category_evidence_page import CategoryEvidencePanel
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from decimal import Decimal
 
     from rfinance.application.allocation_planning import AllocationPlanningService
+    from rfinance.application.instrument_category import InstrumentCategoryService
     from rfinance.domain.portfolio.allocation import (
         AllocationPlan,
         InvestableInstrument,
@@ -63,11 +66,13 @@ class AllocationPage(QWidget):
         service: AllocationPlanningService,
         *,
         instruments: Sequence[InvestableInstrument] = (),
+        category_service: InstrumentCategoryService | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._service = service
         self._instruments = tuple(instruments)
+        self._category_service = category_service
         self._thread: QThread | None = None
         self._worker: AllocationPlanWorker | None = None
         self._build_ui()
@@ -116,6 +121,9 @@ class AllocationPage(QWidget):
         self.table.setAlternatingRowColors(True)
         self.table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.table)
+        if self._category_service is not None:
+            self.category_panel = CategoryEvidencePanel(self._category_service, self)
+            layout.addWidget(self.category_panel)
         self.refresh()
 
     @staticmethod

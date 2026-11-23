@@ -2,6 +2,14 @@
 
 Last updated: 2026-11-23
 
+## Instrument category evidence (2026-11-23, Windows 11 x64)
+
+- `tests/integration/test_instrument_category.py` (5 tests): evidence-backed decision persistence and investable projection, newer rejection superseding verification, unverified-instrument rejection, append-only enforcement, and allocation planning consuming persisted category evidence without inferring a price.
+- `tests/ui/test_allocation_page.py` (1 test): the connected form archives an evidence file and records a VERIFIED category decision on a worker thread.
+- `tests/ui/test_main_window.py`: asserts the category panel is present.
+- Local gate: **314 passed** (`pytest -q`, 104.01s); Ruff lint/format and Mypy strict pass.
+
+
 ## Simulated portfolio PDF report (2026-11-23, Windows 11 x64)
 
 - `tests/integration/test_portfolio_reports.py` (1 test): report assembly from persisted ledger/valuation/risk data carries the SIMULATED label, currency, methodology versions and Rp5,000,000 balance; `export_pdf()` produces a valid `%PDF-` file.

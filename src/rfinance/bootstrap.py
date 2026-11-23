@@ -14,6 +14,7 @@ from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.financial_statements import FinancialStatementService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
+from rfinance.application.instrument_category import InstrumentCategoryService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
@@ -54,6 +55,7 @@ class ApplicationContext:
     verified_lot_sizes: VerifiedLotSizeService
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
+    instrument_categories: InstrumentCategoryService
     observation_review: ObservationReviewService
     dividend_events: DividendEventService
     dividend_receipts: DividendReceiptService
@@ -96,6 +98,9 @@ def create_application_context(data_directory: str | None = None) -> Application
         instrument_review = InstrumentReviewService(
             database.sessions,
             data_directory=paths.root,
+        )
+        instrument_categories = InstrumentCategoryService(
+            database.sessions, data_directory=paths.root
         )
         observation_review = ObservationReviewService(
             database.sessions,
@@ -147,6 +152,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         allocation_planning = AllocationPlanningService(
             portfolio_valuation,
             risk_monitoring=risk_monitoring,
+            instrument_categories=instrument_categories,
         )
         screening_evaluation = ScreeningEvaluationService(
             database.sessions,
@@ -171,6 +177,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         verified_lot_sizes=verified_lot_sizes,
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,
+        instrument_categories=instrument_categories,
         observation_review=observation_review,
         dividend_events=dividend_events,
         dividend_receipts=dividend_receipts,
