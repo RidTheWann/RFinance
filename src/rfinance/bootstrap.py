@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from rfinance.application.allocation_planning import AllocationPlanningService
 from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.financial_statements import FinancialStatementService
@@ -55,6 +56,7 @@ class ApplicationContext:
     recommendations: RecommendationService
     screening_evaluation: ScreeningEvaluationService
     portfolio_valuation: PortfolioValuationService
+    allocation_planning: AllocationPlanningService
     technical_analysis: TechnicalAnalysisService
     risk_monitoring: RiskMonitoringService
     logger: logging.Logger
@@ -106,6 +108,10 @@ def create_application_context(data_directory: str | None = None) -> Application
         )
         recommendations = RecommendationService(database.sessions)
         risk_monitoring = RiskMonitoringService(database.sessions)
+        allocation_planning = AllocationPlanningService(
+            portfolio_valuation,
+            risk_monitoring=risk_monitoring,
+        )
         screening_evaluation = ScreeningEvaluationService(
             database.sessions,
             dividend_events=dividend_events,
@@ -135,6 +141,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         recommendations=recommendations,
         screening_evaluation=screening_evaluation,
         portfolio_valuation=portfolio_valuation,
+        allocation_planning=allocation_planning,
         technical_analysis=technical_analysis,
         risk_monitoring=risk_monitoring,
         logger=logger,

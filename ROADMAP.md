@@ -10,7 +10,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 3 | Fundamental, valuation, technical and dividend calculations | `fundamental-metrics-v1`, `dividend-analytics-v1`, technical indicator suite, and append-only reviewed financial statement metrics connected to screening implemented. Broader statement coverage, sampling-frequency and corporate-action metadata remain |
 | 4 | Screening and deterministic evidence-linked recommendations | `screening-deterministic-v1`, append-only persistence, Research Center inspection and a guided evidence-assembly workflow implemented; verified financial-statement inputs remain |
 | 5 | Dividend event calendar and analytics | `dividend-analytics-v1`, append-only event/review persistence, labelled calendar, connected Dividend Center, and `dividend-receipt-v1` confirmed-receipt posting with 50/30/20 split and duplicate protection implemented; automated provider feed remains |
-| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, first-run cash setup, `portfolio-valuation-v1`, confirmed dividend receipts, evidence-gated simulated trades, and `risk-controls-v1` drawdown/concentration events with explicit reviews and a connected Risk Management page implemented; rebalancing execution, verified sector mapping and risk automation remain |
+| 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, first-run cash setup, `portfolio-valuation-v1`, `allocation-plan-v1` gap planning with explicit unfilled targets and risk blocking, confirmed dividend receipts, evidence-gated simulated trades, and `risk-controls-v1` drawdown/concentration events with explicit reviews and connected desktop pages implemented; automatic rebalancing execution, verified sector mapping and risk automation remain |
 | 7 | Optional Ollama intelligence and secure document analysis | Not started |
 | 8 | Local automation and reporting | `ledger-csv-v1` simulated-ledger export connected to the Portfolio Simulator and documented; automation scheduler and PDF/broader reports remain |
 | 9 | Backup/restore, offline operation, reliability and security hardening | Not started |
@@ -33,7 +33,7 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 ## Next implementation sequence
 
 1. ~~Connect persisted active risk events to screening evaluation end-to-end so a required review blocks BUY_CANDIDATE promotion from the desktop.~~ Implemented via `screening-deterministic-v2`; see IMPLEMENTATION_STATUS.md.
-2. Add allocation-target execution and rebalancing using verified instruments and instrument-to-category evidence.
+2. ~~Add allocation-target execution and rebalancing using verified instruments and instrument-to-category evidence.~~ Gap planning implemented via `allocation-plan-v1`; automatic rebalancing execution and persisted category evidence remain.
 3. Add explicit sampling-frequency, sector and corporate-action adjustment evidence to the instrument/observation model before supporting additional historical providers.
 4. Extend fundamental statements and valuation calculations with formula versioning, input requirements and missing-data semantics.
 5. Post the reinvestment and money-market legs of confirmed dividends into verified instruments once such instruments exist.

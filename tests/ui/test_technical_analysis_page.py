@@ -104,6 +104,7 @@ def test_technical_analysis_page_loads_local_catalog_and_calculates_off_ui_threa
             ),
             timeout=30000,
         )
+        qtbot.wait(200)
         assert page.instrument_combo.count() == 1
         assert page.source_combo.count() == 1
 
@@ -116,6 +117,7 @@ def test_technical_analysis_page_loads_local_catalog_and_calculates_off_ui_threa
             timeout=30000,
         )
 
+        qtbot.wait(200)
         assert page.summary_label.text().startswith("BBCA — Bank Central Asia")
         assert "UNKNOWN_AS_SUPPLIED" in page.status_label.text()
         assert page.indicator_table.rowCount() == 14

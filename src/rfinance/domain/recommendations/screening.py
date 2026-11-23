@@ -89,6 +89,7 @@ class RiskControlEvidence:
 
     review_required: bool = False
     buy_candidates_suspended: bool = False
+    allocation_changes_suspended: bool = False
     critical: bool = False
     drawdown: Decimal | None = None
     active_event_ids: tuple[str, ...] = ()

@@ -41,6 +41,7 @@ from rfinance.application.portfolio_ledger import (
     PortfolioLedgerService,
 )
 from rfinance.data.contracts import InstrumentContract, InstrumentType
+from rfinance.ui.allocation_page import AllocationPage
 from rfinance.ui.dividend_page import DividendPage
 from rfinance.ui.observation_review_page import ObservationReviewPage
 from rfinance.ui.portfolio_trading_page import PortfolioTradingPage
@@ -52,6 +53,7 @@ from rfinance.ui.technical_analysis_page import TechnicalAnalysisPage
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
+    from rfinance.application.allocation_planning import AllocationPlanningService
     from rfinance.application.dividend_events import DividendEventService
     from rfinance.application.dividend_receipts import DividendReceiptService
     from rfinance.application.ledger_reporting import LedgerReportService
@@ -162,6 +164,7 @@ class MainWindow(QMainWindow):
         screening_evaluation: ScreeningEvaluationService | None = None,
         risk_monitoring: RiskMonitoringService | None = None,
         ledger_reports: LedgerReportService | None = None,
+        allocation_planning: AllocationPlanningService | None = None,
     ) -> None:
         super().__init__()
         self.paths = paths
@@ -184,6 +187,8 @@ class MainWindow(QMainWindow):
         self.risk_monitoring = risk_monitoring
         self.risk_page: RiskPage | None = None
         self.ledger_reports = ledger_reports
+        self.allocation_planning = allocation_planning
+        self.allocation_page: AllocationPage | None = None
         self._import_thread: QThread | None = None
         self._import_worker: MarketCSVImportWorker | None = None
         self._review_thread: QThread | None = None
@@ -403,6 +408,14 @@ class MainWindow(QMainWindow):
                 "Unfilled targets remain uninvested."
             )
         )
+        if self.allocation_planning is None:
+            dashboard_layout.addWidget(QLabel("Allocation planning is unavailable."))
+        else:
+            self.allocation_page = AllocationPage(
+                self.allocation_planning,
+                parent=self._portfolio_dashboard,
+            )
+            dashboard_layout.addWidget(self.allocation_page)
         self.export_ledger_button = QPushButton("Export simulated ledger (CSV)")
         self.export_ledger_button.setObjectName("exportLedgerButton")
         self.export_ledger_button.clicked.connect(self._export_ledger_csv)

@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFileDialog, QInputDialog
 from sqlalchemy import func, select
 
+from rfinance.application.allocation_planning import AllocationPlanningService
 from rfinance.application.dividend_events import DividendEventService
 from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
@@ -87,6 +88,7 @@ def create_window(database: Database, tmp_path) -> MainWindow:
         evaluation_service,
         RiskMonitoringService(database.sessions),
         LedgerReportService(portfolio_service),
+        AllocationPlanningService(portfolio_valuation_service),
     )
 
 
@@ -116,6 +118,7 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert window.dividend_page is not None
         assert window.research_page is not None
         assert window.risk_page is not None
+        assert window.allocation_page is not None
         assert window.initial_capital_input.text() == "5000000"
         assert not window._portfolio_empty_panel.isHidden()
         assert window._portfolio_dashboard.isHidden()

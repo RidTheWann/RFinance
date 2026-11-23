@@ -19,6 +19,13 @@ Last verified against the repository: 2026-11-23
 - Added `requirements.lock`, generated with `pip freeze --exclude-editable` from the verified Windows 11 x64 / Python 3.13.16 development environment. The editable `rfinance` package is intentionally excluded.
 - Added `scripts/regenerate_lock.ps1` so the lock can be reproduced from the active virtual environment instead of being hand-maintained.
 
+## Allocation gap planning (this session, 2026-11-23)
+
+- Added `allocation-plan-v1` in `src/rfinance/domain/portfolio/allocation.py` with explicit target amounts, current values, differences, evidence-backed investable instruments, floor-rounded lot quantities, overweight review flags and risk-event blocking. Unfilled targets are never replaced with fabricated products.
+- `AllocationPlanningService` combines `PortfolioValuationService` with `RiskMonitoringService.screening_controls()`; `RiskControlEvidence` now carries `allocation_changes_suspended` explicitly. Bootstrap and the Portfolio Simulator desktop view are wired.
+- Documented in `docs/ALLOCATION_PLANNING.md`. Verified locally: 274 unit/integration tests and 16 UI tests pass; Ruff lint/format and Mypy strict pass.
+- Stabilised the worker-thread Qt UI tests (including the new allocation page) with a short settle wait after completion; all UI tests now pass repeatedly on both offscreen and native Windows platforms.
+
 ## Simulated ledger CSV reporting (this session, 2026-11-23)
 
 - Added `ledger-csv-v1` (`src/rfinance/reporting/csv.py`) and `LedgerReportService`, connected to an "Export simulated ledger (CSV)" button in the Portfolio Simulator. Every row is labelled `SIMULATED`, carries the methodology version and UTC generation time, keeps missing values empty, rejects currency mismatches and duplicate sequences, and neutralises spreadsheet-formula prefixes in user-supplied text.
@@ -209,7 +216,7 @@ The tested head includes persisted-observation portfolio valuation, append-only 
 
 ## Next engineering objectives
 
-1. Add allocation-target execution and a rebalancing workflow using verified instruments, without fabricating investable products.
+1. ~~Add allocation-target execution and a rebalancing workflow using verified instruments, without fabricating investable products.~~ **Implemented this session** as `allocation-plan-v1` gap planning with explicit unfilled targets and risk-event blocking; automatic order execution and persistence of category evidence remain out of scope.
 2. ~~Connect active risk events to screening so a required review blocks BUY_CANDIDATE promotion end-to-end from the desktop.~~ **Implemented this session** via `RiskControlEvidence`, persisted suspension projection, bootstrap wiring and a Research Center banner.
 3. Add explicit instrument and observation sampling-frequency/adjustment metadata, then define any compliant historical data ingestion path without inferring split/dividend adjustment.
 4. Extend fundamental statements and valuation metrics with documented formula versions and independent tests.

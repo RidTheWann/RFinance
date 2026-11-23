@@ -2,6 +2,16 @@
 
 Last updated: 2026-11-23
 
+## Allocation planning and Qt UI stabilisation (2026-11-23, Windows 11 x64)
+
+- `tests/unit/test_allocation_plan.py` (10 tests): cash-only unfilled targets, verified-lot quantities, missing-price and sub-lot gaps, overweight review, risk suspension blocking, tolerance, incomplete valuation, validation and duplicate rejection.
+- `tests/integration/test_allocation_planning.py` (2 tests): plan derived from a persisted cash ledger, and a `PROHIBITED_ACTIVITY` risk event blocking an otherwise investable line.
+- `tests/ui/test_allocation_page.py` (1 test): worker-backed page renders target amounts and unfilled statuses.
+- `tests/ui/test_main_window.py`: asserts the connected allocation page exists.
+- Qt stabilisation: a short `qtbot.wait(200)` after completion was added to `test_allocation_page.py`, `test_portfolio_valuation_page.py` and `test_technical_analysis_page.py`. The 16-test UI suite then passed 3/3 full runs under the native platform and once under offscreen, with all assertions unchanged. This resolves the intermittent `pytestqt.plugin._process_events` abort noted in earlier checkpoints.
+- Local gate: **274** unit/integration tests pass; Ruff lint/format and Mypy strict pass.
+
+
 ## Simulated ledger CSV reporting (2026-11-23, Windows 11 x64)
 
 - `tests/unit/test_ledger_csv_report.py` (9 tests): documented header, `SIMULATED` label, empty cells for missing values, CSV escaping, formula-prefix neutralisation, sequence ordering, currency mismatch, duplicate sequences and naive timestamp rejection.

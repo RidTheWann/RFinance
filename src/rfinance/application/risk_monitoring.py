@@ -273,6 +273,9 @@ class RiskMonitoringService:
         return RiskControlEvidence(
             review_required=bool(active),
             buy_candidates_suspended=any(item.rule in _BUY_SUSPENDING for item in active),
+            allocation_changes_suspended=any(
+                item.rule in _ALLOCATION_SUSPENDING for item in active
+            ),
             critical=any(
                 item.severity is RiskSeverity.CRITICAL or item.rule in _ALLOCATION_SUSPENDING
                 for item in active
