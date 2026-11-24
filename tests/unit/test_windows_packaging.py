@@ -28,3 +28,21 @@ def test_windows_build_assets_bundle_license_and_migrations() -> None:
     assert "console=False" in spec
     assert "PyInstaller" in script
     assert "build_windows.ps1" in script or "rfinance.spec" in script
+
+
+def test_setup_script_selects_only_supported_python_runtimes() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    requires_python = pyproject["project"]["requires-python"]
+    assert requires_python == ">=3.12,<3.16"
+
+    script = (ROOT / "scripts" / "setup_windows.ps1").read_text(encoding="utf-8")
+
+    # The interpreter gate must be derived from the supported range, never a
+    # single hard-coded version.
+    assert '[version]"3.12"' in script
+    assert '[version]"3.16"' in script
+    assert '[string]$Python = ""' in script  # no hard-coded interpreter default
+    assert "[switch]$DryRun" in script
+    assert "Dry run: no environment was created." in script
+    installation = (ROOT / "docs" / "INSTALLATION.md").read_text(encoding="utf-8")
+    assert "setup_windows.ps1" in installation

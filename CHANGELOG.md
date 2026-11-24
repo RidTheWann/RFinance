@@ -4,6 +4,8 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Fixed `scripts\setup_windows.ps1` failing on machines without Python 3.12: it now auto-detects a supported 3.12–3.15 interpreter, supports `-Python` override and `-DryRun`, and documents the PowerShell execution-policy workaround. A packaging test pins the supported range so the script cannot regress to a single hard-coded version, and `README.md` points at the setup script instead of literal `py -3.12` commands.
+
 - Replaced the planned Ollama integration with optional API-key AI research (ADR 0005). A single verified OpenAI Chat Completions endpoint is allowlisted; the key is read only from `RFINANCE_AI_API_KEY` and never stored or logged. Structured output is validated against an application-owned schema and displayed as untrusted research aid only. Documented in `docs/AI_RESEARCH.md`.
 
 - Added a reproducible Windows folder build: `installer/windows/rfinance.spec`, `scripts\build_windows.ps1`, pinned PyInstaller in the dev extra and regenerated `requirements.lock`. The frozen executable was smoke-tested with a fresh data directory: it stayed alive, created SQLite at Alembic `0012_instrument_category` with 22 tables, and wrote no startup errors. Documented in `docs/INSTALLATION.md`.

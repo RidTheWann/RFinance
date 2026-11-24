@@ -53,11 +53,11 @@ substantial slice.
 
 ## Development
 
-The initial supported development runtime is Python 3.12 on Windows 11 x64.
+Supported development runtimes are Python 3.12–3.15 on Windows 11 x64; 3.13 is preferred.
 
 Use PowerShell:
 
-    py -3.12 -m venv .venv
+    .\scripts\setup_windows.ps1
     .\.venv\Scripts\Activate.ps1
     python -m pip install --upgrade pip
     python -m pip install -e ".[dev]"
