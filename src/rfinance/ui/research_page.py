@@ -310,7 +310,8 @@ class ResearchPage(QWidget):
         thread.start()
 
     def _on_evaluation_done(self, result: object) -> None:
-        assert isinstance(result, Recommendation)
+        if not isinstance(result, Recommendation):
+            raise TypeError("evaluation returned an unexpected result")
         self.evaluate_button.setEnabled(True)
         self.evaluation_detail_label.setText(
             f"Action: {result.action.value}\n"

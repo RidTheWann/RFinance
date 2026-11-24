@@ -49,7 +49,6 @@ class VerifiedLotSizeService:
             ).all()
             result: dict[str, VerifiedLotSize] = {}
             for instrument in instruments:
-                assert instrument.lot_size is not None
                 rule = self._rule_for(session, instrument)
                 if rule is not None:
                     result[instrument.instrument_id] = rule

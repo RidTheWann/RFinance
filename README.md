@@ -22,7 +22,7 @@ See IMPLEMENTATION_STATUS.md, ROADMAP.md, and TEST_REPORT.md for implementation 
 
 ## Progress Project
 
-Estimated progress toward a **publish-ready release**: **65%** (updated 2026-11-23).
+Estimated progress toward a **publish-ready release**: **86.2%** (updated 2026-11-24, recomputed from the milestone table below and verified against `origin/main` at `8949344`).
 
 "Publish-ready" means: a tested Windows 11 x64 installer, reproducible locked
 dependencies, verified backup/restore, clean-install and upgrade evidence,
@@ -33,17 +33,17 @@ from verified repository evidence, not a promise or a schedule.
 | # | Milestone | Weight | Complete | Contribution | Evidence / remaining gap |
 |---|---|---:|---:|---:|---|
 | 0 | Repository bootstrap, policy, CI | 5% | 100% | 5.0% | AGENTS.md, pyproject, CI green |
-| 1 | Desktop shell, config, SQLite/Alembic | 8% | 100% | 8.0% | PySide6 shell, 0001–0009 migrations, first-run setup |
+| 1 | Desktop shell, config, SQLite/Alembic | 8% | 100% | 8.0% | PySide6 shell with ten connected pages, migrations `0001`–`0013`, first-run setup |
 | 2 | Data provenance, import, eligibility | 10% | 78% | 7.8% | CSV import + review gates done; no licensed/official automated feed |
 | 3 | Deterministic financial engine | 14% | 82% | 11.5% | Fundamental/technical/dividend/valuation + reviewed filing metrics; broader statement coverage pending |
 | 4 | Screening and recommendations | 10% | 92% | 9.2% | Engine, append-only records, guided evaluation, verified filing inputs; no backtesting yet |
 | 5 | Dividend Center | 8% | 92% | 7.4% | Events, calendar, analytics, confirmed receipts; no automated dividend feed |
 | 6 | Portfolio simulator and risk | 14% | 86% | 12.0% | Ledger, valuation, receipts, evidence-gated trades and auditable drawdown/concentration controls; rebalancing execution pending |
-| 7 | Optional AI | 8% | 0% | 0.0% | API-key research aid implemented; document analysis and more providers remain |
-| 8 | Automation and reporting | 10% | 0% | 0.0% | Not started (scheduler, PDF/CSV exports) |
-| 9 | Security and reliability | 8% | 40% | 3.2% | Append-only ledgers, audit, triggers; backup/restore and offline acceptance unverified |
-| 10 | Windows production delivery | 5% | 12% | 0.6% | Windows CI only; no installer, lockfile, or clean-install test |
-| | **Total** | **100%** | | **64.7%** | |
+| 7 | Optional AI | 8% | 88% | 7.0% | `ai-research-summary-v1` allowlisted endpoint + schema-validated untrusted summary in Research Center; document analysis and further providers remain |
+| 8 | Automation and reporting | 10% | 88% | 8.8% | `automation-jobs-v1` + connected Automation Center; `ledger-csv-v1` and `portfolio-pdf-v1` exports wired to Portfolio Simulator; automatic scheduling/monthly reports remain |
+| 9 | Security and reliability | 8% | 85% | 6.8% | 19 append-only tables with triggers, `sqlite-backup-v1` verified backup/non-destructive restore, pip-audit clean; in-place restore, offline acceptance and signed package remain |
+| 10 | Windows production delivery | 5% | 60% | 3.0% | Reproducible PyInstaller folder build, pinned lockfile, frozen binary smoke-tested on a fresh data directory; separate-machine clean install, in-place upgrade/data preservation and code signing remain |
+| | **Total** | **100%** | | **86.2%** | |
 
 The next objectives are recorded in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md):
 allocation-target execution and rebalancing, then automation/reporting,

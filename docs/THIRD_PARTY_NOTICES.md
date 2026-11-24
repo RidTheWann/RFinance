@@ -24,6 +24,9 @@ RFinance is licensed under `GPL-3.0-only`. This file records the licenses of the
 | bandit | 1.9.4 | `Apache-2.0` | Security scanning |
 | pip-audit | 2.10.1 | (see installed metadata) | Dependency vulnerability audit |
 | setuptools | 84.2.1 | `MIT` | Build backend |
+| PyInstaller | 6.22.3 | `GPL-2.0-or-later WITH a bootloader special exception permitting use to build and distribute non-free programs` | Freezes the application into `dist/RFinance`; the bootloader exception allows bundling without imposing GPL terms on RFinance, while RFinance itself remains `GPL-3.0-only` |
+| altgraph | 0.17.5 | `MIT` | PyInstaller module graph helper |
+| pefile | 2024.8.26 | `MIT` | PyInstaller Windows PE analysis |
 
 ## Qt for Python obligations
 

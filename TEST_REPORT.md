@@ -36,8 +36,8 @@ Last updated: 2026-11-24
 
 - Build command: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_windows.ps1` with PyInstaller 6.22.3 — **build complete**, output `dist\RFinance\RFinance.exe`.
 - Smoke test: launched the frozen `RFinance.exe` with a fresh `RFINANCE_HOME`; after 12 seconds the process was still alive; `Database/rfinance.sqlite3` (+ WAL/SHM) and `Logs/rfinance.log` were created.
-- Frozen database inspection: Alembic `0012_instrument_category`, 22 tables, log line `RFinance initialized using local data directory: …` with no error.
-- `tests/unit/test_windows_packaging.py` (2 tests): PyInstaller pinned in `pyproject.toml`/`requirements.lock`; spec bundles migrations, GPLv3 LICENSE and third-party notices.
+- Frozen database inspection at that checkpoint: Alembic `0012_instrument_category`, 22 tables, log line `RFinance initialized using local data directory: …` with no error. A fresh upgrade on the current tree reaches `0013_instrument_metadata_evidence` with 23 tables (verified locally 2026-11-24).
+- `tests/unit/test_windows_packaging.py`: PyInstaller pinned in `pyproject.toml`/`requirements.lock`; spec bundles migrations, GPLv3 LICENSE and third-party notices; `setup_windows.ps1` accepts only the supported Python range.
 - **NOT VERIFIED**: clean install on a different machine, in-place upgrade, data preservation after upgrade, code signing, SmartScreen/antivirus behaviour.
 
 
@@ -259,8 +259,8 @@ The persisted-observation valuation service joins ledger positions to stored pri
 - Price review does not certify provider licensing, corporate-action adjustment, or freshness. Those remain independent gates.
 - No IDX scraper or automated market-data provider is enabled.
 - Historical technical analysis is connected to local persisted observations through a single-source series service and `historical-price-eligibility-v1`; it does not fetch, blend sources, resample, interpolate, infer frequency, or adjust corporate actions. The adjustment state is `UNKNOWN_AS_SUPPLIED` until source evidence says otherwise.
-- The dividend calculation layer is connected to append-only event/review persistence, a labelled calendar and the Dividend Center desktop page. It has no automated provider feed, and confirmed dividend receipts are not yet posted to the portfolio cash ledger.
-- The screening engine, append-only persistence and Research Center inspection view exist; the guided workflow that assembles all persisted evidence into an evaluation is not yet connected. Extended financial statements, portfolio trade UI, Ollama, automation, reporting, backup/restore, and production packaging remain incomplete.
+- The dividend calculation layer is connected to append-only event/review persistence, a labelled calendar, the Dividend Center desktop page and `dividend-receipt-v1` confirmed-receipt posting with duplicate protection and the 50/30/20 preference. It still has no automated provider feed.
+- The guided screening workflow is connected end-to-end from the Research Center and persists append-only recommendation records. Automated scheduling, broader statement coverage beyond `fundamental-metrics-v1`, a signed Windows installer, separate-machine clean-install/upgrade acceptance and deeper security hardening remain incomplete. (An earlier revision of this section claimed portfolio trade UI, automation, reporting, backup/restore and receipt posting were missing; that was false — each is implemented and covered by tests. Corrected 2026-11-24.)
 
 ## Remaining validation work
 

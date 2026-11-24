@@ -582,7 +582,8 @@ class DividendPage(QWidget):
             return self._service.record_event(contract)
 
         def on_success(result: object) -> None:
-            assert isinstance(result, DividendRecordResult)
+            if not isinstance(result, DividendRecordResult):
+                raise TypeError("record operation returned an unexpected result")
             self.event_key_input.clear()
             self.event_notes_input.clear()
             self._on_operation_completed(
@@ -620,7 +621,8 @@ class DividendPage(QWidget):
             )
 
         def on_success(result: object) -> None:
-            assert isinstance(result, DividendAnalyticsReport)
+            if not isinstance(result, DividendAnalyticsReport):
+                raise TypeError("analytics operation returned an unexpected result")
             self._render_analytics(result)
 
         self.calculate_button.setEnabled(False)
@@ -686,7 +688,8 @@ class DividendPage(QWidget):
             return receipts.post_receipt(event_id, net_amount=net_amount)
 
         def on_success(result: object) -> None:
-            assert isinstance(result, DividendReceiptResult)
+            if not isinstance(result, DividendReceiptResult):
+                raise TypeError("receipt operation returned an unexpected result")
             self.receipt_result_label.setText(
                 f"Receipt posted: net {result.net_amount:,.2f} IDR; "
                 f"reinvest {result.reinvestment:,.2f}; "
@@ -724,7 +727,8 @@ class DividendPage(QWidget):
             )
 
         def on_success(result: object) -> None:
-            assert isinstance(result, DividendReviewResult)
+            if not isinstance(result, DividendReviewResult):
+                raise TypeError("review operation returned an unexpected result")
             self.review_status_label.setText(
                 f"Review recorded: {result.event_id} is effectively {result.decision}. "
                 f"Evidence SHA-256 {result.evidence_sha256}. The raw event is unchanged."

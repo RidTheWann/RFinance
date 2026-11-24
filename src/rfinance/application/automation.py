@@ -162,8 +162,7 @@ class AutomationService:
                 )
                 if not should_retry(definition, attempt):
                     return last
-        assert last is not None
-        return last
+        raise RuntimeError("retry loop produced no run record; job definition must terminate")
 
     def _finish(
         self,

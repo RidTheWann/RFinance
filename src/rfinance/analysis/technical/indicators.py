@@ -417,7 +417,9 @@ def momentum(prices: PriceSeries, lookback: int) -> tuple[DecimalValue, ...]:
             result.append(None)
             continue
         base = window[0]
-        assert base is not None
+        if base is None:
+            result.append(None)
+            continue
         result.append(current / base - ONE)
 
     return tuple(result)
@@ -458,7 +460,9 @@ def relative_strength(
 
         asset_base = asset_window[0]
         benchmark_base = benchmark_window[0]
-        assert asset_base is not None and benchmark_base is not None
+        if asset_base is None or benchmark_base is None:
+            result.append(None)
+            continue
         asset_factor = current / asset_base
         benchmark_factor = benchmark_current / benchmark_base
         result.append(asset_factor / benchmark_factor - ONE)
