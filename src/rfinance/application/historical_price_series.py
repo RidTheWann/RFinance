@@ -17,6 +17,7 @@ from rfinance.domain.eligibility.historical import (
     FORMULA_VERSION as HISTORICAL_ELIGIBILITY_VERSION,
 )
 from rfinance.domain.eligibility.historical import historical_observation_reasons
+from rfinance.domain.eligibility.metadata import AdjustmentStatus, SamplingFrequency
 from rfinance.domain.eligibility.observation import (
     InstrumentState,
     InstrumentStatus,
@@ -36,6 +37,8 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from sqlalchemy.orm import Session, sessionmaker
+
+    from rfinance.application.instrument_metadata import InstrumentMetadataEvidenceService
 
 
 MAX_HISTORY_OBSERVATIONS = 100_000
@@ -97,6 +100,7 @@ class HistoricalPriceSeriesSnapshot:
     rejected_reasons: tuple[tuple[str, int], ...]
     max_gap_days: int
     adjustment_status: str
+    sampling_frequency: SamplingFrequency = SamplingFrequency.UNKNOWN_AS_SUPPLIED
     methodology_version: str = SERIES_METHOD_VERSION
     eligibility_methodology: str = HISTORICAL_ELIGIBILITY_VERSION
 
@@ -128,12 +132,14 @@ class HistoricalPriceSeriesService:
         *,
         allow_unreviewed_sources: bool = True,
         max_observations: int = MAX_HISTORY_OBSERVATIONS,
+        metadata_service: InstrumentMetadataEvidenceService | None = None,
     ) -> None:
         if max_observations <= 0 or max_observations > MAX_HISTORY_OBSERVATIONS:
             raise ValueError(f"max_observations must be between 1 and {MAX_HISTORY_OBSERVATIONS}")
         self._sessions = sessions
         self._allow_unreviewed_sources = allow_unreviewed_sources
         self._max_observations = max_observations
+        self._metadata_service = metadata_service
 
     def available_series(self) -> tuple[HistoricalSeriesChoice, ...]:
         """Return active verified instrument/source pairs with local observations."""
@@ -324,6 +330,15 @@ class HistoricalPriceSeriesService:
             highs.append(point.high)
             lows.append(point.low)
 
+        metadata = (
+            self._metadata_service.latest_verified(instrument_id, source_id)
+            if self._metadata_service is not None
+            else None
+        )
+        adjustment_status = (
+            AdjustmentStatus.UNKNOWN_AS_SUPPLIED if metadata is None else metadata.adjustment_status
+        ).value
+
         return HistoricalPriceSeriesSnapshot(
             instrument_id=instrument_id,
             ticker=instrument_record.ticker or instrument_id,
@@ -339,7 +354,10 @@ class HistoricalPriceSeriesService:
             rejected_count=sum(rejected.values()),
             rejected_reasons=tuple(sorted(rejected.items())),
             max_gap_days=max_gap_days,
-            adjustment_status=ADJUSTMENT_STATUS,
+            adjustment_status=adjustment_status,
+            sampling_frequency=SamplingFrequency.UNKNOWN_AS_SUPPLIED
+            if metadata is None
+            else metadata.sampling_frequency,
         )
 
     def _load_rows(

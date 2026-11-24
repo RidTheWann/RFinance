@@ -8,6 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from sqlalchemy import text
 
 from rfinance.application.portfolio_ledger import PortfolioLedgerService
 from rfinance.security.backup import BackupService, verify_backup
@@ -34,7 +35,11 @@ def test_backup_is_verified_with_provenance(tmp_path: Path) -> None:
 
         assert backup.is_ok is True
         assert backup.integrity_check == "ok"
-        assert backup.alembic_version == "0012_instrument_category"
+        with database.engine.connect() as connection:
+            expected_version = connection.execute(
+                text("SELECT version_num FROM alembic_version LIMIT 1")
+            ).scalar_one()
+        assert backup.alembic_version == expected_version
         assert backup.ledger_event_count == 1
         assert backup.manifest_matches is True
         assert len(backup.sha256) == 64

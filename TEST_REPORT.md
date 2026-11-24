@@ -2,6 +2,13 @@
 
 Last updated: 2026-11-24
 
+## Instrument metadata evidence (2026-11-24, Windows 11 x64 / Python 3.13.16)
+
+- `tests/integration/test_instrument_metadata.py` (6 tests): verified decision is persisted with methodology version; a newer rejection suppresses the prior verified decision; the table rejects UPDATE and DELETE through its append-only triggers; an UNVERIFIED instrument cannot receive evidence; the series snapshot defaults to `UNKNOWN_AS_SUPPLIED` for both fields and switches to the verified values when evidence exists.
+- Full suite: **331 passed** in 78.85s (`pytest -q`). Ruff lint/format pass on 259 files; Mypy strict passes on 111 source files.
+- Regression fix in this change: `test_backup_restore.py` compared the backup's Alembic version against a hard-coded string, so it failed as soon as migration 0013 existed. It now reads `alembic_version` from the live database.
+- **NOT VERIFIED**: no connected desktop form records metadata evidence yet, and no separate-machine or fresh-install acceptance of the new migration was run.
+
 ## Windows development environment bootstrap (2026-11-24, Windows 11 x64)
 
 - `tests/unit/test_windows_packaging.py` (3 tests): PyInstaller pinned in `pyproject.toml`/`requirements.lock`; spec bundles migrations, GPLv3 LICENSE and third-party notices; `setup_windows.ps1` accepts only the supported Python range declared by `requires-python` and exposes `-DryRun`.

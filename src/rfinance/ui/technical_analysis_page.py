@@ -306,6 +306,7 @@ class TechnicalAnalysisPage(QWidget):
                     f"Report: {result.methodology_version}\n"
                     f"Observation eligibility: {series.eligibility_methodology}\n"
                     f"Source: {series.source_name} ({series.source_id})\n"
+                    f"Sampling frequency: {series.sampling_frequency.value}\n"
                     f"Adjustment status: {series.adjustment_status}"
                 )
                 self.indicator_table.setItem(row, column, cell)
@@ -339,6 +340,7 @@ class TechnicalAnalysisPage(QWidget):
             f"{latest.observed_at.astimezone().date()}. "
             f"{series.rejected_count:,} row(s) rejected; {len(series.gaps)} gap break(s) "
             f"greater than {series.max_gap_days} calendar days. "
-            f"Source: {series.source_name}. Adjustment: {series.adjustment_status}. "
+            f"Source: {series.source_name}. Sampling frequency: "
+            f"{series.sampling_frequency.value}. Adjustment: {series.adjustment_status}. "
             "Bars are not resampled; all indicator periods count observations, not calendar days."
         )
