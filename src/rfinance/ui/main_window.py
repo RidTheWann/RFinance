@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QStackedWidget,
     QTableWidget,
@@ -316,13 +317,14 @@ class MainWindow(QMainWindow):
         import_title = QLabel("Local market-data import")
         import_title.setStyleSheet("font-size: 18px; font-weight: 600;")
         layout.addWidget(import_title)
-        layout.addWidget(
-            QLabel(
-                "Import a CSV file you obtained lawfully. Imported observations remain "
-                "UNVERIFIED until separately reviewed; this workflow does not fetch data "
-                "from IDX, OJK, KSEI, or any remote provider."
-            )
+        import_help = QLabel(
+            "Import a CSV file you obtained lawfully. Imported observations remain "
+            "UNVERIFIED until separately reviewed; this workflow does not fetch data "
+            "from IDX, OJK, KSEI, or any remote provider."
         )
+        import_help.setWordWrap(True)
+        import_help.setToolTip("Expected columns are documented in docs/MARKET_CSV_IMPORT.md.")
+        layout.addWidget(import_help)
         self.import_market_csv_button = QPushButton("Import market CSV")
         self.import_market_csv_button.setObjectName("importMarketCSVButton")
         self.import_market_csv_button.clicked.connect(self._select_market_csv)
@@ -380,13 +382,13 @@ class MainWindow(QMainWindow):
         empty_title = QLabel("Initialize your simulated portfolio")
         empty_title.setStyleSheet("font-size: 18px; font-weight: 600;")
         empty_layout.addWidget(empty_title)
-        empty_layout.addWidget(
-            QLabel(
-                "Choose the opening cash balance. The Rp5,000,000 value is only a default "
-                "suggestion: no money, asset, or monthly contribution is recorded until "
-                "you explicitly initialize this local simulation."
-            )
+        opening_help = QLabel(
+            "Choose the opening cash balance. The Rp5,000,000 value is only a default "
+            "suggestion: no money, asset, or monthly contribution is recorded until "
+            "you explicitly initialize this local simulation."
         )
+        opening_help.setWordWrap(True)
+        empty_layout.addWidget(opening_help)
 
         form = QFormLayout()
         self.initial_capital_input = QLineEdit(format(DEFAULT_SIMULATION_CAPITAL, "f"))
@@ -1061,6 +1063,11 @@ class MainWindow(QMainWindow):
         )
         if not target:
             return
+        if Path(target).exists() and not self._confirm_overwrite(Path(target)):
+            self.portfolio_status_label.setText(
+                "Ledger export cancelled; the existing file was kept."
+            )
+            return
         try:
             report = self.ledger_reports.ledger_csv()
             Path(target).write_text(report.csv_text, encoding="utf-8")
@@ -1071,6 +1078,18 @@ class MainWindow(QMainWindow):
             f"Exported {report.event_count} simulated ledger event(s) to {target}. "
             f"Methodology: {report.methodology_version}."
         )
+
+    def _confirm_overwrite(self, target: Path) -> bool:
+        """Ask before replacing an existing report file."""
+
+        answer = QMessageBox.question(
+            self,
+            "Replace existing file?",
+            f"{target.name} already exists.\nOverwrite it?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        return answer is QMessageBox.StandardButton.Yes
 
     def _export_portfolio_report(self) -> None:
         """Write a PDF report assembled from local simulation records."""
@@ -1085,6 +1104,11 @@ class MainWindow(QMainWindow):
             "PDF files (*.pdf)",
         )
         if not target:
+            return
+        if Path(target).exists() and not self._confirm_overwrite(Path(target)):
+            self.portfolio_status_label.setText(
+                "Report export cancelled; the existing file was kept."
+            )
             return
         try:
             self.portfolio_reports.export_pdf(Path(target))

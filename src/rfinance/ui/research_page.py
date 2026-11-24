@@ -111,6 +111,32 @@ class ResearchPage(QWidget):
         self.reporting_basis_select = QComboBox()
         for basis in ReportingBasis:
             self.reporting_basis_select.addItem(basis.value, basis)
+        amount_hint = "Decimal amount in IDR for the selected reporting period."
+        self.evaluate_instrument_input.setToolTip(
+            "Instrument identifier as stored locally, e.g. IDX:BBCA."
+        )
+        self.evaluate_revenue_input.setToolTip(amount_hint)
+        self.evaluate_previous_revenue_input.setToolTip(
+            f"{amount_hint} Must be from the prior comparable period."
+        )
+        self.evaluate_net_income_input.setToolTip(amount_hint)
+        self.evaluate_average_equity_input.setToolTip(amount_hint)
+        self.evaluate_total_debt_input.setToolTip(amount_hint)
+        self.evaluate_total_equity_input.setToolTip(amount_hint)
+        self.evaluate_eps_input.setToolTip(
+            "Earnings per share in IDR (profit / shares outstanding)."
+        )
+        self.evaluate_price_input.setToolTip(
+            "Market price per share in IDR at the observation date."
+        )
+        self.reporting_basis_select.setToolTip(
+            "Declares whether the amounts cover an ANNUAL, QUARTERLY or TTM period. "
+            "Required when verified local filings are used."
+        )
+        self.use_filings_checkbox.setToolTip(
+            "Use VERIFIED local filing metrics instead of the manual inputs above. "
+            "The selected Reporting basis must match the filing basis."
+        )
         form.addRow("Instrument ID", self.evaluate_instrument_input)
         form.addRow("Revenue", self.evaluate_revenue_input)
         form.addRow("Prior revenue", self.evaluate_previous_revenue_input)

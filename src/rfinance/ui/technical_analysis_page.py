@@ -230,7 +230,10 @@ class TechnicalAnalysisPage(QWidget):
 
     def _render_catalog(self, result: object) -> None:
         if not isinstance(result, tuple):
-            raise TypeError("technical series catalogue returned an invalid result")
+            self.status_label.setText(
+                "Technical analysis failed: the service returned an unexpected catalogue."
+            )
+            return
         choices = tuple(item for item in result if isinstance(item, HistoricalSeriesChoice))
         self._choices = choices
         self.instrument_combo.blockSignals(True)
@@ -289,7 +292,10 @@ class TechnicalAnalysisPage(QWidget):
 
     def _render_report(self, result: object) -> None:
         if not isinstance(result, TechnicalAnalysisReport):
-            raise TypeError("technical analysis service returned an invalid report")
+            self.status_label.setText(
+                "Technical analysis failed: the service returned an unexpected report."
+            )
+            return
         series = result.series
         self.indicator_table.setRowCount(len(result.indicators))
         for row, reading in enumerate(result.indicators):

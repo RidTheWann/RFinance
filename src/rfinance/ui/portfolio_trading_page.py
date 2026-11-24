@@ -77,16 +77,31 @@ class PortfolioTradingPage(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 12, 8, 8)
         layout.setSpacing(10)
-        layout.addWidget(QLabel("Simulated trade entry (no real order is placed)"))
+        intro = QLabel(
+            "Simulated trade entry — no real order is placed. Amounts are in IDR; "
+            "prices and quantities must come from VERIFIED observations."
+        )
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
 
         form = QFormLayout()
         self.instrument_input = QLineEdit("IDX:BBCA")
+        self.instrument_input.setToolTip(
+            "Instrument ID as listed in Instrument Review, e.g. IDX:BBCA. "
+            "Only active VERIFIED instruments with lot-size evidence can be traded."
+        )
         self.side_combo = QComboBox()
         self.side_combo.addItems(["BUY", "SELL"])
         self.quantity_input = QLineEdit()
+        self.quantity_input.setToolTip(
+            "Whole shares; must be a multiple of the verified lot size shown below."
+        )
         self.price_input = QLineEdit()
+        self.price_input.setToolTip("Price per share in IDR. Simulated only; no order is sent.")
         self.fees_input = QLineEdit("0")
+        self.fees_input.setToolTip("Fees in IDR for this simulated trade; 0 means none.")
         self.taxes_input = QLineEdit("0")
+        self.taxes_input.setToolTip("Taxes in IDR for this simulated trade; 0 means none.")
         form.addRow("Instrument ID", self.instrument_input)
         form.addRow("Side", self.side_combo)
         form.addRow("Quantity (shares)", self.quantity_input)
