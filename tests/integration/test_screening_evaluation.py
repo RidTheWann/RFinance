@@ -18,6 +18,7 @@ from rfinance.data.contracts import (
     DividendEventContract,
     DividendEventStatus,
     DividendType,
+    ReportingBasis,
 )
 from rfinance.domain.recommendations.screening import RecommendationAction, RiskFlag
 from rfinance.domain.risk.controls import RiskSnapshot
@@ -325,8 +326,17 @@ def test_persisted_verified_metrics_drive_screening(tmp_path: Path) -> None:
         fundamentals={},
         as_of=AS_OF,
         use_persisted_fundamentals=True,
+        reporting_basis=ReportingBasis.ANNUAL,
     )
 
     assert result.action is RecommendationAction.BUY_CANDIDATE
     assert "metric:RETURN_ON_EQUITY" in result.evidence_ids
+
+    with pytest.raises(ValueError, match="reporting_basis is required"):
+        service.evaluate(
+            "IDX:BBCA",
+            fundamentals={},
+            as_of=AS_OF,
+            use_persisted_fundamentals=True,
+        )
     database.close()

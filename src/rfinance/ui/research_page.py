@@ -6,12 +6,13 @@
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
+    QComboBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -23,6 +24,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from rfinance.data.contracts import ReportingBasis
 from rfinance.domain.recommendations.screening import Recommendation
 
 if TYPE_CHECKING:
@@ -106,6 +108,9 @@ class ResearchPage(QWidget):
         self.use_filings_checkbox = QCheckBox(
             "Use verified local filings instead of the inputs below"
         )
+        self.reporting_basis_select = QComboBox()
+        for basis in ReportingBasis:
+            self.reporting_basis_select.addItem(basis.value, basis)
         form.addRow("Instrument ID", self.evaluate_instrument_input)
         form.addRow("Revenue", self.evaluate_revenue_input)
         form.addRow("Prior revenue", self.evaluate_previous_revenue_input)
@@ -115,6 +120,7 @@ class ResearchPage(QWidget):
         form.addRow("Total equity", self.evaluate_total_equity_input)
         form.addRow("EPS", self.evaluate_eps_input)
         form.addRow("Price", self.evaluate_price_input)
+        form.addRow("Reporting basis", self.reporting_basis_select)
         form.addRow("", self.use_filings_checkbox)
         layout.addLayout(form)
 
@@ -236,6 +242,7 @@ class ResearchPage(QWidget):
                 instrument_id,
                 fundamentals=fundamentals,
                 use_persisted_fundamentals=self.use_filings_checkbox.isChecked(),
+                reporting_basis=cast("ReportingBasis", self.reporting_basis_select.currentData()),
             )
 
         def on_success(result: object) -> None:

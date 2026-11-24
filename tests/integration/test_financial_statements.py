@@ -15,7 +15,7 @@ from rfinance.application.financial_statements import (
     FinancialReviewDecision,
     FinancialStatementService,
 )
-from rfinance.data.contracts import DataQualityStatus
+from rfinance.data.contracts import DataQualityStatus, ReportingBasis
 from rfinance.storage.database import Database
 from rfinance.storage.models.instrument_registry import InstrumentRegistryRecord
 
@@ -139,6 +139,47 @@ def test_verified_inputs_uses_latest_period_and_ignores_future(tmp_path: Path) -
         )
 
     assert service.verified_inputs("IDX:BBCA", as_of=AS_OF) == {"revenue": Decimal("1000")}
+    database.close()
+
+
+def test_verified_inputs_separates_reporting_basis_and_prefers_requested(tmp_path: Path) -> None:
+    database = Database.open(tmp_path / "financial-basis.sqlite3")
+    database.upgrade()
+    seed_instrument(database)
+    service = FinancialStatementService(database.sessions)
+    annual = service.record_metric(metric(value="1000"), recorded_at=AS_OF)
+    quarterly = service.record_metric(
+        metric(
+            value="300",
+            period_start=date(2025, 10, 1),
+            period_end=date(2025, 12, 31),
+            reporting_basis="QUARTERLY",
+        ),
+        recorded_at=AS_OF,
+    )
+    for item in (annual, quarterly):
+        service.review_metric(
+            item.metric_id,
+            decision=FinancialReviewDecision.VERIFIED,
+            reviewer_label="Operator",
+            evidence_reference="Documents/report.pdf",
+            evidence_sha256="a" * 64,
+            notes="Checked",
+            reviewed_at=AS_OF,
+        )
+
+    # A newer quarter never replaces the annual figure: mixing bases would feed a
+    # three-month revenue into a formula that assumes an annual denominator.
+    assert service.verified_inputs("IDX:BBCA", as_of=AS_OF)["revenue"] == Decimal("1000")
+    assert service.verified_inputs("IDX:BBCA", as_of=AS_OF, reporting_basis=ReportingBasis.ANNUAL)[
+        "revenue"
+    ] == Decimal("1000")
+    assert service.verified_inputs(
+        "IDX:BBCA", as_of=AS_OF, reporting_basis=ReportingBasis.QUARTERLY
+    )["revenue"] == Decimal("300")
+    assert (
+        service.verified_inputs("IDX:BBCA", as_of=AS_OF, reporting_basis=ReportingBasis.TTM) == {}
+    )
     database.close()
 
 

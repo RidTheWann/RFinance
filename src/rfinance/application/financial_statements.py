@@ -17,7 +17,7 @@ from uuid import uuid4
 
 from sqlalchemy import select
 
-from rfinance.data.contracts import FinancialMetricContract
+from rfinance.data.contracts import FinancialMetricContract, ReportingBasis
 from rfinance.storage.models.data_ingestion import SourceRegistryRecord
 from rfinance.storage.models.financial_statement import (
     FinancialMetricRecord,
@@ -60,6 +60,7 @@ class FinancialMetricCandidate:
     currency: str
     period_start: date
     period_end: date
+    reporting_basis: ReportingBasis
     raw_quality: str
     effective_quality: str
 
@@ -209,6 +210,7 @@ class FinancialStatementService:
                 currency=record.currency,
                 period_start=date.fromisoformat(record.period_start),
                 period_end=date.fromisoformat(record.period_end),
+                reporting_basis=ReportingBasis(record.reporting_basis),
                 raw_quality=record.quality_status,
                 effective_quality=latest.get(record.metric_id, record.quality_status),
             )
@@ -343,20 +345,42 @@ class FinancialStatementService:
         instrument_id: str,
         *,
         as_of: datetime | None = None,
+        reporting_basis: ReportingBasis | None = None,
     ) -> dict[str, Decimal]:
-        """Return the newest verified value per metric name, excluding future periods."""
+        """Return the newest verified value per metric name, excluding future periods.
+
+        Candidates are never blended across reporting bases. With an explicit
+        ``reporting_basis`` only that basis is eligible. Without one the most
+        complete basis available wins (`ANNUAL`, then `TTM`, then `QUARTERLY`),
+        so a newer quarter cannot replace an annual figure and feed a three-month
+        denominator into an annual formula; within the selected basis the newest
+        period wins. Callers of the persisted-fundamentals path must still declare
+        the basis their formula version expects.
+        """
 
         moment = as_of or datetime.now(UTC)
         if moment.tzinfo is None or moment.utcoffset() is None:
             raise ValueError("as_of must be timezone-aware")
         cutoff = moment.astimezone(UTC).date()
-        chosen: dict[str, tuple[date, Decimal]] = {}
+        basis_rank = {
+            ReportingBasis.ANNUAL: 0,
+            ReportingBasis.TTM: 1,
+            ReportingBasis.QUARTERLY: 2,
+        }
+        chosen: dict[str, tuple[int, date, Decimal]] = {}
         for item in self.list_metrics(limit=2_000):
             if item.instrument_id != instrument_id or item.effective_quality != "VERIFIED":
                 continue
             if item.period_end > cutoff:
                 continue
+            if reporting_basis is not None and item.reporting_basis is not reporting_basis:
+                continue
+            rank = basis_rank[item.reporting_basis]
             current = chosen.get(item.metric_name)
-            if current is None or item.period_end > current[0]:
-                chosen[item.metric_name] = (item.period_end, item.value)
-        return {name: value for name, (_, value) in chosen.items()}
+            if (
+                current is None
+                or rank < current[0]
+                or (rank == current[0] and item.period_end > current[1])
+            ):
+                chosen[item.metric_name] = (rank, item.period_end, item.value)
+        return {name: value for name, (_, _, value) in sorted(chosen.items())}

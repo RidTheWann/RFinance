@@ -2,6 +2,13 @@
 
 Last verified against the repository: 2026-11-24
 
+## Reporting-basis separation (this session, 2026-11-24)
+
+- Found and fixed a real input-mixing defect on roadmap item 4. `FinancialStatementService.verified_inputs` selected the newest value per metric name without regard to `reporting_basis`, so a newer `QUARTERLY` revenue could replace an `ANNUAL` one; `ScreeningEvaluationService.evaluate` then fed that mixed input into `fundamental-metrics-v1`. Candidates are now keyed by metric name **and** basis, an explicit `reporting_basis` filter is honoured, and persisted fundamentals are rejected without a declared basis.
+- Research Center exposes a Reporting basis selector (`ANNUAL`/`QUARTERLY`/`TTM`) and passes it through; the UI test asserts the declared basis reaches the service.
+- Verified locally on Windows 11 x64 / Python 3.13.16: affected tests → 15 passed; full suite → **332 passed**; Ruff lint/format clean; Mypy strict passes on 111 source files.
+- Not verified: whether any existing local database already holds basis-mixed metrics (the fix selects correctly going forward but does not rewrite history).
+
 ## Instrument metadata evidence (this session, 2026-11-24)
 
 - Added `instrument-metadata-evidence-v1`: append-only `instrument_metadata_events` (migration `0013_instrument_metadata_evidence`) recording a stated sampling frequency and corporate-action adjustment status per instrument/source pair, each with archived evidence SHA-256, reviewer label and methodology version. The gate requires an active `VERIFIED` instrument; a newer `REJECTED` decision suppresses the prior VERIFIED one.

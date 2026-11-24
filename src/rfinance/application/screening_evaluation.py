@@ -12,6 +12,7 @@ from rfinance.analysis.fundamental.metrics import (
     ComputedMetric,
     compute_fundamental_metrics,
 )
+from rfinance.data.contracts import ReportingBasis  # noqa: TC001 - runtime identity check
 from rfinance.domain.recommendations.screening import (
     EvidenceItem,
     EvidenceKind,
@@ -64,8 +65,14 @@ class ScreeningEvaluationService:
         as_of: datetime | None = None,
         portfolio_drawdown: Decimal | None = None,
         use_persisted_fundamentals: bool = False,
+        reporting_basis: ReportingBasis | None = None,
     ) -> Recommendation:
-        """Evaluate one instrument; all numeric inputs remain explicit."""
+        """Evaluate one instrument; all numeric inputs remain explicit.
+
+        ``reporting_basis`` declares which reporting basis the formula version
+        expects. When persisted fundamentals are used it is required, so a
+        quarterly value can never silently feed an annual formula.
+        """
 
         moment = as_of or datetime.now(UTC)
         if moment.tzinfo is None or moment.utcoffset() is None:
@@ -111,7 +118,11 @@ class ScreeningEvaluationService:
         if use_persisted_fundamentals:
             if self._financial_statements is None:
                 raise ValueError("no financial statement service is configured")
-            persisted = self._financial_statements.verified_inputs(instrument_id, as_of=moment)
+            if reporting_basis is None:
+                raise ValueError("reporting_basis is required when using persisted fundamentals")
+            persisted = self._financial_statements.verified_inputs(
+                instrument_id, as_of=moment, reporting_basis=reporting_basis
+            )
             fundamentals = {**fundamentals, **persisted}
 
         metrics: tuple[ComputedMetric, ...] = compute_fundamental_metrics(fundamentals)
