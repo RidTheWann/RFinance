@@ -2,6 +2,14 @@
 
 Last verified against the repository: 2026-11-24
 
+## Instrument metadata evidence (this session, 2026-11-24)
+
+- Added `instrument-metadata-evidence-v1`: append-only `instrument_metadata_events` (migration `0013_instrument_metadata_evidence`) recording a stated sampling frequency and corporate-action adjustment status per instrument/source pair, each with archived evidence SHA-256, reviewer label and methodology version. The gate requires an active `VERIFIED` instrument; a newer `REJECTED` decision suppresses the prior VERIFIED one.
+- `HistoricalPriceSeriesService` consumes the latest verified decision when supplied and otherwise keeps `sampling_frequency = UNKNOWN_AS_SUPPLIED` / `adjustment_status = UNKNOWN_AS_SUPPLIED`, so a bar count can never imply a frequency or an adjusted series. The Technical Analysis page displays both values.
+- Verified locally on Windows 11 x64 / Python 3.13.16: `pytest tests/integration/test_instrument_metadata.py tests/integration/test_backup_restore.py` → 11 passed; full suite → **331 passed**; Ruff lint/format and Mypy strict pass on 111 source files. CI for PR #19 (the preceding bootstrap fix) is green on Windows and Ubuntu.
+- Scope boundary: sector attribution remains unimplemented because `RiskMonitoringService` reports no sector weights today and no sector-evidence contract has been adopted. Sector evidence is recorded as a deferred, separately-evidenced slice rather than implied from the free-text `instrument_registry.sector`.
+- Not verified: end-to-end recording through a desktop form (no connected UI for metadata evidence yet); the service is exercised only by integration tests and exposed via the composition root.
+
 ## Windows development bootstrap (this session, 2026-11-24)
 
 - `scripts\setup_windows.ps1` no longer assumes Python 3.12 is installed. It auto-detects a supported 3.12–3.15 runtime (`py -3.13`, then 3.12, 3.14, 3.15, `python`, `py -3`), rejects an explicitly passed unsupported interpreter, and supports `-DryRun`. The range matches `requires-python = ">=3.12,<3.16"`.

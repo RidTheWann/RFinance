@@ -16,6 +16,7 @@ from rfinance.application.dividend_receipts import DividendReceiptService
 from rfinance.application.financial_statements import FinancialStatementService
 from rfinance.application.historical_price_series import HistoricalPriceSeriesService
 from rfinance.application.instrument_category import InstrumentCategoryService
+from rfinance.application.instrument_metadata import InstrumentMetadataEvidenceService
 from rfinance.application.instrument_review import InstrumentReviewService
 from rfinance.application.ledger_reporting import LedgerReportService
 from rfinance.application.market_csv_import import MarketCSVImportService
@@ -58,6 +59,7 @@ class ApplicationContext:
     market_csv_import: MarketCSVImportService
     instrument_review: InstrumentReviewService
     instrument_categories: InstrumentCategoryService
+    instrument_metadata: InstrumentMetadataEvidenceService
     observation_review: ObservationReviewService
     dividend_events: DividendEventService
     dividend_receipts: DividendReceiptService
@@ -92,7 +94,10 @@ def create_application_context(data_directory: str | None = None) -> Application
         ledger_reports = LedgerReportService(portfolio_ledger)
         portfolio_valuation = PortfolioValuationService(database.sessions, portfolio_ledger)
         technical_analysis = TechnicalAnalysisService(
-            HistoricalPriceSeriesService(database.sessions)
+            HistoricalPriceSeriesService(
+                database.sessions,
+                metadata_service=InstrumentMetadataEvidenceService(database.sessions),
+            )
         )
         data_ingestion_repository = DataIngestionRepository(database.sessions)
         market_csv_import = MarketCSVImportService(
@@ -104,6 +109,9 @@ def create_application_context(data_directory: str | None = None) -> Application
             data_directory=paths.root,
         )
         instrument_categories = InstrumentCategoryService(
+            database.sessions, data_directory=paths.root
+        )
+        instrument_metadata = InstrumentMetadataEvidenceService(
             database.sessions, data_directory=paths.root
         )
         observation_review = ObservationReviewService(
@@ -184,6 +192,7 @@ def create_application_context(data_directory: str | None = None) -> Application
         market_csv_import=market_csv_import,
         instrument_review=instrument_review,
         instrument_categories=instrument_categories,
+        instrument_metadata=instrument_metadata,
         observation_review=observation_review,
         dividend_events=dividend_events,
         dividend_receipts=dividend_receipts,
