@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from rfinance.analysis.portfolio.valuation import ValuationCategory
+from rfinance.ui.formatting import format_decimal
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -164,7 +165,7 @@ class CategoryEvidencePanel(QWidget):
             values = (
                 decision.instrument_id,
                 decision.category.value,
-                format(decision.lot_size, "f"),
+                format_decimal(decision.lot_size),
                 decision.decision,
                 decision.evidence_reference,
                 decision.reviewer_label,

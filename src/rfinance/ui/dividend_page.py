@@ -36,6 +36,7 @@ from rfinance.application.dividend_events import (
 )
 from rfinance.application.dividend_receipts import DividendReceiptResult
 from rfinance.data.contracts import DividendEventContract, DividendEventStatus, DividendType
+from rfinance.ui.formatting import format_decimal, format_percent
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -404,9 +405,7 @@ class DividendPage(QWidget):
                 candidate.instrument_id,
                 candidate.dividend_type,
                 candidate.event_status,
-                "—"
-                if candidate.amount_per_share is None
-                else format(candidate.amount_per_share, "f"),
+                format_decimal(candidate.amount_per_share),
                 candidate.currency,
                 candidate.ex_date.isoformat(),
                 "—" if candidate.payment_date is None else candidate.payment_date.isoformat(),
@@ -493,7 +492,7 @@ class DividendPage(QWidget):
                 item.date_kind,
                 item.instrument_id,
                 item.dividend_type,
-                "—" if item.amount_per_share is None else format(item.amount_per_share, "f"),
+                format_decimal(item.amount_per_share),
                 item.currency,
                 item.event_status,
                 item.effective_quality,
@@ -632,22 +631,24 @@ class DividendPage(QWidget):
         self.calculate_button.setEnabled(True)
         trailing = report.trailing_dividend_per_share
         trailing_text = (
-            "unavailable (no verified observation)" if trailing is None else format(trailing, "f")
+            "unavailable (no verified observation)"
+            if trailing is None
+            else format_decimal(trailing)
         )
         yield_text = (
             "unavailable (no verified price)"
             if report.trailing_yield is None
-            else (f"{report.trailing_yield.value * 100:.2f}% TRAILING (observed)")
+            else f"{format_percent(report.trailing_yield.value)} TRAILING (observed)"
         )
         forward_text = (
             "not requested"
             if report.forward_yield is None
-            else (f"{report.forward_yield.value * 100:.2f}% FORWARD (estimate)")
+            else f"{format_percent(report.forward_yield.value)} FORWARD (estimate)"
         )
         net_text = (
             "gross only (withholding unknown)"
             if report.net_trailing_per_share is None
-            else (format(report.net_trailing_per_share, "f"))
+            else format_decimal(report.net_trailing_per_share)
         )
         self.analytics_result_label.setText(
             f"{report.instrument_id} as of {report.as_of.isoformat()} ({report.currency}): "

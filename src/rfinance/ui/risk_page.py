@@ -7,6 +7,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from decimal import Decimal
+
 from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -22,6 +25,7 @@ from PySide6.QtWidgets import (
 )
 
 from rfinance.domain.risk.controls import RiskAssessment, RiskRule
+from rfinance.ui.formatting import MISSING, format_decimal, format_percent
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -167,8 +171,8 @@ class RiskPage(QWidget):
                 event.triggered_at_utc.replace("T", " "),
                 event.rule.value,
                 event.severity.value,
-                "—" if event.observed_value is None else format(event.observed_value, "f"),
-                "—" if event.threshold is None else format(event.threshold, "f"),
+                self._render_metric(event.rule, event.observed_value),
+                self._render_metric(event.rule, event.threshold),
                 "Reviewed" if event.review is not None else "Pending",
             )
             for column, value in enumerate(values):
@@ -200,9 +204,29 @@ class RiskPage(QWidget):
         value = selected[0].data(Qt.ItemDataRole.UserRole)
         return value if isinstance(value, str) else None
 
+    @staticmethod
+    def _render_metric(rule: RiskRule, value: Decimal | None) -> str:
+        """Render a risk metric in the unit its rule measures."""
+
+        if value is None:
+            return MISSING
+        ratio_rules = {
+            RiskRule.CRITICAL_DRAWDOWN,
+            RiskRule.ELEVATED_DRAWDOWN,
+            RiskRule.SINGLE_INSTRUMENT_CONCENTRATION,
+            RiskRule.SECTOR_CONCENTRATION,
+            RiskRule.ALLOCATION_DEVIATION,
+        }
+        return format_percent(value) if rule in ratio_rules else format_decimal(value)
+
     def _on_selection_changed(self) -> None:
         event_id = self._selected_event_id()
         self.selected_event_label.setText(event_id or "Select an event above")
+        # Clear the draft fields so a note written for one event cannot be
+        # submitted against a different event after re-selection.
+        self.reviewer_input.clear()
+        self.notes_input.clear()
+        self.evidence_input.clear()
         self.review_button.setEnabled(event_id is not None and not self.is_busy)
 
     def evaluate(self) -> None:
@@ -242,7 +266,9 @@ class RiskPage(QWidget):
             self.status_label.setText("Risk evaluation returned an unexpected result.")
             return
         self._drawdown = (
-            "not available" if result.drawdown is None else format(result.drawdown, "f")
+            "not available"
+            if result.drawdown is None
+            else f"{format_percent(result.drawdown)} of peak"
         )
         self.status_label.setText(
             "Risk evaluation complete. Unresolved events require an explicit review."

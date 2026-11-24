@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
@@ -127,6 +127,8 @@ class AutomationPage(QWidget):
             for column, value in enumerate(values):
                 item = QTableWidgetItem(value)
                 item.setToolTip(job.description)
+                if column == 0:
+                    item.setData(Qt.ItemDataRole.UserRole, job.job_id)
                 self.jobs_table.setItem(row, column, item)
         if definitions:
             self.jobs_table.selectRow(0)
@@ -150,11 +152,17 @@ class AutomationPage(QWidget):
     def run_selected(self) -> None:
         if self._thread is not None:
             return
-        selected = self.jobs_table.selectedItems()
-        if not selected:
+        # Read the identifier from column 0's user data, not whichever cell was
+        # clicked: clicking Name/Enabled/Schedule must still target the right job.
+        current_row = self.jobs_table.currentRow()
+        if current_row < 0:
             self.status_label.setText("Select a registered job first.")
             return
-        job_id = selected[0].text()
+        id_item = self.jobs_table.item(current_row, 0)
+        job_id = "" if id_item is None else str(id_item.data(Qt.ItemDataRole.UserRole) or "")
+        if not job_id:
+            self.status_label.setText("Select a registered job first.")
+            return
         thread = QThread(self)
         worker = AutomationWorker(self._service, job_id)
         worker.moveToThread(thread)
