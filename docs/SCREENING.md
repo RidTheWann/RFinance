@@ -91,6 +91,9 @@ evidence from persisted records only:
 - verified cash dividend event IDs for the instrument;
 - metrics computed from operator-supplied fundamental inputs via
   `fundamental-metrics-v1`, or verified local filing values when selected;
+  persisted filings must declare a `reporting_basis` (`ANNUAL`, `QUARTERLY`,
+  `TTM`) so a quarterly value can never feed an annual formula, and the call is
+  rejected without one;
 - persisted risk-control state from `RiskMonitoringService.screening_controls()`
   when that service is configured.
 

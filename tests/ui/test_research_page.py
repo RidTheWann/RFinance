@@ -7,6 +7,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 
 from rfinance.application.recommendations import RecommendationService
+from rfinance.data.contracts import ReportingBasis
 from rfinance.domain.recommendations.screening import (
     EvidenceItem,
     EvidenceKind,
@@ -170,6 +171,7 @@ def test_research_page_runs_guided_evaluation_and_shows_evidence(
         assert "price:obs-1" in page.evaluation_detail_label.text()
         assert stub.calls and stub.calls[0]["instrument_id"] == "IDX:BBCA"
         assert stub.calls[0]["use_persisted_fundamentals"] is True
+        assert stub.calls[0]["reporting_basis"] == ReportingBasis.ANNUAL
         page.close()
     finally:
         database.close()

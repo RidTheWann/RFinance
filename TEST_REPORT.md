@@ -2,6 +2,14 @@
 
 Last updated: 2026-11-24
 
+## Reporting-basis separation (2026-11-24, Windows 11 x64 / Python 3.13.16)
+
+- `tests/integration/test_financial_statements.py`: the new test records a verified ANNUAL revenue and a newer verified QUARTERLY revenue for the same instrument, then asserts the unfiltered input keeps the annual figure, `ANNUAL` returns it, `QUARTERLY` returns the quarter, and `TTM` returns nothing.
+- `tests/integration/test_screening_evaluation.py`: persisted fundamentals require `reporting_basis`, and omitting it raises.
+- `tests/ui/test_research_page.py`: the Research Center passes the selected basis to the evaluation service.
+- Full suite: **332 passed** in ~76s. Ruff lint/format clean; Mypy strict passes on 111 source files.
+- **NOT VERIFIED**: migration-free behaviour on an existing database that already contains basis-mixed metrics; this change governs future selection only.
+
 ## Instrument metadata evidence (2026-11-24, Windows 11 x64 / Python 3.13.16)
 
 - `tests/integration/test_instrument_metadata.py` (6 tests): verified decision is persisted with methodology version; a newer rejection suppresses the prior verified decision; the table rejects UPDATE and DELETE through its append-only triggers; an UNVERIFIED instrument cannot receive evidence; the series snapshot defaults to `UNKNOWN_AS_SUPPLIED` for both fields and switches to the verified values when evidence exists.

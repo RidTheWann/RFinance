@@ -9,6 +9,8 @@
 - Reported metrics, derived metrics, analyst estimates, forward estimates, AI interpretations, and simulations must be separately labelled.
 - Financial statements must be period-aligned and use a declared reporting basis (annual, quarterly, trailing twelve months, etc.).
 
+`verified_inputs` never blends reporting bases for one metric. With an explicit `reporting_basis`, only that basis is eligible and the newest period within it wins. Without one, the most complete available basis wins (`ANNUAL`, then `TTM`, then `QUARTERLY`) before period recency is compared, so a newer quarter cannot replace an annual figure and feed a three-month denominator into an annual formula. Callers of the persisted-fundamentals path must still declare the basis their formula version expects; `ScreeningEvaluationService.evaluate` rejects persisted fundamentals when `reporting_basis` is omitted.
+
 ## Fundamental metrics (`fundamental-metrics-v1`)
 
 `src/rfinance/analysis/fundamental/metrics.py` provides both low-level pure
