@@ -190,6 +190,34 @@ def test_main_window_navigation_and_initial_portfolio_setup(qtbot, tmp_path) -> 
         assert not window._portfolio_dashboard.isHidden()
         assert window._portfolio_empty_panel.isHidden()
         assert window.portfolio_cash_label.text() == "Cash balance: Rp1,250,000.00"
+
+        window.navigation.setCurrentRow(0)
+        window._refresh_overview_summary()
+        summary = window.overview_summary_label.text()
+        assert "Cash: Rp1,250,000.00 IDR" in summary
+        assert "Held positions: 0" in summary
+        assert "Ledger events applied: 1" in summary
+    finally:
+        database.close()
+
+
+def test_overview_summary_reports_read_failure_without_crashing(qtbot, tmp_path) -> None:
+    """A broken ledger read must surface a message, not raise into Qt."""
+
+    database = Database.open(tmp_path / "overview-broken.sqlite3")
+    database.upgrade()
+    try:
+        window = create_window(database, tmp_path)
+        qtbot.addWidget(window)
+        window.show()
+
+        class _BrokenLedger:
+            def snapshot(self):  # noqa: D102 - test double
+                raise RuntimeError("corrupt ledger")
+
+        window.portfolio_ledger = _BrokenLedger()  # type: ignore[assignment]
+        window._refresh_overview_summary()
+        assert "Could not read the local ledger" in window.overview_summary_label.text()
     finally:
         database.close()
 

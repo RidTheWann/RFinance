@@ -296,9 +296,38 @@ class MainWindow(QMainWindow):
         self.navigation.currentRowChanged.connect(self.pages.setCurrentIndex)
         self.navigation.setCurrentRow(0)
         self.refresh_portfolio()
+        self._refresh_overview_summary()
         self.refresh_market_import_history()
         self.refresh_instrument_review_queue()
         self.observation_review_page.refresh_queue()
+
+    def _refresh_overview_summary(self) -> None:
+        """Render a compact, always-labelled simulated portfolio summary."""
+
+        if self.portfolio_ledger is None:
+            self.overview_summary_label.setText("Portfolio Simulator is unavailable.")
+            return
+        try:
+            snapshot = self.portfolio_ledger.snapshot()
+        except Exception as error:  # noqa: BLE001 - UI must never crash on replay
+            self.overview_summary_label.setText(f"Could not read the local ledger: {error}")
+            return
+        held = [name for name in snapshot.positions if snapshot.positions[name].quantity > 0]
+        parts = [
+            f"Cash: {self._format_idr(snapshot.cash_balance)} {snapshot.currency}",
+            f"Held positions: {len(held)}",
+            f"Ledger events applied: {snapshot.applied_events}",
+            f"Simulated dividends received: {self._format_idr(snapshot.simulated_dividends)}",
+        ]
+        if self.instrument_review is not None:
+            pending = sum(
+                1
+                for item in self.instrument_review.list_instruments(limit=500)
+                if item.verification_status == "UNVERIFIED"
+            )
+            if pending:
+                parts.append(f"Instruments awaiting review: {pending}")
+        self.overview_summary_label.setText("\n".join(parts))
 
     def _overview_page(self) -> QWidget:
         page = QWidget()
@@ -312,7 +341,17 @@ class MainWindow(QMainWindow):
         layout.addWidget(QLabel("Local-first investment research workspace"))
         layout.addWidget(QLabel("Application storage: initialized"))
         layout.addWidget(QLabel("Automated market-data providers: none configured"))
-        layout.addWidget(QLabel("Portfolio figures are available in Portfolio Simulator"))
+
+        summary_title = QLabel("Simulated portfolio at a glance")
+        summary_title.setStyleSheet("font-size: 18px; font-weight: 600;")
+        layout.addWidget(summary_title)
+        self.overview_summary_label = QLabel("Reading local simulation records…")
+        self.overview_summary_label.setObjectName("overviewSummary")
+        self.overview_summary_label.setWordWrap(True)
+        self.overview_summary_label.setToolTip(
+            "Values come from the append-only simulated ledger. No broker account is involved."
+        )
+        layout.addWidget(self.overview_summary_label)
 
         import_title = QLabel("Local market-data import")
         import_title.setStyleSheet("font-size: 18px; font-weight: 600;")
