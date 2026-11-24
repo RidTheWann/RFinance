@@ -99,7 +99,11 @@ def complete_json(
         method="POST",
     )
     try:
-        with urlopen(request, timeout=config.timeout_seconds) as response:
+        # B310 is expected here: the URL comes only from the application-owned
+        # ALLOWED_ENDPOINTS table (fixed HTTPS values), never from user input.
+        with urlopen(  # nosec B310
+            request, timeout=config.timeout_seconds
+        ) as response:
             raw = response.read(MAX_RESPONSE_BYTES + 1)
     except (HTTPError, URLError, TimeoutError, OSError) as error:
         # Do not include headers or the request object: they contain the key.

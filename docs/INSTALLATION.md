@@ -42,7 +42,7 @@ are append-only with respect to recorded financial events.
 
 The frozen executable was launched with a fresh `RFINANCE_HOME` on Windows 11
 x64. It stayed alive, created the SQLite database with WAL/SHM files and a log,
-and reached Alembic head `0012_instrument_category` with 22 tables. No Python
+and reached Alembic head `0013_instrument_metadata_evidence` with 23 tables. No Python
 interpreter from the development virtualenv was used by the executable.
 
 ## Licensing notices

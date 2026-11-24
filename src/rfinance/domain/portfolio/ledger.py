@@ -271,19 +271,22 @@ def replay_ledger(
             )
 
         if event.event_type is LedgerEventType.CAPITAL_INJECTION:
-            assert event.amount is not None
+            if event.amount is None:
+                raise LedgerValidationError("capital injection requires an amount")
             cash += event.amount
             continue
 
         if event.event_type is LedgerEventType.CASH_WITHDRAWAL:
-            assert event.amount is not None
+            if event.amount is None:
+                raise LedgerValidationError("cash withdrawal requires an amount")
             if event.amount > cash:
                 raise InsufficientCashError("withdrawal would create a negative cash balance")
             cash -= event.amount
             continue
 
         instrument = event.instrument_id
-        assert instrument is not None
+        if instrument is None:
+            raise LedgerValidationError("instrument movement requires an instrument id")
 
         if event.event_type in {LedgerEventType.BUY, LedgerEventType.SELL}:
             lot_rule = lot_sizes.get(instrument)
@@ -292,8 +295,8 @@ def replay_ledger(
                     f"verified lot-size evidence is required for {instrument}"
                 )
             lot_size = lot_rule.size
-            assert event.quantity is not None
-            assert event.unit_price is not None
+            if event.quantity is None or event.unit_price is None:
+                raise LedgerValidationError("trade requires quantity and unit price")
             if event.quantity % lot_size != _ZERO:
                 raise LedgerValidationError(
                     f"quantity for {instrument} must be a multiple of lot size {lot_size}"
@@ -337,8 +340,10 @@ def replay_ledger(
             continue
 
         if event.event_type is LedgerEventType.SIMULATED_DIVIDEND:
-            assert event.amount is not None
-            assert event.source_reference is not None
+            if event.amount is None or event.source_reference is None:
+                raise LedgerValidationError(
+                    "simulated dividend requires an amount and source reference"
+                )
             if quantities.get(instrument, _ZERO) <= _ZERO:
                 raise InsufficientPositionError(
                     f"simulated dividend requires a held position in {instrument}"
@@ -354,8 +359,10 @@ def replay_ledger(
             continue
 
         if event.event_type is LedgerEventType.CONFIRMED_DIVIDEND:
-            assert event.amount is not None
-            assert event.source_reference is not None
+            if event.amount is None or event.source_reference is None:
+                raise LedgerValidationError(
+                    "confirmed dividend requires an amount and source reference"
+                )
             receipt_key = (instrument, event.source_reference)
             if receipt_key in seen_confirmed_refs:
                 raise LedgerValidationError(

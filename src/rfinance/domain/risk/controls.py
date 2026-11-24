@@ -168,7 +168,8 @@ def evaluate_risk(
     if valuation_usable:
         peak = snapshot.peak_value
         current = snapshot.current_value
-        assert peak is not None and current is not None
+        if peak is None or current is None:
+            raise RuntimeError("a usable valuation snapshot requires peak and current values")
         drawdown = max(ZERO, (peak - current) / peak)
         if drawdown >= applied.critical_drawdown:
             findings.append(

@@ -11,17 +11,18 @@ Statuses reflect implemented behavior and test evidence, not folder names or UI 
 | 4 | Screening and deterministic evidence-linked recommendations | `screening-deterministic-v1`, append-only persistence, Research Center inspection and a guided evidence-assembly workflow implemented; verified financial-statement inputs remain |
 | 5 | Dividend event calendar and analytics | `dividend-analytics-v1`, append-only event/review persistence, labelled calendar, connected Dividend Center, and `dividend-receipt-v1` confirmed-receipt posting with 50/30/20 split and duplicate protection implemented; automated provider feed remains |
 | 6 | Ledger-based simulated portfolio, allocation and risk | Immutable ledger replay, first-run cash setup, `portfolio-valuation-v1`, `allocation-plan-v1` gap planning with explicit unfilled targets and risk blocking, `instrument-category-v1` evidence decisions feeding the plan, confirmed dividend receipts, evidence-gated simulated trades, and `risk-controls-v1` events with explicit reviews and connected desktop pages implemented; automatic rebalancing execution, verified sector mapping and risk automation remain |
-| 7 | Optional AI intelligence and secure document analysis | `ai-research-summary-v1` API-key research aid implemented with a single allowlisted endpoint, schema-validated output and no key storage; document analysis and additional providers remain |
-| 8 | Local automation and reporting | `automation-jobs-v1` job registry, append-only run ledger and connected Automation Center; `ledger-csv-v1` and `portfolio-pdf-v1` exports connected to the Portfolio Simulator. Automatic scheduling and monthly/broader reports remain |
-| 9 | Backup/restore, offline operation, reliability and security hardening | `sqlite-backup-v1` verified backup with manifest and non-destructive restore connected to Settings; in-place restore, offline acceptance and deeper hardening remain |
-| 10 | Windows installer, clean install, upgrade and data-preservation verification | PyInstaller folder build implemented and locally smoke-tested with a fresh data directory; signed installer, separate-machine clean install, in-place upgrade and data-preservation acceptance remain |
+| 7 | Optional AI intelligence and secure document analysis | `ai-research-summary-v1` API-key research aid with one allowlisted HTTPS endpoint, schema-validated output, untrusted labelling, no key storage and an optional capability disabled by default; document analysis and additional providers remain |
+| 8 | Local automation and reporting | `automation-jobs-v1` code-defined jobs, append-only run ledger and connected Automation Center with manual runs/history; `ledger-csv-v1` and `portfolio-pdf-v1` exports connected to the Portfolio Simulator. Automatic scheduling and monthly/broader reports remain |
+| 9 | Backup/restore, offline operation, reliability and security hardening | `sqlite-backup-v1` verified backup with SHA-256 manifest and non-destructive restore connected to Settings; 19 append-only tables with triggers; pip-audit clean. In-place restore, offline acceptance and deeper hardening remain |
+| 10 | Windows installer, clean install, upgrade and data-preservation verification | Reproducible PyInstaller folder build (`installer/windows/rfinance.spec`, `scripts/build_windows.ps1`), pinned lockfile, frozen binary smoke-tested on a fresh data directory reaching migration `0013` with 23 tables. Signed installer, separate-machine clean install, in-place upgrade and data-preservation acceptance remain |
 
-## Latest local engineering checkpoint (2026-11-23)
+## Latest local engineering checkpoint (2026-11-24)
 
-- Verified remote/local `main`: `753308bb87b58c076fc9cf9d189c7e2a9a14d053` (203 commits), merge of PR #6. Earlier notes claiming `f005c911...` / 179 commits were an outdated checkpoint. `gh` is unauthenticated here, so this session's commits are local and no push/PR/merge is claimed.
-- Linux aarch64 / Python 3.14: Ruff lint and format pass, Mypy strict passes on 82 source files, 246 unit/integration tests pass, 13 UI tests pass with one pre-existing aarch64/offscreen worker-timing failure reproduced on clean HEAD.
-- Delivered in this session: `risk-controls-v1`, append-only risk events/reviews and valuation history, and a connected Risk Management page.
-- Full Qt worker-thread suite remains timing-unreliable on this aarch64/offscreen runtime; historical Windows/Ubuntu x64 CI at Python 3.12 passed 215 tests.
+- Verified `origin/main`: `89493444ea128715b17fabc6187bf22bdca2d10b` (merge of PR #20), **238 commits**. `gh` is authenticated as `RidTheWann`.
+- Windows 11 x64 / Python 3.13.16: Ruff lint/format clean, Mypy strict clean on 111 source files, `pytest -q` → **332 passed**. `pip-audit -r requirements.lock` clean; `bandit` one medium false positive (`B310`) + 21 lows.
+- Delivered across PRs #19–#21: `setup_windows.ps1` interpreter autodetect; `instrument-metadata-evidence-v1` (sampling-frequency and adjustment evidence feeding `historical-price-series-v1`); reporting-basis separation so quarterly values cannot feed annual formulas.
+- CI stalls recorded as runner infrastructure, not code: two Ubuntu jobs hung for the full six-hour timeout or were cancelled mid-`Tests` while same-SHA runs passed.
+- Earlier aarch64/Python 3.14 checkpoints and the 246-test / 215-test counts are superseded by the current cross-platform Python 3.12 CI plus the local 332-test gate.
 
 ## Historical verified engineering checkpoint
 

@@ -304,19 +304,25 @@ def trailing_yield(
     if observed is None:
         return None
     value = dividend_yield(observed, price)
-    assert value is not None
+    if value is None:
+        return None
     return LabeledYield(value=value, basis="TRAILING", is_estimate=False)
 
 
 def forward_yield(
     estimated_annual_dividend: decimal.Decimal,
     price: decimal.Decimal,
-) -> LabeledYield:
-    """Yield based on an explicitly estimated forward annual dividend."""
+) -> LabeledYield | None:
+    """Yield based on an explicitly estimated forward annual dividend.
+
+    Returns ``None`` when no finite, positive yield can be derived; a missing
+    value is never replaced by zero.
+    """
 
     estimate = _non_negative(estimated_annual_dividend, "estimated_annual_dividend")
     value = dividend_yield(estimate, price)
-    assert value is not None
+    if value is None:
+        return None
     return LabeledYield(value=value, basis="FORWARD", is_estimate=True)
 
 

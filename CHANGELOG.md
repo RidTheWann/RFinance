@@ -4,6 +4,14 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Corrected stale status documentation against verified source and Git state. `README.md`'s progress table, `ROADMAP.md`'s checkpoint, `TEST_REPORT.md`'s known boundaries and `IMPLEMENTATION_STATUS.md`'s repository/CI sections described features that are already implemented (API-key AI research, automation jobs, CSV/PDF reporting, confirmed dividend receipt posting, backup/restore, Windows build) and cited superseded commit hashes. README progress is recomputed to 86.2% and the milestone table now matches the implemented surface.
+
+- Hardened the runtime path: removed 22 `assert`-based checks in ledger replay, risk controls, technical indicators, dividend analytics, automation retry, trading lot lookup and Qt result handling. Each is now an explicit `LedgerValidationError`, `TypeError`, `RuntimeError` or a guarded skip, so behaviour no longer changes under `python -O`. `bandit -r src` now reports zero findings; the sole prior medium (`B310`) was an allowlisted-endpoint false positive, documented inline with `# nosec`.
+
+- Added the missing PyInstaller, altgraph and pefile entries to `docs/THIRD_PARTY_NOTICES.md` (PyInstaller ships a bootloader exception permitting use to distribute non-free programs while RFinance stays GPL-3.0-only).
+
+- CI now runs `bandit -q -r src` and `pip-audit -r requirements.lock`, sets a 30-minute job timeout so a stalled runner fails fast instead of consuming the six-hour limit, installs `xvfb` alongside the Linux Qt libraries, and cancels superseded runs for the same ref. These were documented project gates that CI did not enforce.
+
 - Fixed `scripts\setup_windows.ps1` failing on machines without Python 3.12: it now auto-detects a supported 3.12–3.15 interpreter, supports `-Python` override and `-DryRun`, and documents the PowerShell execution-policy workaround. A packaging test pins the supported range so the script cannot regress to a single hard-coded version, and `README.md` points at the setup script instead of literal `py -3.12` commands.
 
 - Replaced the planned Ollama integration with optional API-key AI research (ADR 0005). A single verified OpenAI Chat Completions endpoint is allowlisted; the key is read only from `RFINANCE_AI_API_KEY` and never stored or logged. Structured output is validated against an application-owned schema and displayed as untrusted research aid only. Documented in `docs/AI_RESEARCH.md`.
