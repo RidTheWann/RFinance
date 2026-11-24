@@ -1,6 +1,14 @@
 # Implementation Status
 
-Last verified against the repository: 2026-11-23
+Last verified against the repository: 2026-11-24
+
+## Windows development bootstrap (this session, 2026-11-24)
+
+- `scripts\setup_windows.ps1` no longer assumes Python 3.12 is installed. It auto-detects a supported 3.12–3.15 runtime (`py -3.13`, then 3.12, 3.14, 3.15, `python`, `py -3`), rejects an explicitly passed unsupported interpreter, and supports `-DryRun`. The range matches `requires-python = ">=3.12,<3.16"`.
+- Added a contract test in `tests/unit/test_windows_packaging.py` pinning that gate, so a future hard-coded single-version default fails CI.
+- `README.md` now points at `setup_windows.ps1` instead of a literal `py -3.12 -m venv .venv`; `docs/INSTALLATION.md` documents `-Python`/`-DryRun` and the PowerShell execution-policy workaround.
+- Verified locally on Windows 11 x64 (PowerShell 5.1, Python 3.13.16): `-DryRun` selected `py -3.13` and exited 0; `-Python "py -3.11"` threw and exited 1. Ruff lint/format and Mypy strict pass on the tree.
+- Not yet verified: real `.venv` creation via the script on a host lacking 3.13, and the `-Python` override with a non-`py` launcher.
 
 ## Repository state
 

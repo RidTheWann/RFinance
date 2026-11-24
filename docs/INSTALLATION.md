@@ -9,10 +9,16 @@ required to run it.
 From a clean checkout on Windows:
 
 ```powershell
-py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\scripts\setup_windows.ps1
 .\scripts\build_windows.ps1
 ```
+
+`setup_windows.ps1` auto-detects a supported Python 3.12–3.15 runtime (it uses
+`py -3.13` first and falls back to 3.12, 3.14 and 3.15). Earlier versions hard-coded
+`py -3.12`, which failed on machines without Python 3.12. Pass `-Python "py -3.13"`
+to override, or `-DryRun` to see which interpreter would be selected without
+creating a virtual environment. If PowerShell blocks local scripts, run with
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup_windows.ps1`.
 
 PyInstaller is pinned in the `dev` extra and in `requirements.lock`. The build
 uses `installer/windows/rfinance.spec`, which bundles the Alembic migration

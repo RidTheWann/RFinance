@@ -1,6 +1,12 @@
 # Test Report
 
-Last updated: 2026-11-23
+Last updated: 2026-11-24
+
+## Windows development environment bootstrap (2026-11-24, Windows 11 x64)
+
+- `tests/unit/test_windows_packaging.py` (3 tests): PyInstaller pinned in `pyproject.toml`/`requirements.lock`; spec bundles migrations, GPLv3 LICENSE and third-party notices; `setup_windows.ps1` accepts only the supported Python range declared by `requires-python` and exposes `-DryRun`.
+- Executed the script directly rather than only reading it: `-DryRun` printed `Selected Python: py -3.13` and exited 0 on this host (Python 3.13.16 via `py -3.13`, plus a Store 3.11); `-Python "py -3.11"` threw the unsupported-runtime error and exited 1.
+- **NOT VERIFIED**: creating a real `.venv` through the script on a machine with no Python 3.13 present, and the `-Python` override on a non-`py` launcher such as an absolute interpreter path.
 
 ## API-key AI research (2026-11-23, Windows 11 x64)
 
