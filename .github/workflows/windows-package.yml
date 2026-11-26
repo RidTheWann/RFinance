@@ -47,6 +47,19 @@ jobs:
         shell: pwsh
         run: .\scripts\build_windows.ps1 -CreateInstaller
 
+      - name: Generate package checksums
+        shell: pwsh
+        run: |
+          $files = @(
+            Get-ChildItem .\dist\RFinance-Portable-*-win-x64.zip
+            Get-ChildItem .\dist\installer\RFinance-Setup-*-win-x64.exe
+          )
+          $lines = foreach ($file in $files) {
+            $hash = Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256
+            "$($hash.Hash.ToLowerInvariant())  $($file.Name)"
+          }
+          $lines | Set-Content .\dist\SHA256SUMS.txt -Encoding ascii
+
       - name: Upload Windows distributables
         uses: actions/upload-artifact@v4
         with:
@@ -54,6 +67,7 @@ jobs:
           path: |
             dist/RFinance-Portable-*-win-x64.zip
             dist/installer/RFinance-Setup-*-win-x64.exe
+            dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
 
