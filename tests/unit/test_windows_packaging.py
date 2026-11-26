@@ -27,7 +27,9 @@ def test_windows_build_assets_bundle_license_and_migrations() -> None:
     assert "THIRD_PARTY_NOTICES.md" in spec
     assert "console=False" in spec
     assert "PyInstaller" in script
-    assert "build_windows.ps1" in script or "rfinance.spec" in script
+    assert "RFinance.exe" in script
+    assert "--smoke-test" in script
+    assert "Compress-Archive" in script
 
 
 def test_setup_script_selects_only_supported_python_runtimes() -> None:
@@ -46,3 +48,35 @@ def test_setup_script_selects_only_supported_python_runtimes() -> None:
     assert "Dry run: no environment was created." in script
     installation = (ROOT / "docs" / "INSTALLATION.md").read_text(encoding="utf-8")
     assert "setup_windows.ps1" in installation
+
+
+def test_inno_setup_is_per_user_and_preserves_application_data() -> None:
+    iss = (ROOT / "installer" / "windows" / "rfinance.iss").read_text(encoding="utf-8")
+    assert "PrivilegesRequired=lowest" in iss
+    assert "DefaultDirName={localappdata}\\Programs\\RFinance" in iss
+    assert "RFinance-Setup-{#AppVersion}-win-x64" in iss
+    assert "{autoprograms}" in iss
+    assert "{autodesktop}" in iss
+
+    build = (ROOT / "scripts" / "build_windows.ps1").read_text(encoding="utf-8")
+    assert "[switch]$CreateInstaller" in build
+    assert "ISCC_PATH" in build
+    assert "RFINANCE_HOME" in build
+
+
+def test_windows_package_workflow_builds_artifact_and_publishes_version_tags() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "windows-package.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "windows-latest" in workflow
+    assert "choco install innosetup" in workflow
+    assert "actions/upload-artifact@v4" in workflow
+    assert "softprops/action-gh-release@v2" in workflow
+    assert 'tags: ["v*"]' in workflow
+
+
+def test_packaging_smoke_switch_bootstraps_database_without_gui() -> None:
+    main = (ROOT / "src" / "rfinance" / "main.py").read_text(encoding="utf-8")
+    assert '"--smoke-test"' in main
+    assert "alembic_version" in main
+    assert "context.close()" in main
