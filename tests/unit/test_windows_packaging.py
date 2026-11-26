@@ -67,9 +67,7 @@ def test_inno_setup_is_per_user_and_preserves_application_data() -> None:
 
 
 def test_windows_package_workflow_builds_artifact_and_publishes_version_tags() -> None:
-    workflow = (ROOT / ".github" / "workflows" / "windows-package.yml").read_text(
-        encoding="utf-8"
-    )
+    workflow = (ROOT / ".github" / "workflows" / "windows-package.yml").read_text(encoding="utf-8")
     assert "windows-latest" in workflow
     assert "choco install innosetup" in workflow
     assert "actions/upload-artifact@v4" in workflow
