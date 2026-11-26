@@ -114,6 +114,7 @@ try {
             throw "Inno Setup 6 compiler (ISCC.exe) was not found. Install Inno Setup 6 or set ISCC_PATH."
         }
 
+        New-Item -ItemType Directory -Path (Join-Path $dist "installer") -Force | Out-Null
         $installerScript = Join-Path $root "installer\windows\rfinance.iss"
         & $iscc "/DAppVersion=$version" $installerScript
         if ($LASTEXITCODE -ne 0) {
