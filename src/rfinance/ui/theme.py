@@ -163,7 +163,6 @@ def build_stylesheet(tokens: ThemeTokens) -> str:
         background-color: {t.bg_sidebar};
         color: {t.text_secondary};
         border: none;
-        outline: none;
         padding: 10px 8px;
     }}
 
