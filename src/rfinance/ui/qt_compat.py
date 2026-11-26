@@ -23,15 +23,9 @@ try:
     )
 except ImportError:  # pragma: no cover - PySide6 is the supported application binding.
     from PyQt6 import QtCore, QtGui, QtWidgets  # type: ignore[no-redef]
-    from PyQt6.QtCore import (  # type: ignore[no-redef]
-        QObject,
-        QRunnable,
-        Qt,
-        QThreadPool,
-        QTimer,
-        pyqtSignal as Signal,
-        pyqtSlot as Slot,
-    )
+    from PyQt6.QtCore import QObject, QRunnable, Qt, QThreadPool, QTimer  # type: ignore[no-redef]
+    from PyQt6.QtCore import pyqtSignal as Signal  # type: ignore[no-redef]
+    from PyQt6.QtCore import pyqtSlot as Slot  # type: ignore[no-redef]
 
 __all__ = [
     "QtCore",
