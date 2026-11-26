@@ -51,7 +51,8 @@ can be started manually, and publishes release assets for a version tag
 `--smoke-test` switch against an isolated temporary data directory, proving
 that SQLite startup and the bundled Alembic migrations work before uploading
 the installer and portable ZIP. Pull-request builds are available as a
-14-day Actions artifact; tagged builds are attached to GitHub Releases.
+14-day Actions artifact; tagged builds are attached to GitHub Releases together
+with `SHA256SUMS.txt` so each downloaded asset can be checked locally.
 
 For a tag to publish, its version must match `src/rfinance/__init__.py` and
 `pyproject.toml`. The build script rejects a mismatch.
