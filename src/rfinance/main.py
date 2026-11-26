@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from rfinance import __version__
 from rfinance.bootstrap import create_application_context
 from rfinance.ui.main_window import MainWindow
+from rfinance.ui.theme import apply_app_theme
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -24,6 +25,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     application.setApplicationName("RFinance")
     application.setApplicationVersion(__version__)
     application.setOrganizationName("RidTheWann")
+    apply_app_theme(application, mode="dark")
 
     try:
         context = create_application_context()
