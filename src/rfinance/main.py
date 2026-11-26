@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from rfinance import __version__
 from rfinance.bootstrap import create_application_context
 from rfinance.ui.main_window import MainWindow
+from rfinance.ui.theme import apply_app_theme
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -20,10 +21,29 @@ if TYPE_CHECKING:
 
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = list(argv) if argv is not None else sys.argv
+    if "--smoke-test" in arguments[1:]:
+        try:
+            context = create_application_context()
+            try:
+                with context.database.engine.connect() as connection:
+                    revision = connection.exec_driver_sql(
+                        "SELECT version_num FROM alembic_version"
+                    ).scalar_one_or_none()
+                if not isinstance(revision, str) or not revision:
+                    raise RuntimeError("database migration revision was not recorded")
+                context.logger.info("Frozen application smoke test passed at schema %s", revision)
+            finally:
+                context.close()
+        except Exception as error:  # noqa: BLE001 - smoke-test failures must produce a nonzero exit.
+            sys.stderr.write(f"RFinance packaging smoke test failed: {error}\n")
+            return 1
+        return 0
+
     application = QApplication(arguments)
     application.setApplicationName("RFinance")
     application.setApplicationVersion(__version__)
     application.setOrganizationName("RidTheWann")
+    apply_app_theme(application, mode="dark")
 
     try:
         context = create_application_context()

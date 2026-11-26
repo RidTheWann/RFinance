@@ -1,0 +1,92 @@
+name: Windows Package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/windows-package.yml"
+      - "installer/**"
+      - "scripts/build_windows.ps1"
+      - "src/rfinance/main.py"
+      - "src/rfinance/storage/migrations/**"
+      - "pyproject.toml"
+      - "requirements.lock"
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Windows x64 installer
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install application and frozen-build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Install Inno Setup 6
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build, smoke-test and package
+        shell: pwsh
+        run: .\scripts\build_windows.ps1 -CreateInstaller
+
+      - name: Generate package checksums
+        shell: pwsh
+        run: |
+          $files = @(
+            Get-ChildItem .\dist\RFinance-Portable-*-win-x64.zip
+            Get-ChildItem .\dist\installer\RFinance-Setup-*-win-x64.exe
+          )
+          $lines = foreach ($file in $files) {
+            $hash = Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256
+            "$($hash.Hash.ToLowerInvariant())  $($file.Name)"
+          }
+          $lines | Set-Content .\dist\SHA256SUMS.txt -Encoding ascii
+
+      - name: Upload Windows distributables
+        uses: actions/upload-artifact@v4
+        with:
+          name: rfinance-windows-package-${{ github.run_id }}
+          path: |
+            dist/RFinance-Portable-*-win-x64.zip
+            dist/installer/RFinance-Setup-*-win-x64.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish tagged Windows release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: rfinance-windows-package-${{ github.run_id }}
+          path: release-assets
+
+      - name: Publish installer and portable package
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/**

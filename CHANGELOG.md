@@ -4,6 +4,10 @@ All notable changes to RFinance are documented here.
 
 ## Unreleased
 
+- Added a Windows 11 x64 packaging path that creates a smoke-tested PyInstaller executable bundle, a portable ZIP, and a per-user Inno Setup installer. The Windows Package workflow publishes pull-request artifacts and attaches installer/portable assets to matching version tags. Installer uninstall leaves the per-user RFinance data directory untouched; the package remains unsigned pending an Authenticode certificate.
+
+- Added a centralized obsidian-slate Qt design system with a light-mode alternative, reusable KPI/status/toast widgets, a Qt binding compatibility surface, and a worker pool that retains jobs and dispatches callbacks on the GUI thread. The dark financial-terminal theme is now applied at startup.
+
 - The Overview page is now a real dashboard instead of a pointer to another tab: it shows cash, held positions, applied ledger events and simulated dividends from the append-only ledger, plus the count of instruments still awaiting review. A ledger read failure is reported in the label instead of raising.
 
 - Improved desktop usability from a structured GUI audit: the Automation Center now reads the job identifier from column 0's user data so clicking Name/Enabled/Schedule runs the correct job (with a regression test); ledger and PDF exports ask before overwriting an existing file; long instructional labels wrap instead of clipping; research, trading, risk and metadata inputs carry tooltips stating units and accepted formats; dividend, risk and category tables render amounts, percentages and lot sizes through one shared formatter (`ui/formatting.py`) with an explicit `—` for unavailable values; risk review draft fields clear when the selected event changes so notes cannot be filed against the wrong event; technical-analysis worker result mismatches report into the status label instead of raising into a Qt traceback.
