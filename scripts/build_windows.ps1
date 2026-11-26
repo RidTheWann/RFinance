@@ -129,6 +129,18 @@ try {
         Write-Host "Installer not requested. Pass -CreateInstaller after installing Inno Setup 6."
     }
 
+    $artifactPaths = @($portableArchive)
+    if ($CreateInstaller) {
+        $artifactPaths += $installer
+    }
+    $checksumLines = foreach ($artifactPath in $artifactPaths) {
+        $hash = Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256
+        "$($hash.Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($artifactPath))"
+    }
+    $checksumFile = Join-Path $dist "SHA256SUMS.txt"
+    $checksumLines | Set-Content -LiteralPath $checksumFile -Encoding ascii
+    Write-Host "Package checksums ready: $checksumFile"
+
     Write-Host "Windows x64 build complete for RFinance $version."
 }
 finally {
