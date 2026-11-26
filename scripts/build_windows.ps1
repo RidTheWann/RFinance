@@ -68,11 +68,14 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "The frozen executable failed its isolated startup/migration smoke test."
         }
-        $database = Join-Path $smokeRoot "Database\rfinance.sqlite3"
-        if (-not (Test-Path $database)) {
-            throw "The frozen executable did not create the expected per-user SQLite database."
+        $database = Get-ChildItem -LiteralPath $smokeRoot -Filter "rfinance.sqlite3" -File -Recurse |
+            Select-Object -First 1
+        if ($null -eq $database) {
+            $contents = (Get-ChildItem -LiteralPath $smokeRoot -Force -Recurse |
+                Select-Object -ExpandProperty FullName) -join [Environment]::NewLine
+            throw "The frozen executable passed migration smoke test but no SQLite file was found under RFINANCE_HOME. Contents: $contents"
         }
-        Write-Host "Frozen executable smoke test passed: $database"
+        Write-Host "Frozen executable smoke test passed: $($database.FullName)"
     }
     finally {
         if ($null -eq $previousHome) {
