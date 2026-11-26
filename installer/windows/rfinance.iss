@@ -40,7 +40,7 @@ VersionInfoCompany={#AppPublisher}
 VersionInfoDescription=Local-first investment research and simulated portfolio management
 VersionInfoProductName={#AppName}
 VersionInfoProductVersion={#AppVersion}
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#AppVersion}.0
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
