@@ -7,20 +7,23 @@ from __future__ import annotations
 
 import logging
 import traceback
-from collections.abc import Callable
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from rfinance.ui.qt_compat import (
     QObject,
     QRunnable,
+    Qt,
     QThreadPool,
     QTimer,
-    Qt,
     QtWidgets,
     Signal,
     Slot,
 )
 from rfinance.ui.theme import get_monospace_font
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 _LOGGER = logging.getLogger(__name__)
 PillTone = Literal["positive", "negative", "warning", "neutral"]
