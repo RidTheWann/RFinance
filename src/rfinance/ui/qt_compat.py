@@ -15,9 +15,9 @@ try:
     from PySide6.QtCore import (
         QObject,
         QRunnable,
+        Qt,
         QThreadPool,
         QTimer,
-        Qt,
         Signal,
         Slot,
     )
@@ -26,9 +26,9 @@ except ImportError:  # pragma: no cover - PySide6 is the supported application b
     from PyQt6.QtCore import (  # type: ignore[no-redef]
         QObject,
         QRunnable,
+        Qt,
         QThreadPool,
         QTimer,
-        Qt,
         pyqtSignal as Signal,
         pyqtSlot as Slot,
     )
