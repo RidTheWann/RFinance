@@ -261,9 +261,7 @@ class TaskRunner(QObject):
         worker.signals.failed.connect(
             lambda error, task=worker: self._error_dispatch.emit(task, error)
         )
-        worker.signals.finished.connect(
-            lambda task=worker: self._finished_dispatch.emit(task)
-        )
+        worker.signals.finished.connect(lambda task=worker: self._finished_dispatch.emit(task))
         self._pool.start(worker)
         return worker
 
