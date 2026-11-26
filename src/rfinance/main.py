@@ -35,7 +35,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             finally:
                 context.close()
         except Exception as error:  # noqa: BLE001 - smoke-test failures must produce a nonzero exit.
-            sys.stderr.write(f"RFinance packaging smoke test failed: {error}\\n")
+            sys.stderr.write(f"RFinance packaging smoke test failed: {error}\n")
             return 1
         return 0
 
